@@ -5,13 +5,30 @@ module.exports = async (req, res) => {
   const u = new URL(req.url, 'http://localhost');
   const taskId = u.searchParams.get('taskId') || '';
   if (!taskId) { res.status(400).json({ success: false, message: 'taskId required' }); return; }
-  const resp = await fetch(`https://api.kie.ai/api/v1/jobs/queryTask?taskId=${encodeURIComponent(taskId)}`, {
-    method: 'GET', headers: { 'Authorization': `Bearer ${key}` }
-  });
-  const data = await resp.json();
+  const controller = new AbortController();
+  const to = setTimeout(() => controller.abort(), 30000);
+  let data = null; let parseError = ''; let httpStatus = 0;
+  try {
+    const resp = await fetch(`https://api.kie.ai/api/v1/jobs/queryTask?taskId=${encodeURIComponent(taskId)}`, {
+      method: 'GET', headers: { 'Authorization': `Bearer ${key}` }, signal: controller.signal
+    });
+    httpStatus = resp.status;
+    data = await resp.json();
+  } catch (e) {
+    console.error('KIE query error:', e && e.message ? e.message : e);
+    clearTimeout(to);
+    res.status(500).json({ success: false, message: 'query error', error: String(e && e.message || 'unknown') });
+    return;
+  }
+  clearTimeout(to);
   const state = data && data.data && data.data.state ? data.data.state : 'unknown';
   let resultUrl = '';
-  try { const parsed = JSON.parse(data && data.data && data.data.resultJson ? data.data.resultJson : '{}'); resultUrl = parsed && parsed.resultUrls ? parsed.resultUrls[0] || '' : ''; } catch {}
-  res.json({ success: true, state, resultUrl, raw: data });
+  try { const parsed = JSON.parse(data && data.data && data.data.resultJson ? data.data.resultJson : '{}'); resultUrl = parsed && parsed.resultUrls ? parsed.resultUrls[0] || '' : ''; }
+  catch (e) { parseError = String(e && e.message || 'parse error'); }
+  const ok = (httpStatus===200) || (data && data.code===200);
+  if (!ok) {
+    res.status(502).json({ success: false, state, resultUrl, raw: data, diagnostics: { parseError, httpStatus } });
+    return;
+  }
+  res.json({ success: true, state, resultUrl, raw: data, diagnostics: { parseError, httpStatus } });
 };
-

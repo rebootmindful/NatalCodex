@@ -210,3 +210,13 @@ Important Notes
 The callback content structure is identical to the Query Task API response
 The param field contains the complete Create Task request parameters, not just the input section
 If callBackUrl is not provided, no callback notifications will be sent
+
+Polling & Status
+- States: `pending` → `running` → `success` | `fail`
+- Query frequency: every 2s; upper time limit: 60s
+- Result parsing: `data.resultJson` contains `resultUrls`; if empty, return diagnostics including parse errors
+- Recommended flow: createTask with `callBackUrl`, otherwise use queryTask polling with above limits
+
+Error Handling
+- Create: return `{ success:false, message, raw }` on non-200; 30s timeout with abort
+- Query: return `{ success:false, message, error }` when network/timeout; include `diagnostics.parseError` if `resultJson` malformed

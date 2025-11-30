@@ -11,11 +11,21 @@ module.exports = async (req, res) => {
   if (!prompt) { res.status(400).json({ success: false, message: 'prompt required' }); return; }
   const payload = { model: 'nano-banana-pro', input: { prompt, aspect_ratio, resolution, output_format } };
   if (callBackUrl) payload.callBackUrl = callBackUrl;
-  const resp = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` }, body: JSON.stringify(payload)
-  });
-  const data = await resp.json();
+  const controller = new AbortController();
+  const to = setTimeout(() => controller.abort(), 30000);
+  let data = null;
+  try {
+    const resp = await fetch('https://api.kie.ai/api/v1/jobs/createTask', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` }, body: JSON.stringify(payload), signal: controller.signal
+    });
+    data = await resp.json();
+  } catch (e) {
+    console.error('KIE create error:', e && e.message ? e.message : e);
+    clearTimeout(to);
+    res.status(500).json({ success: false, message: 'create error', error: String(e && e.message || 'unknown') });
+    return;
+  }
+  clearTimeout(to);
   if (data && data.code === 200 && data.data && data.data.taskId) { res.json({ success: true, taskId: data.data.taskId }); return; }
   res.status(500).json({ success: false, message: 'Unexpected response', raw: data });
 };
-
