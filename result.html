@@ -50,6 +50,7 @@
         <div class="actions" style="margin-bottom:8px">
           <button id="generate" class="btn">Generate Report</button>
           <button id="copy" class="btn ghost">Copy</button>
+          <button id="dualGenerate" class="btn ghost" title="Ctrl+Shift+G">Dual Generate (Doc+Image)</button>
         </div>
         <div id="report" class="pre">Preparing...</div>
         <div id="reportStatus" class="pre" style="margin-top:8px"></div>
@@ -98,13 +99,16 @@
     function download(node){var a=document.createElement('a');a.href='soulprint-card.webp.png';a.download='natalcodex-card.png';a.click()}
     document.getElementById('downloadCard').addEventListener('click',function(){download()})
     document.getElementById('regenCard').addEventListener('click',function(){var c=document.getElementById('card');c.style.opacity='0.6';setTimeout(function(){c.style.opacity='1'},600)})
+    // dual trigger: Ctrl+Shift+G or button click
+    document.addEventListener('keydown',function(e){if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='g'){dualGenerate()}})
+    document.getElementById('dualGenerate').addEventListener('click',function(){dualGenerate()})
     async function genCardViaKIE(){
       var statusEl=document.getElementById('kieStatus');
       statusEl.textContent='Creating task...';
       try{
         var d=JSON.parse(session||'{}');
         var prompt='Soulprint card, MBTI fusion, birth '+(d.date||'')+' '+(d.time||'')+', '+(d.location||'')+' ('+(d.lat||'')+','+(d.lon||'')+') '+(d.timezone||'')+'; Cyber-Zen style, neon jade glow, 9:16, 2K, PNG.';
-        var payload={prompt:prompt,aspect_ratio:'9:16',resolution:'2K',output_format:'png'};
+        var payload={prompt:prompt,aspect_ratio:'9:16',resolution:'4K',output_format:'png'};
         var epsCreate=['/api/kie/createTask','http://localhost:5502/api/kie/createTask'];
         var taskId='';
         for(var i=0;i<epsCreate.length;i++){
@@ -119,6 +123,32 @@
         var ok=await pollKieTask(taskId,statusEl);
         if(!ok){statusEl.textContent='Polling finished with no result'}
       }catch(e){statusEl.textContent='Failed: '+(e&&e.message||'unknown')}
+    }
+    async function dualGenerate(){
+      var status=document.getElementById('reportStatus');
+      var kie=document.getElementById('kieStatus');
+      status.textContent='Dual: preparing...';
+      kie.textContent='Dual: preparing image...';
+      try{
+        var d=JSON.parse(session||'{}');
+        var p1=(async function(){ var content=await tryGenerate(d); // export PDF + DOCX
+          status.textContent='Dual: exporting documents...';
+          await Promise.all([
+            fetch('/api/export/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:orderId,content:content,title:'Soul Codex Report'})}).then(async r=>{if(!r.ok)throw new Error('Export PDF HTTP '+r.status); const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-report.pdf'; a.click(); }),
+            fetch('/api/export/doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:orderId,content:content,title:'Soul Codex Report'})}).then(async r=>{if(!r.ok)throw new Error('Export DOC HTTP '+r.status); const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-report.docx'; a.click(); })
+          ]);
+          status.textContent='Dual: documents ready';
+          localStorage.setItem('nc_cache_report',content);
+        })();
+        var p2=(async function(){ await genCardViaKIE(); // when generated, trigger download of bg image
+          kie.textContent='Dual: downloading image...';
+          var bg=document.getElementById('card').style.backgroundImage||'';
+          var m=bg.match(/url\("(.+?)"\)/); var url=m?m[1]:'';
+          if(url){ const resp=await fetch(url); const blob=await resp.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-card.png'; a.click(); localStorage.setItem('nc_cache_card_url',url); kie.textContent='Dual: image ready'; } else { kie.textContent='Dual: image url missing'; }
+        })();
+        await Promise.all([p1,p2]);
+        status.textContent='Dual: all done';
+      }catch(e){ status.textContent='Dual error: '+((e&&e.message)||'unknown'); }
     }
     async function pollKieTask(taskId,statusEl){
       var card=document.getElementById('card');
