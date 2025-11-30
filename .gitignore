@@ -1,0 +1,10 @@
+node_modules/
+apikey.txt
+*.log
+.DS_Store
+Thumbs.db
+backup-original/
+reports/
+dist/
+tmp/
+*.env

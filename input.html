@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NatalCodex - Input</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);color:#fff;min-height:100vh}
+    .wrap{max-width:920px;margin:0 auto;padding:32px 20px}
+    .logo{font-size:32px;font-weight:600;color:#00ff9d;text-shadow:0 0 14px rgba(0,255,157,.5);letter-spacing:-.2px;margin-bottom:4px}
+    .title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:24px;color:#e5e7eb}
+    .card{background:rgba(10,14,39,.55);backdrop-filter:blur(8px);border:1px solid rgba(0,255,157,.3);border-radius:16px;padding:24px;box-shadow:0 10px 28px rgba(0,255,157,.18)}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .field{display:flex;flex-direction:column;gap:8px}
+    label{font-size:13px;color:#cbd5e1}
+    input,select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(0,255,157,.25);background:rgba(2,6,23,.65);color:#fff;outline:none}
+    input:focus,select:focus{border-color:#00ff9d;box-shadow:0 0 0 3px rgba(0,255,157,.18)}
+    .row{display:flex;gap:16px}
+    .actions{margin-top:20px;display:flex;gap:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:14px 20px;border-radius:12px;border:1px solid rgba(0,255,157,.35);background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);color:#0a0e27;font-weight:700;letter-spacing:.2px;box-shadow:0 10px 26px rgba(0,255,157,.4);cursor:pointer;transition:transform .2s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .ghost{background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)}
+    .suggest{position:relative}
+    .suggest-list{position:absolute;top:100%;left:0;right:0;background:rgba(10,14,39,.95);border:1px solid rgba(0,255,157,.3);border-radius:12px;margin-top:6px;max-height:220px;overflow:auto;z-index:10}
+    .suggest-item{padding:10px 12px;border-bottom:1px solid rgba(0,255,157,.15);font-size:13px;color:#d4d4d8;cursor:pointer}
+    .suggest-item:hover{background:rgba(0,255,157,.15);color:#0a0e27}
+    .footer{margin-top:18px;font-size:12px;color:#a1a1aa}
+    .error{border-color:#f87171 !important;box-shadow:0 0 0 3px rgba(248,113,113,.2) !important}
+    .msg{margin-top:12px;font-size:13px;color:#fca5a5}
+    .field-msg{margin-top:6px;font-size:12px;color:#fca5a5}
+    .field-msg.ok{color:#34d399}
+    .banner{background:rgba(34,197,94,.15);color:#d1fae5;border:1px solid rgba(34,197,94,.35);padding:10px 12px;border-radius:12px;margin-bottom:12px;font-size:13px}
+    @media (max-width:768px){.grid{grid-template-columns:1fr}.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">NatalCodex</div>
+    <div class="title">Enter Your Birth Information</div>
+    <div id="testBanner" class="banner" style="display:none">Test Mode is ON — generation will run without payment.</div>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <label>Name</label>
+          <input id="name" type="text" placeholder="Optional">
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <select id="gender"><option value="female">Female</option><option value="male">Male</option><option value="other">Other</option></select>
+        </div>
+        <div class="field">
+          <label>Birth Date</label>
+          <input id="date" type="date">
+        </div>
+        <div class="field">
+          <label>Birth Time</label>
+          <input id="time" type="time">
+        </div>
+        <div class="field suggest">
+          <label>Birth Location</label>
+          <input id="location" type="text" placeholder="City, Country">
+          <div id="suggestions" class="suggest-list" style="display:none"></div>
+        </div>
+        <div class="field">
+          <label>Timezone</label>
+          <div class="row">
+            <select id="timezone" style="flex:1">
+              <option value="UTC">UTC</option>
+              <option value="Pacific/Niue">Pacific/Niue (UTC-11)</option>
+              <option value="Pacific/Honolulu">Pacific/Honolulu (UTC-10)</option>
+              <option value="America/Anchorage">America/Anchorage (UTC-9)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles (UTC-8)</option>
+              <option value="America/Denver">America/Denver (UTC-7)</option>
+              <option value="America/Chicago">America/Chicago (UTC-6)</option>
+              <option value="America/New_York">America/New_York (UTC-5/-4)</option>
+              <option value="America/Halifax">America/Halifax (UTC-4)</option>
+              <option value="America/Sao_Paulo">America/Sao_Paulo (UTC-3)</option>
+              <option value="America/Noronha">America/Noronha (UTC-2)</option>
+              <option value="Atlantic/Azores">Atlantic/Azores (UTC-1)</option>
+              <option value="Europe/London">Europe/London (UTC+0)</option>
+              <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
+              <option value="Europe/Athens">Europe/Athens (UTC+2)</option>
+              <option value="Europe/Moscow">Europe/Moscow (UTC+3)</option>
+              <option value="Africa/Nairobi">Africa/Nairobi (UTC+3)</option>
+              <option value="Asia/Dubai">Asia/Dubai (UTC+4)</option>
+              <option value="Asia/Karachi">Asia/Karachi (UTC+5)</option>
+              <option value="Asia/Dhaka">Asia/Dhaka (UTC+6)</option>
+              <option value="Asia/Bangkok">Asia/Bangkok (UTC+7)</option>
+              <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
+              <option value="Asia/Hong_Kong">Asia/Hong_Kong (UTC+8)</option>
+              <option value="Asia/Tokyo">Asia/Tokyo (UTC+9)</option>
+              <option value="Asia/Seoul">Asia/Seoul (UTC+9)</option>
+              <option value="Australia/Sydney">Australia/Sydney (UTC+10)</option>
+              <option value="Pacific/Noumea">Pacific/Noumea (UTC+11)</option>
+              <option value="Pacific/Auckland">Pacific/Auckland (UTC+12)</option>
+              <option value="Pacific/Tongatapu">Pacific/Tongatapu (UTC+13)</option>
+              <option value="Pacific/Kiritimati">Pacific/Kiritimati (UTC+14)</option>
+            </select>
+            <button id="tzSuggest" class="btn ghost" style="padding:10px 12px">Suggest</button>
+          </div>
+          <div id="tzMsg" class="field-msg" style="min-height:18px"></div>
+        </div>
+        <div class="field">
+          <label>Latitude</label>
+          <input id="lat" type="text" placeholder="e.g., 31.2304">
+        </div>
+        <div class="field">
+          <label>Longitude</label>
+          <input id="lon" type="text" placeholder="e.g., 121.4737">
+        </div>
+      </div>
+      <div class="actions">
+        <button id="save" class="btn">Save & Continue</button>
+        <button id="clear" class="btn ghost">Clear</button>
+      </div>
+      <div class="footer">Data is stored locally to avoid re-entry.</div>
+    </div>
+  </div>
+  <script>
+    function getParam(k){var u=new URL(window.location.href);return u.searchParams.get(k)}
+    function uuid(){var s=[],hex='0123456789abcdef';for(var i=0;i<36;i++){s[i]=hex.substr(Math.floor(Math.random()*16),1)}s[14]='4';s[19]=hex.substr((parseInt(s[19],16)&0x3)|0x8,1);s[8]='-';s[13]='-';s[18]='-';s[23]='-';return s.join('')}
+    var testMode=(getParam('test')==='1')||(localStorage.getItem('nc_test_mode')==='1');
+    var orderId=getParam('order_id')||localStorage.getItem('nc_order_id')||getCookie('nc_order_id');
+    if(!orderId){
+      if(testMode){orderId=uuid();localStorage.setItem('nc_order_id',orderId);}
+      else{window.location.href='checkout.html'}
+    } else {localStorage.setItem('nc_order_id',orderId)}
+    function setCookie(name,value,days){var d=new Date();d.setTime(d.getTime()+days*24*60*60*1000);document.cookie=name+'='+encodeURIComponent(value)+';expires='+d.toUTCString()+';path=/'}
+    function getCookie(name){var v=document.cookie.split('; ').find(function(r){return r.startsWith(name+'=')});return v?decodeURIComponent(v.split('=')[1]):null}
+    function debounce(fn,delay){var t;return function(){var a=arguments;clearTimeout(t);t=setTimeout(function(){fn.apply(null,a)},delay)}}
+    var input=document.getElementById('location');
+    var list=document.getElementById('suggestions');
+    function renderSuggestions(items){list.innerHTML='';if(!items||!items.length){list.style.display='none';return}items.slice(0,8).forEach(function(p){var li=document.createElement('div');li.className='suggest-item';li.textContent=p.display_name;li.addEventListener('click',function(){input.value=p.display_name;document.getElementById('lat').value=p.lat;document.getElementById('lon').value=p.lon;list.style.display='none'});list.appendChild(li)});list.style.display='block'}
+    var search=debounce(function(q){if(!q||q.length<2){renderSuggestions([]);return}fetch('https://nominatim.openstreetmap.org/search?format=json&q='+encodeURIComponent(q)).then(function(r){return r.json()}).then(function(data){renderSuggestions(data)}).catch(function(){renderSuggestions([])})},400)
+    input.addEventListener('input',function(e){search(e.target.value)})
+    var saved=getCookie('nc_birth_info')||localStorage.getItem('natal_user_session');
+    if(saved){try{var d=JSON.parse(saved);document.getElementById('name').value=d.name||'';document.getElementById('gender').value=d.gender||'female';document.getElementById('date').value=d.date||'';document.getElementById('time').value=d.time||'';document.getElementById('location').value=d.location||'';document.getElementById('timezone').value=d.timezone||'UTC';document.getElementById('lat').value=d.lat||'';document.getElementById('lon').value=d.lon||''}catch(e){}}
+    if(testMode){document.getElementById('testBanner').style.display='block'}
+    function showErrors(ids){ids.forEach(function(id){var el=document.getElementById(id);el.classList.add('error')});var card=document.querySelector('.card');var msg=document.getElementById('msg');if(!msg){msg=document.createElement('div');msg.id='msg';msg.className='msg';card.appendChild(msg)}msg.textContent='Please complete required fields: '+ids.join(', ')}
+    function clearErrors(){['name','gender','date','time','location','timezone','lat','lon'].forEach(function(id){document.getElementById(id).classList.remove('error')});var msg=document.getElementById('msg');if(msg){msg.textContent=''};document.querySelectorAll('.field-msg').forEach(function(n){n.textContent=''})}
+    function isNumberInRange(v,min,max){var n=parseFloat(v);return !isNaN(n)&&n>=min&&n<=max}
+    function setFieldError(id,msg){var el=document.getElementById(id);el.classList.add('error');var m=el.nextElementSibling;var needNew=!m||!m.classList||!m.classList.contains('field-msg');if(needNew){m=document.createElement('div');m.className='field-msg';el.parentNode.appendChild(m)}m.textContent=msg}
+    function setFieldOk(id,msg){var el=document.getElementById(id);el.classList.remove('error');var m=el.nextElementSibling;var needNew=!m||!m.classList||!m.classList.contains('field-msg');if(needNew){m=document.createElement('div');m.className='field-msg ok';el.parentNode.appendChild(m)}else{m.classList.add('ok')}m.textContent=msg}
+    function isValidTime(v){if(!v)return false;var parts=v.split(':');if(parts.length!==2)return false;var h=parseInt(parts[0],10),m=parseInt(parts[1],10);return !isNaN(h)&&!isNaN(m)&&h>=0&&h<=23&&m>=0&&m<=59}
+    function isValidDateStr(v){if(!v)return false;var parts=v.split('-');if(parts.length!==3)return false;var y=parseInt(parts[0],10),mo=parseInt(parts[1],10),da=parseInt(parts[2],10);if(isNaN(y)||isNaN(mo)||isNaN(da))return false;var d=new Date(v);if(isNaN(d.getTime()))return false;return d.getUTCFullYear()===y&&(d.getUTCMonth()+1)===mo&&d.getUTCDate()===da}
+    function isFutureDate(v){try{var d=new Date(v);var now=new Date();return d.getTime()>now.getTime()}catch(_){return false}}
+    function validate(){var missing=[];['date','time','location','timezone','lat','lon'].forEach(function(id){var v=document.getElementById(id).value.trim();if(!v){missing.push(id)}});
+      var dv=document.getElementById('date').value.trim();
+      if(dv && (!isValidDateStr(dv) || isFutureDate(dv))){setFieldError('date',!isValidDateStr(dv)?'Invalid date':'Date cannot be in the future');if(missing.indexOf('date')<0)missing.push('date')}
+      return missing}
+    document.getElementById('date').addEventListener('blur',function(e){var v=e.target.value.trim();if(!v){setFieldError('date','Required');return}if(!isValidDateStr(v)){setFieldError('date','Invalid date');return}if(isFutureDate(v)){setFieldError('date','Date cannot be in the future');return}setFieldOk('date','Looks good')})
+    ;['lat','lon'].forEach(function(id){document.getElementById(id).addEventListener('blur',function(e){var v=e.target.value.trim();if(!v){setFieldError(id,'Required')}else{var ok=id==='lat'?isNumberInRange(v,-90,90):isNumberInRange(v,-180,180);if(!ok){setFieldError(id,id==='lat'?'Latitude must be -90 to 90':'Longitude must be -180 to 180')} else {e.target.classList.remove('error');var m=e.target.nextElementSibling;if(m&&m.classList.contains('field-msg')){m.textContent=''}}}})})
+    document.getElementById('time').addEventListener('blur',function(e){var v=e.target.value.trim();if(!isValidTime(v)){setFieldError('time','Invalid time, use HH:MM')}else{setFieldOk('time','Looks good')}})
+    function suggestTimezone(){var lon=document.getElementById('lon').value.trim();var lat=document.getElementById('lat').value.trim();var msg=document.getElementById('tzMsg');function setMsg(t,ok){msg.textContent=t;msg.className='field-msg'+(ok?' ok':'')}
+      if(!lon||!lat){setMsg('Please provide latitude and longitude first',false);return}
+      if(!isNumberInRange(lat,-90,90)||!isNumberInRange(lon,-180,180)){setMsg('Latitude/Longitude out of range',false);return}
+      var offset=Math.round(parseFloat(lon)/15);
+      var map={
+        '-11':'Pacific/Niue',
+        '-10':'Pacific/Honolulu',
+        '-9':'America/Anchorage',
+        '-8':'America/Los_Angeles',
+        '-7':'America/Denver',
+        '-6':'America/Chicago',
+        '-5':'America/New_York',
+        '-4':'America/Halifax',
+        '-3':'America/Sao_Paulo',
+        '-2':'America/Noronha',
+        '-1':'Atlantic/Azores',
+        '0':'Europe/London',
+        '1':'Europe/Paris',
+        '2':'Europe/Athens',
+        '3':'Europe/Moscow',
+        '4':'Asia/Dubai',
+        '5':'Asia/Karachi',
+        '6':'Asia/Dhaka',
+        '7':'Asia/Bangkok',
+        '8':'Asia/Shanghai',
+        '9':'Asia/Tokyo',
+        '10':'Australia/Sydney',
+        '11':'Pacific/Noumea',
+        '12':'Pacific/Auckland',
+        '13':'Pacific/Tongatapu',
+        '14':'Pacific/Kiritimati'
+      };
+      var tz=map[String(offset)];
+      if(!tz){setMsg('No exact match. Please select manually.',false);return}
+      var sel=document.getElementById('timezone');sel.value=tz;setMsg('Suggested '+tz+' based on longitude (~UTC'+(offset>=0?('+'+offset):offset)+')',true)
+    }
+    document.getElementById('tzSuggest').addEventListener('click',function(e){e.preventDefault();suggestTimezone()})
+    document.getElementById('save').addEventListener('click',function(){clearErrors();var missing=validate();var extra=[];var latv=document.getElementById('lat').value.trim();var lonv=document.getElementById('lon').value.trim();if(latv&&(!isNumberInRange(latv,-90,90))){extra.push('lat')}
+      if(lonv&&(!isNumberInRange(lonv,-180,180))){extra.push('lon')}
+      if(document.getElementById('time').value && !isValidTime(document.getElementById('time').value)){setFieldError('time','Invalid time, use HH:MM')}
+      var dv=document.getElementById('date').value.trim();
+      if(dv && (!isValidDateStr(dv) || isFutureDate(dv))){setFieldError('date',!isValidDateStr(dv)?'Invalid date':'Date cannot be in the future')}
+      var all=missing.concat(extra);if(all.length){showErrors(all);if(extra.indexOf('lat')>=0){setFieldError('lat','Latitude must be -90 to 90')}if(extra.indexOf('lon')>=0){setFieldError('lon','Longitude must be -180 to 180')}return}
+      var data={orderId:localStorage.getItem('nc_order_id'),name:document.getElementById('name').value,gender:document.getElementById('gender').value,date:document.getElementById('date').value,time:document.getElementById('time').value,location:document.getElementById('location').value,timezone:document.getElementById('timezone').value,lat:document.getElementById('lat').value,lon:document.getElementById('lon').value};var s=JSON.stringify(data);localStorage.setItem('natal_user_session',s);setCookie('nc_birth_info',s,365);var next='result.html?order_id='+encodeURIComponent(orderId);if(testMode){next+='&test=1'};window.location.href=next})
+    document.getElementById('clear').addEventListener('click',function(){localStorage.removeItem('natal_user_session');setCookie('nc_birth_info','',-1);['name','date','time','location','lat','lon'].forEach(function(id){document.getElementById(id).value=''});document.getElementById('gender').value='female';document.getElementById('timezone').value='UTC'})
+  </script>
+</body>
+</html>
