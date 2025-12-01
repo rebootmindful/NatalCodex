@@ -44,6 +44,21 @@
           <button id="downloadCard" class="btn ghost">Download</button>
           <button id="genViaKie" class="btn ghost">Generate via KIE</button>
         </div>
+        <div class="actions" style="margin-top:8px">
+          <label style="font-size:12px;color:#cbd5e1">Resolution
+            <select id="kieRes" style="margin-left:6px;padding:6px;border-radius:8px;background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)">
+              <option value="4K" selected>4K</option>
+              <option value="2K">2K</option>
+              <option value="1K">1K</option>
+            </select>
+          </label>
+          <label style="font-size:12px;color:#cbd5e1;margin-left:12px">Format
+            <select id="kieFmt" style="margin-left:6px;padding:6px;border-radius:8px;background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)">
+              <option value="png" selected>PNG</option>
+              <option value="jpg">JPG</option>
+            </select>
+          </label>
+        </div>
         <div id="kieStatus" class="pre" style="margin-top:8px"></div>
       </div>
       <div class="panel">
@@ -107,8 +122,13 @@
       statusEl.textContent='Creating task...';
       try{
         var d=JSON.parse(session||'{}');
-        var prompt='Soulprint card, MBTI fusion, birth '+(d.date||'')+' '+(d.time||'')+', '+(d.location||'')+' ('+(d.lat||'')+','+(d.lon||'')+') '+(d.timezone||'')+'; Cyber-Zen style, neon jade glow, 9:16, 2K, PNG.';
-        var payload={prompt:prompt,aspect_ratio:'9:16',resolution:'4K',output_format:'png'};
+        var prompt=buildKiePrompt(d);
+        var resSel=document.getElementById('kieRes');
+        var fmtSel=document.getElementById('kieFmt');
+        var resolution=(resSel&&resSel.value)||localStorage.getItem('nc_kie_res')||'4K';
+        var output_format=(fmtSel&&fmtSel.value)||localStorage.getItem('nc_kie_fmt')||'png';
+        localStorage.setItem('nc_kie_res',resolution); localStorage.setItem('nc_kie_fmt',output_format);
+        var payload={prompt:prompt,aspect_ratio:'9:16',resolution:resolution,output_format:output_format};
         var epsCreate=['/api/kie/createTask','http://localhost:5502/api/kie/createTask'];
         var taskId='';
         for(var i=0;i<epsCreate.length;i++){
@@ -123,6 +143,29 @@
         var ok=await pollKieTask(taskId,statusEl);
         if(!ok){statusEl.textContent='Polling finished with no result'}
       }catch(e){statusEl.textContent='Failed: '+(e&&e.message||'unknown')}
+    }
+    function buildKiePrompt(d){
+      var name=(d.name||'');var gender=(d.gender||'');var date=(d.date||'');var time=(d.time||'');var tz=(d.timezone||'');var loc=(d.location||'');var lat=(d.lat||'');var lon=(d.lon||'');
+      return [
+        '你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。',
+        '我的出生信息：【'+date+' '+time+'，'+(gender||'')+'，'+loc+'】（坐标 '+lat+','+lon+'；时区 '+tz+'）',
+        '请严格按以下7步执行：',
+        '1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间',
+        '2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级',
+        '3. 通过深度问答式推导（模拟最专业的MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理，不能乱猜）',
+        '4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如“庚金剑修·INTJ”“癸水玄女·INFP”“戊土建筑师·ISTJ”等）',
+        '5. 用 nanobanana pro 风格生成一张超长竖版「灵魂契合卡」（建议1080×3200及以上，打印级别300dpi），布局要求：',
+        '   - 顶部巨大篆体金色标题：【'+(name||'你的名字')+'】的灵魂契合卡',
+        '   - 左侧传统水墨风：完整八字命盘圆盘（地支藏干、十神标注、空亡、神煞、红字标出用神）',
+        '   - 右侧赛博紫电风：MBTI雷达图+八大认知功能栈进度条（五行配色：木青火红土黄金白水黑）',
+        '   - 中央最显眼位置：超大鎏金篆体写出我的专属灵魂称号',
+        '   - 中间横贯一条五行能量光带，连接命盘与MBTI图谱，形成“命运齿轮”转动感',
+        '   - 下方古籍风横批总结一句最准的命格人格总评（引用古籍原文+现代翻译）',
+        '   - 整体配色：黑紫渐变星空底+霓虹电光五行色+局部烫金，赛博道教风，镭射全息质感，信息密度高但层次分明',
+        '   - 所有文字必须用中文，字体：标题篆体，正文宋体+黑体，关键词荧光描边',
+        '6. 最后单独输出一张纯文字版总结，便于复制分享',
+        '直接生成图片+文字，一次成型。',
+      ].join('\n');
     }
     async function dualGenerate(){
       var status=document.getElementById('reportStatus');
