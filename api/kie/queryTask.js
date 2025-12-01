@@ -9,11 +9,20 @@ module.exports = async (req, res) => {
   const to = setTimeout(() => controller.abort(), 30000);
   let data = null; let parseError = ''; let httpStatus = 0;
   try {
-    const resp = await fetch(`https://api.kie.ai/api/v1/jobs/queryTask?taskId=${encodeURIComponent(taskId)}`, {
+    // First try GET with query params
+    let resp = await fetch(`https://api.kie.ai/api/v1/jobs/queryTask?taskId=${encodeURIComponent(taskId)}`, {
       method: 'GET', headers: { 'Authorization': `Bearer ${key}` }, signal: controller.signal
     });
     httpStatus = resp.status;
     data = await resp.json();
+    // If 404 or missing data, try POST body variant
+    if ((httpStatus === 404) || !(data && data.data)) {
+      resp = await fetch('https://api.kie.ai/api/v1/jobs/queryTask', {
+        method: 'POST', headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ taskId }), signal: controller.signal
+      });
+      httpStatus = resp.status;
+      data = await resp.json();
+    }
   } catch (e) {
     console.error('KIE query error:', e && e.message ? e.message : e);
     clearTimeout(to);

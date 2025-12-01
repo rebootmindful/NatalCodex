@@ -187,7 +187,7 @@
           kie.textContent='Dual: downloading image...';
           var bg=document.getElementById('card').style.backgroundImage||'';
           var m=bg.match(/url\("(.+?)"\)/); var url=m?m[1]:'';
-          if(url){ const resp=await fetch(url); const blob=await resp.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-card.png'; a.click(); localStorage.setItem('nc_cache_card_url',url); kie.textContent='Dual: image ready'; } else { kie.textContent='Dual: image url missing'; }
+          if(url){ const resp=await fetch('/api/kie/fetchImage?url='+encodeURIComponent(url)); const blob=await resp.blob(); const fmt=(resp.headers.get('content-type')||'').includes('jpeg')?'jpg':'png'; const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-card.'+fmt; a.click(); localStorage.setItem('nc_cache_card_url',url); kie.textContent='Dual: image ready'; } else { kie.textContent='Dual: image url missing'; }
         })();
         await Promise.all([p1,p2]);
         status.textContent='Dual: all done';
