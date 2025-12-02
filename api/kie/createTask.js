@@ -8,6 +8,17 @@ module.exports = async (req, res) => {
   const resolution = String(b.resolution || '2K');
   const output_format = String(b.output_format || 'png');
   const callBackUrl = process.env.KIE_CALLBACK_URL ? `${process.env.KIE_CALLBACK_URL}?token=${process.env.KIE_CALLBACK_TOKEN||''}` : undefined;
+
+  console.log('[KIE Create] Starting task creation:', {
+    hasPrompt: !!prompt,
+    promptLength: prompt.length,
+    aspect_ratio,
+    resolution,
+    output_format,
+    hasCallbackUrl: !!callBackUrl,
+    callbackUrl: callBackUrl
+  });
+
   if (!prompt) { res.status(400).json({ success: false, message: 'prompt required' }); return; }
   const payload = { model: 'nano-banana-pro', input: { prompt, aspect_ratio, resolution, output_format } };
   if (callBackUrl) payload.callBackUrl = callBackUrl;
@@ -26,6 +37,20 @@ module.exports = async (req, res) => {
     return;
   }
   clearTimeout(to);
-  if (data && data.code === 200 && data.data && data.data.taskId) { res.json({ success: true, taskId: data.data.taskId }); return; }
+
+  console.log('[KIE Create] API Response:', {
+    code: data && data.code,
+    hasTaskId: !!(data && data.data && data.data.taskId),
+    taskId: data && data.data && data.data.taskId,
+    state: data && data.data && data.data.state
+  });
+
+  if (data && data.code === 200 && data.data && data.data.taskId) {
+    console.log('[KIE Create] Task created successfully:', data.data.taskId);
+    res.json({ success: true, taskId: data.data.taskId });
+    return;
+  }
+
+  console.error('[KIE Create] Unexpected response:', data);
   res.status(500).json({ success: false, message: 'Unexpected response', raw: data });
 };

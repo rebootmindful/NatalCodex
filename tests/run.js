@@ -42,8 +42,27 @@ async function testKie(){
   assert(res._body && res._body.allow==='POST','should inform allow POST');
 }
 
+async function testStore(){
+  const handler=require('../api/kie/storeResult');
+  function mkRes(){return{code:200,_body:null,status(c){this.code=c;return this},json(o){this._body=o}}}
+  let res=mkRes();
+  await handler({method:'POST',body:{taskId:'t1',imageUrl:'https://example.com/i1.png'},headers:{},url:'/api/kie/storeResult'},res);
+  assert(res.code===200,'store POST returns 200');
+  assert(res._body&&res._body.success===true,'store success');
+  const sid=res._body.shortId||'';
+  res=mkRes();
+  await handler({method:'GET',url:'/api/kie/storeResult?shortId='+encodeURIComponent(sid)},res);
+  assert(res.code===200,'store GET by shortId 200');
+  assert(res._body&&res._body.imageUrl,'store GET returns imageUrl');
+  res=mkRes();
+  await handler({method:'GET',url:'/api/kie/storeResult?action=export'},res);
+  assert(res.code===200,'export 200');
+  assert(res._body&&Array.isArray(res._body.items),'export returns items');
+}
+
 (async()=>{
   await run('report.generate',testReport);
   await run('kie.endpoints',testKie);
+  await run('kie.storeResult',testStore);
   log('Done');
 })();

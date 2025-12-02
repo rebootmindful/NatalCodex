@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfix(kie): Fix KIE API integration issues\n\n🔧 Core Fixes:\n- Fix queryTask.js to use POST method (official KIE API standard)\n- Remove incorrect GET fallback that was causing 404 errors\n- Add comprehensive logging to callback.js for debugging\n- Improve frontend error messages with detailed failCode/failMsg\n\n📝 Documentation:\n- Add .env.example with all required environment variables\n- Create VERCEL_DEPLOYMENT.md with step-by-step deployment guide\n- Include troubleshooting section for common issues\n\n🎯 Expected Impact:\n- KIE API calls should now succeed on first attempt\n- Callback webhook will be properly logged in Vercel logs\n- Users will see clear error messages if generation fails\n- Deployment team has clear instructions for environment setup\n\n🤖 Generated with Claude Code\nhttps://claude.com/claude-code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(npm test:*)",
+      "Bash(git commit:*)",
+      "Bash(node:*)",
+      "Bash(git push:*)",
+      "Bash(curl:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

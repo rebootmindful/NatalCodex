@@ -5,6 +5,94 @@ api key:  996c9f218f6339fefd23eeb688f4bfbe
 
 所有 API 请求都需要在请求头中包含您的 API Key：
 
+=====================这里是官方回信的使用方法优先参考这个：
+
+Here are some examples you need：
+Example of createTask (POST):
+curl -X POST "https://api.kie.ai/api/v1/jobs/createTask" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "model": "nano-banana-pro",
+    "callBackUrl": "https://your-domain.com/api/kie/callback",
+    "input": {
+      "prompt": "A futuristic robot waving its hand",
+      "aspect_ratio": "16:9",
+      "resolution": "1K",
+      "output_format": "png"
+    }
+}'
+
+￼
+ Example of create task response:
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "7ac3c1b02f054e39a84c1b14737712f4",
+    "model": "nano-banana-pro",
+    "state": "pending"
+  }
+}
+
+￼
+ Example of Query Task (POST):
+curl -X POST "https://api.kie.ai/api/v1/jobs/queryTask" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "taskId": "7ac3c1b02f054e39a84c1b14737712f4"
+  }'
+
+￼
+ Example of successful response for query task:
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "7ac3c1b02f054e39a84c1b14737712f4",
+    "state": "success",
+    "resultJson": {
+      "resultUrls": [
+        "https://cdn.kie.ai/output/abc123.png"
+      ]
+    }
+  }
+}
+
+￼
+ Example: Query task is not yet ready
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "taskId": "7ac3c1b02f054e39a84c1b14737712f4",
+    "state": "running",
+    "raw": {
+      "status": 200
+    }
+  }
+}
+
+￼
+ Example: Query task unknown/404
+{
+  "success": false,
+  "message": "Task not found on provider",
+  "diagnostics": {
+    "httpStatus": 404,
+    "providerMessage": "record not found"
+  }
+}
+
+Fred
+
+
+
+
+===========================
+这里是官网的文档：
+
 POST
 /api/v1/jobs/createTask
 Create Task
