@@ -12,17 +12,65 @@ function makeShortId(taskId, imageUrl) { const h = crypto.createHash('sha256').u
 function baseUrl(req) { const host = req.headers['host'] || ''; const proto = 'https://'; return host ? (proto + host) : ''; }
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') { res.status(405).json({ success:false, message:'Method Not Allowed', allow:'POST' }); return; }
+  // Add detailed logging for debugging
+  console.log('[KIE Callback] Received request:', {
+    method: req.method,
+    url: req.url,
+    hasBody: !!req.body,
+    bodyKeys: req.body ? Object.keys(req.body) : []
+  });
+
+  if (req.method !== 'POST') {
+    console.error('[KIE Callback] Method not allowed:', req.method);
+    res.status(405).json({ success:false, message:'Method Not Allowed', allow:'POST' });
+    return;
+  }
+
   const u = new URL(req.url, 'http://localhost');
   const token = u.searchParams.get('token') || '';
   const expect = process.env.KIE_CALLBACK_TOKEN || '';
-  if (!token || !expect || token !== expect) { console.error('KIE callback unauthorized'); res.status(401).json({ success: false, message: 'unauthorized' }); return; }
+
+  console.log('[KIE Callback] Token validation:', {
+    hasToken: !!token,
+    hasExpected: !!expect,
+    tokenPrefix: token ? token.slice(0, 10) + '...' : 'missing',
+    expectedPrefix: expect ? expect.slice(0, 10) + '...' : 'missing'
+  });
+
+  if (!token || !expect || token !== expect) {
+    console.error('[KIE Callback] Unauthorized - token mismatch');
+    res.status(401).json({ success: false, message: 'unauthorized' });
+    return;
+  }
+
   const b = req.body || {};
   const data = b.data || {};
   const state = String(data.state || '');
   const taskId = String(data.taskId || '');
+
+  console.log('[KIE Callback] Parsed callback data:', {
+    code: b.code,
+    msg: b.msg,
+    state: state,
+    taskId: taskId,
+    hasResultJson: !!data.resultJson,
+    failCode: data.failCode,
+    failMsg: data.failMsg
+  });
+
   let resultUrl = '';
-  try { const parsed = JSON.parse(String(data.resultJson || '')); resultUrl = parsed && parsed.resultUrls ? parsed.resultUrls[0] || '' : ''; } catch (e) { console.error('KIE callback parse error:', e && e.message ? e.message : e); }
+  try {
+    const parsed = JSON.parse(String(data.resultJson || ''));
+    resultUrl = parsed && parsed.resultUrls ? parsed.resultUrls[0] || '' : '';
+
+    if (resultUrl) {
+      console.log('[KIE Callback] Successfully extracted resultUrl:', resultUrl);
+    } else {
+      console.warn('[KIE Callback] No resultUrl found in resultJson');
+    }
+  } catch (e) {
+    console.error('[KIE Callback] Parse error:', e && e.message ? e.message : e);
+  }
   let shortId = '';
   let shortUrl = '';
   try {

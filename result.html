@@ -235,7 +235,13 @@
             statusEl.textContent='Success with empty url'+(diag?(' — '+diag):'')+(httpStatus?(' — http:'+httpStatus):'')+(rawMsg?(' — msg:'+rawMsg):'');
             return false;
           }
-          if(state==='fail'){statusEl.textContent='Task failed';return false}
+          if(state==='fail'){
+            var failCode=(data.raw&&data.raw.data&&data.raw.data.failCode)||'';
+            var failMsg=(data.raw&&data.raw.data&&data.raw.data.failMsg)||'';
+            statusEl.textContent='Task failed: '+failCode+' - '+failMsg;
+            try{localStorage.setItem('nc_kie_last_error',JSON.stringify({taskId:taskId,failCode:failCode,failMsg:failMsg,timestamp:Date.now()}))}catch(_){}
+            return false;
+          }
           // unknown / pending / running
           var httpStatus2=(data.raw&&data.raw.status)||'';
           if(httpStatus2){trace.push('http:'+httpStatus2)}
