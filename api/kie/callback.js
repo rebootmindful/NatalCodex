@@ -1,3 +1,14 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+
+function storePath() { return path.join(process.cwd(), 'nddesign', 'data', 'kie-results.json'); }
+function ensureStore() { const p = storePath(); const dir = path.dirname(p); if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); if (!fs.existsSync(p)) fs.writeFileSync(p, JSON.stringify({ items: [] }, null, 2)); return p; }
+function load() { const p = ensureStore(); try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { return { items: [] }; } }
+function save(data) { const p = ensureStore(); fs.writeFileSync(p, JSON.stringify(data, null, 2)); }
+function makeShortId(taskId, imageUrl) { const h = crypto.createHash('sha256').update(String(taskId)+'|'+String(imageUrl)).digest('base64url'); return h.slice(0, 10); }
+function baseUrl(req) { const host = req.headers['host'] || ''; const proto = 'https://'; return host ? (proto + host) : ''; }
+
 module.exports = async (req, res) => {
   if (req.method !== 'POST') { res.status(405).json({ success:false, message:'Method Not Allowed', allow:'POST' }); return; }
   const u = new URL(req.url, 'http://localhost');
@@ -10,5 +21,22 @@ module.exports = async (req, res) => {
   const taskId = String(data.taskId || '');
   let resultUrl = '';
   try { const parsed = JSON.parse(String(data.resultJson || '')); resultUrl = parsed && parsed.resultUrls ? parsed.resultUrls[0] || '' : ''; } catch (e) { console.error('KIE callback parse error:', e && e.message ? e.message : e); }
-  res.json({ success: true, state, taskId, resultUrl });
+  let shortId = '';
+  let shortUrl = '';
+  try {
+    if (taskId && resultUrl) {
+      const store = load();
+      let existing = store.items.find(x => x.taskId === taskId) || store.items.find(x => x.imageUrl === resultUrl);
+      if (!existing) {
+        shortId = makeShortId(taskId, resultUrl);
+        existing = { taskId, imageUrl: resultUrl, shortId, createdAt: Date.now() };
+        store.items.push(existing);
+        save(store);
+      } else {
+        shortId = existing.shortId;
+      }
+      shortUrl = baseUrl(req) ? `${baseUrl(req)}/api/kie/storeResult?shortId=${shortId}` : '';
+    }
+  } catch (e) { console.error('KIE callback store error:', e && e.message ? e.message : e); }
+  res.json({ success: true, state, taskId, resultUrl, shortId, shortUrl });
 };

@@ -199,6 +199,11 @@
       var deadline=Date.now()+180000;
       var trace=[];
       while(Date.now()<deadline){
+        // Prefer callback result stored server-side
+        try{
+          var sr=await fetch('/api/kie/storeResult?taskId='+encodeURIComponent(taskId));
+          if(sr.ok){ var sj=await sr.json(); var sUrl=sj.imageUrl||''; if(sUrl){ card.style.backgroundImage='url("'+sUrl+'")'; statusEl.textContent='Generated (callback)'; return true; } }
+        }catch(_){}
         var data=null;
         for(var i=0;i<epsQuery.length;i++){
           try{
@@ -234,6 +239,7 @@
           // unknown / pending / running
           var httpStatus2=(data.raw&&data.raw.status)||'';
           if(httpStatus2){trace.push('http:'+httpStatus2)}
+          if(state==='unknown' || httpStatus2==="404"){ try{ localStorage.setItem('nc_kie_last_error', JSON.stringify({ taskId: taskId, raw: data.raw||data })); }catch(_){} }
         }
         var elapsed=deadline-Date.now();
         var wait=2000; // first minute 2s
