@@ -1,4 +1,12 @@
-const config = require('./config');
+// APIMart Configuration (inline to avoid Vercel routing issues)
+const config = {
+  API_KEY: process.env.APIMART_API_KEY || '',
+  BASE_URL: 'https://api.apimart.ai/v1',
+  MODELS: {
+    CHAT: 'gemini-2.5-flash',
+    IMAGE: 'gemini-3-pro-image-preview'
+  }
+};
 
 /**
  * Build optimized image generation prompt from analysis data
