@@ -202,7 +202,7 @@
         // Prefer callback result stored server-side
         try{
           var sr=await fetch('/api/kie/storeResult?taskId='+encodeURIComponent(taskId));
-          if(sr.ok){ var sj=await sr.json(); var sUrl=sj.imageUrl||''; if(sUrl){ card.style.backgroundImage='url("'+sUrl+'")'; statusEl.textContent='Generated (callback)'; return true; } }
+          if(sr.ok){ var sj=await sr.json(); var sUrl=sj.imageUrl||''; var shortId=sj.shortId||''; var shortUrl=(shortId?('/api/kie/storeResult?shortId='+shortId):''); if(sUrl){ card.style.backgroundImage='url("'+sUrl+'")'; statusEl.textContent='Generated (callback) '+(shortUrl?('share:'+shortUrl):''); return true; } }
         }catch(_){}
         var data=null;
         for(var i=0;i<epsQuery.length;i++){
@@ -226,7 +226,7 @@
             }
             if(url){
               card.style.backgroundImage='url("'+url+'")';
-              statusEl.textContent='Generated';
+              try{ var respStore=await fetch('/api/kie/storeResult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskId:taskId,imageUrl:url})}); if(respStore.ok){ var s=await respStore.json(); var shortId=s.shortId||''; if(shortId){ statusEl.textContent='Generated share:/api/kie/storeResult?shortId='+shortId; } else { statusEl.textContent='Generated'; } } else { statusEl.textContent='Generated'; } }catch(_){ statusEl.textContent='Generated'; }
               return true;
             }
             var diag=(data.diagnostics&&data.diagnostics.parseError)||'';
