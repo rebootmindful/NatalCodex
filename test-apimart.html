@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APIMart Integration Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'SF Pro', -apple-system, system-ui, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f4d 50%, #2d1f4d 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 {
+      font-size: 42px;
+      color: #00ff9d;
+      text-shadow: 0 0 20px rgba(0, 255, 157, 0.6);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .section {
+      background: rgba(10, 14, 39, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .section h2 {
+      font-size: 24px;
+      color: #00ff9d;
+      margin-bottom: 16px;
+    }
+    .input-group {
+      margin-bottom: 16px;
+    }
+    .input-group label {
+      display: block;
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(10, 14, 39, 0.5);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #00ff9d;
+      box-shadow: 0 0 12px rgba(0, 255, 157, 0.3);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      background: linear-gradient(135deg, #00ff9d 0%, #00d4aa 100%);
+      color: #0a0e27;
+      font-weight: 700;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 10px 26px rgba(0, 255, 157, 0.4);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .output {
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px solid rgba(0, 255, 157, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .image-preview {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .image-preview img {
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 12px 42px rgba(0, 255, 157, 0.3);
+    }
+    .status {
+      padding: 12px;
+      background: rgba(0, 255, 157, 0.1);
+      border-left: 4px solid #00ff9d;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .error {
+      background: rgba(255, 69, 0, 0.1);
+      border-left-color: #ff4500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 APIMart Integration Test</h1>
+
+    <!-- Test Input -->
+    <div class="section">
+      <h2>📝 输入测试数据</h2>
+      <div class="input-group">
+        <label>姓名</label>
+        <input type="text" id="name" value="张三" />
+      </div>
+      <div class="input-group">
+        <label>性别</label>
+        <input type="text" id="gender" value="男" />
+      </div>
+      <div class="input-group">
+        <label>出生日期（YYYY-MM-DD）</label>
+        <input type="text" id="date" value="1995-08-08" />
+      </div>
+      <div class="input-group">
+        <label>出生时间（HH:MM）</label>
+        <input type="text" id="time" value="14:30" />
+      </div>
+      <div class="input-group">
+        <label>出生地点</label>
+        <input type="text" id="location" value="北京" />
+      </div>
+      <div class="input-group">
+        <label>纬度</label>
+        <input type="text" id="lat" value="39.9042" />
+      </div>
+      <div class="input-group">
+        <label>经度</label>
+        <input type="text" id="lon" value="116.4074" />
+      </div>
+      <div class="input-group">
+        <label>时区</label>
+        <input type="text" id="timezone" value="Asia/Shanghai" />
+      </div>
+      <button class="btn" id="testBtn" onclick="testCompleteFlow()">
+        🧪 Test Complete Flow
+      </button>
+    </div>
+
+    <!-- Status Display -->
+    <div class="section">
+      <h2>📊 执行状态</h2>
+      <div id="status" class="status">等待开始...</div>
+    </div>
+
+    <!-- Report Output -->
+    <div class="section">
+      <h2>📄 生成的报告</h2>
+      <div id="report" class="output">尚未生成</div>
+    </div>
+
+    <!-- Analysis Output -->
+    <div class="section">
+      <h2>🔮 分析数据（JSON）</h2>
+      <div id="analysis" class="output">尚未生成</div>
+    </div>
+
+    <!-- Image Display -->
+    <div class="section">
+      <h2>🎨 生成的灵魂契合卡</h2>
+      <div id="image" class="image-preview">尚未生成</div>
+    </div>
+  </div>
+
+  <script>
+    async function testCompleteFlow() {
+      const btn = document.getElementById('testBtn');
+      const status = document.getElementById('status');
+      const report = document.getElementById('report');
+      const analysis = document.getElementById('analysis');
+      const image = document.getElementById('image');
+
+      // Disable button
+      btn.disabled = true;
+      btn.textContent = '⏳ Processing...';
+
+      // Clear previous outputs
+      report.textContent = '生成中...';
+      analysis.textContent = '分析中...';
+      image.innerHTML = '生成中...';
+
+      // Collect birth data
+      const birthData = {
+        name: document.getElementById('name').value,
+        gender: document.getElementById('gender').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        location: document.getElementById('location').value,
+        lat: document.getElementById('lat').value,
+        lon: document.getElementById('lon').value,
+        timezone: document.getElementById('timezone').value,
+        orderId: 'test-' + Date.now()
+      };
+
+      try {
+        status.className = 'status';
+        status.textContent = '🚀 Step 1/4: Calling APIMart API...';
+
+        const response = await fetch('/api/reports/generateWithAPImart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: birthData.orderId,
+            birthData: birthData
+          })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'API request failed');
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || 'Unknown error');
+        }
+
+        // Display report
+        status.textContent = '✅ Step 2/4: Report generated!';
+        report.textContent = result.reportContent;
+
+        // Display analysis JSON
+        status.textContent = '✅ Step 3/4: Analysis data received!';
+        analysis.textContent = JSON.stringify(result.analysis, null, 2);
+
+        // Display image
+        if (result.imageUrl) {
+          status.textContent = '✅ Step 4/4: Image generated!';
+          image.innerHTML = `
+            <img src="${result.imageUrl}" alt="Soul Codex Card" />
+            <p style="margin-top: 12px; color: #cbd5e1;">
+              <a href="${result.imageUrl}" target="_blank" style="color: #00ff9d;">
+                📥 Download Image
+              </a>
+            </p>
+          `;
+        } else if (result.taskId) {
+          status.textContent = '⏳ Step 4/4: Image still processing...';
+          image.innerHTML = `
+            <p style="color: #cbd5e1;">
+              Image is still being generated.<br>
+              Task ID: ${result.taskId}
+            </p>
+          `;
+
+          // Continue polling
+          pollImageTask(result.taskId);
+        } else {
+          status.textContent = '⚠️ Step 4/4: No image generated';
+          image.textContent = 'Image generation failed or timeout';
+        }
+
+        // Final success status
+        if (result.status === 'complete') {
+          status.className = 'status';
+          status.textContent = '🎉 Complete! All steps finished successfully!';
+        } else {
+          status.className = 'status error';
+          status.textContent = '⚠️ Partial success: Report ready, image may still be processing';
+        }
+
+      } catch (error) {
+        console.error('Test failed:', error);
+        status.className = 'status error';
+        status.textContent = '❌ Error: ' + error.message;
+        report.textContent = 'Error: ' + error.message;
+        analysis.textContent = 'Error: ' + error.message;
+        image.textContent = 'Error: ' + error.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🧪 Test Complete Flow';
+      }
+    }
+
+    async function pollImageTask(taskId) {
+      const status = document.getElementById('status');
+      const image = document.getElementById('image');
+
+      let attempts = 0;
+      const maxAttempts = 30;
+
+      const pollInterval = setInterval(async () => {
+        attempts++;
+
+        try {
+          const response = await fetch(`/api/apimart/queryTask?taskId=${encodeURIComponent(taskId)}`);
+          if (!response.ok) throw new Error('Query failed');
+
+          const data = await response.json();
+
+          if (data.status === 'completed' && data.imageUrl) {
+            clearInterval(pollInterval);
+            status.textContent = '✅ Image generated successfully!';
+            image.innerHTML = `
+              <img src="${data.imageUrl}" alt="Soul Codex Card" />
+              <p style="margin-top: 12px; color: #cbd5e1;">
+                <a href="${data.imageUrl}" target="_blank" style="color: #00ff9d;">
+                  📥 Download Image
+                </a>
+              </p>
+            `;
+          } else if (data.status === 'failed') {
+            clearInterval(pollInterval);
+            status.className = 'status error';
+            status.textContent = '❌ Image generation failed: ' + (data.error || 'Unknown error');
+            image.textContent = 'Generation failed';
+          } else if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            status.className = 'status error';
+            status.textContent = '⏱️ Timeout: Image still processing after 60s';
+          } else {
+            status.textContent = `⏳ Polling image status... (${attempts}/${maxAttempts})`;
+          }
+        } catch (error) {
+          console.error('Poll error:', error);
+        }
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
