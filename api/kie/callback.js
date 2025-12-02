@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const crypto = require('crypto');
 
-function storePath() { return path.join(process.cwd(), 'nddesign', 'data', 'kie-results.json'); }
-function ensureStore() { const p = storePath(); const dir = path.dirname(p); if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); if (!fs.existsSync(p)) fs.writeFileSync(p, JSON.stringify({ items: [] }, null, 2)); return p; }
-function load() { const p = ensureStore(); try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { return { items: [] }; } }
-function save(data) { const p = ensureStore(); fs.writeFileSync(p, JSON.stringify(data, null, 2)); }
+const MEM_KEY = '__nc_kie_store__';
+function storePath() { return path.join(os.tmpdir(), 'kie-results.json'); }
+function ensureStore() { const p = storePath(); try { if (!fs.existsSync(p)) fs.writeFileSync(p, JSON.stringify({ items: [] }, null, 2)); } catch (_) {} return p; }
+function load() { if (globalThis[MEM_KEY]) return globalThis[MEM_KEY]; const p = ensureStore(); let data = { items: [] }; try { data = JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) {} globalThis[MEM_KEY] = data; return data; }
+function save(data) { globalThis[MEM_KEY] = data; try { const p = ensureStore(); fs.writeFileSync(p, JSON.stringify(data, null, 2)); } catch (_) {} }
 function makeShortId(taskId, imageUrl) { const h = crypto.createHash('sha256').update(String(taskId)+'|'+String(imageUrl)).digest('base64url'); return h.slice(0, 10); }
 function baseUrl(req) { const host = req.headers['host'] || ''; const proto = 'https://'; return host ? (proto + host) : ''; }
 
