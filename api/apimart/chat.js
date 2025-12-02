@@ -29,6 +29,8 @@ module.exports = async (req, res) => {
 
 你的任务是分析用户的出生信息，输出结构化的JSON数据。
 
+⚠️ 重要：你的回复必须是纯JSON格式，不要包含任何其他文字、解释或markdown代码块。直接输出JSON对象。
+
 输出JSON格式要求：
 {
   "bazi": {
@@ -127,8 +129,15 @@ module.exports = async (req, res) => {
     // Extract content from response
     let content = data.choices[0].message.content;
 
-    // Remove markdown code blocks if present
-    content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+    // Enhanced JSON extraction
+    // Remove markdown code blocks
+    content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+
+    // Try to extract JSON object if there's surrounding text
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      content = jsonMatch[0];
+    }
 
     // Parse JSON
     let analysisResult;
@@ -136,8 +145,13 @@ module.exports = async (req, res) => {
       analysisResult = JSON.parse(content);
     } catch (parseError) {
       console.error('[APIMart Chat] JSON Parse Error:', parseError);
-      console.error('[APIMart Chat] Content:', content);
-      throw new Error('Failed to parse AI response as JSON');
+      console.error('[APIMart Chat] Content length:', content.length);
+      console.error('[APIMart Chat] Content preview:', content.substring(0, 500));
+
+      // Log full content for debugging (truncated in Vercel logs)
+      console.error('[APIMart Chat] Full content:', content);
+
+      throw new Error('Failed to parse AI response as JSON: ' + parseError.message);
     }
 
     console.log('[APIMart Chat] Analysis completed:', {
