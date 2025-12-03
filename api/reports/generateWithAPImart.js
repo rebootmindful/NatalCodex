@@ -158,9 +158,8 @@ Analyze and return valid JSON only.`;
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.3,  // Lower temperature for more consistent JSON output
-        max_tokens: 4000,
-        stream: false,
-        response_format: { type: 'json_object' }  // Force JSON mode if supported
+        max_tokens: 2048,  // Reduced from 4000 to ensure complete response
+        stream: false
       })
     });
 
@@ -172,14 +171,34 @@ Analyze and return valid JSON only.`;
 
     const chatData = await chatResponse.json();
     console.log('[GenerateWithAPImart] API Response received');
+    console.log('[GenerateWithAPImart] Response structure:', {
+      hasChoices: !!chatData.choices,
+      choicesLength: chatData.choices?.length,
+      hasMessage: !!chatData.choices?.[0]?.message,
+      hasContent: !!chatData.choices?.[0]?.message?.content,
+      contentLength: chatData.choices?.[0]?.message?.content?.length,
+      finishReason: chatData.choices?.[0]?.finish_reason
+    });
 
     // Extract and parse JSON from response
     let content = chatData.choices[0].message.content;
+    console.log('[GenerateWithAPImart] Raw content length:', content.length);
+    console.log('[GenerateWithAPImart] Raw content:', content);  // Log FULL content for debugging
+
+    // Clean markdown code blocks
     content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    console.log('[GenerateWithAPImart] After markdown cleanup length:', content.length);
+
+    // Try to extract JSON object (use greedy match to get complete JSON)
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
+      console.log('[GenerateWithAPImart] JSON regex matched, extracted length:', jsonMatch[0].length);
       content = jsonMatch[0];
+    } else {
+      console.log('[GenerateWithAPImart] No JSON match found, using content as-is');
     }
+
+    console.log('[GenerateWithAPImart] Final content to parse:', content);
 
     let analysis;
     try {
