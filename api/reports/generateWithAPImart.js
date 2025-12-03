@@ -267,20 +267,8 @@ Return ONLY valid JSON (no markdown):
     // Step 3: Create image generation task
     console.log('[GenerateWithAPImart] Step 3/4: Creating image task...');
 
-    // Build simplified image prompt - focus on core visual elements only
-    const imagePrompt = `Vertical mystical card (9:16) with cyberpunk-Taoist fusion:
-
-TOP: Golden title "${birthData.name}的灵魂契合卡" on purple-black starry gradient
-
-LEFT: Traditional circular BaZi wheel with pillars ${analysis.bazi.year}, ${analysis.bazi.month}, ${analysis.bazi.day}, ${analysis.bazi.hour}
-
-RIGHT: MBTI ${analysis.mbti.type} neon radar chart
-
-CENTER: Large golden text "${analysis.soul_title}" with holographic glow
-
-BOTTOM: Chinese scroll banner with "${analysis.summary}"
-
-Style: Neon five-element colors (green/red/gold/white/blue), laser holographic finish, 4K quality.`;
+    // Ultra-simplified image prompt - minimal description for faster generation
+    const imagePrompt = `Vertical mystical card, 9:16 ratio. Purple-black starry background. Golden Chinese title at top: "${birthData.name}的灵魂契合卡". Center: large golden text "${analysis.soul_title}". Traditional BaZi symbols on left, MBTI ${analysis.mbti.type} chart on right. Chinese calligraphy banner at bottom. Holographic neon style.`;
 
     // Call APIMart Image API directly with timeout handling
     let imageResponse;
@@ -295,7 +283,7 @@ Style: Neon five-element colors (green/red/gold/white/blue), laser holographic f
           model: config.MODELS.IMAGE,
           prompt: imagePrompt,
           size: '1024x1792',
-          quality: 'hd',
+          quality: 'standard',  // Use standard instead of hd for faster generation
           n: 1
         })
       });
@@ -345,11 +333,12 @@ Style: Neon five-element colors (green/red/gold/white/blue), laser holographic f
 
     let imageUrl = null;
     let attempts = 0;
-    const maxAttempts = 20; // 40 seconds timeout (2s interval) - reduced to avoid Vercel timeout
+    const maxAttempts = 15; // 30 seconds timeout (2s interval) - tighter timeout
+
+    // Wait 3 seconds before first check (give image generation time to start)
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     while (attempts < maxAttempts) {
-      // Wait 2 seconds before checking
-      await new Promise(resolve => setTimeout(resolve, 2000));
       attempts++;
 
       // Call APIMart Task Query API directly
@@ -367,6 +356,9 @@ Style: Neon five-element colors (green/red/gold/white/blue), laser holographic f
       const taskData = await queryResponse.json();
 
       console.log('[GenerateWithAPImart] Poll attempt', attempts, '- Status:', taskData.status);
+
+      // Wait 2 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Extract image URL if task is completed
       if (taskData.status === 'completed' && taskData.result && taskData.result.data) {
