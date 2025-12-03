@@ -81,24 +81,10 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Build concise prompts to avoid token limit
-    const systemPrompt = `You are a BaZi (八字) and MBTI expert. Return ONLY valid JSON, no other text.
+    // Ultra-concise prompts to minimize token usage
+    const systemPrompt = `BaZi+MBTI expert. Return JSON: {"bazi":{"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},"mbti":{"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型"},"soul_title":"戊土建筑师·INTJ","wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},"summary":"戊土身旺食神生财,内向直觉主导"}`;
 
-JSON format:
-{"bazi":{"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},"mbti":{"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型"},"soul_title":"戊土建筑师·INTJ","wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},"summary":"戊土身旺食神生财,内向直觉主导"}
-
-Rules: Valid JSON only, no markdown, all values as shown above.`;
-
-    const userPrompt = `Birth Information:
-Name: ${birthData.name || 'Not provided'}
-Gender: ${birthData.gender || 'Not provided'}
-Date: ${birthData.date || ''}
-Time: ${birthData.time || ''}
-Location: ${birthData.location || ''}
-Coordinates: ${birthData.lat || ''}, ${birthData.lon || ''}
-Timezone: ${birthData.timezone || ''}
-
-Analyze and return valid JSON only.`;
+    const userPrompt = `Analyze: ${birthData.name}, ${birthData.gender}, ${birthData.date} ${birthData.time}, ${birthData.location}. Return JSON only.`;
 
     // Call APIMart Chat API directly
     const chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
@@ -114,7 +100,7 @@ Analyze and return valid JSON only.`;
           { role: 'user', content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 3000,  // Increased to allow complete JSON response
+        max_tokens: 8192,  // Maximum for gemini-2.5-flash
         stream: false
       })
     });
