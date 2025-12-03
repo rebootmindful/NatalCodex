@@ -81,10 +81,17 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Extremely minimal prompts - reduce token usage to absolute minimum
-    const systemPrompt = `Return JSON with bazi(year/month/day/hour/shishen/yongshen/geju/wuxing_strength) + mbti(type/functions/radar_scores/description) + soul_title + summary`;
+    // Ultra-minimal prompt - essential info only
+    const prompt = `Analyze BaZi & MBTI for: ${birthData.name}, ${birthData.gender}, born ${birthData.date} ${birthData.time} at ${birthData.location}
 
-    const userPrompt = `BaZi+MBTI for ${birthData.name}, ${birthData.gender}, ${birthData.date} ${birthData.time}, ${birthData.location}`;
+Return ONLY valid JSON (no markdown):
+{
+  "bazi": {"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},
+  "mbti": {"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型战略家"},
+  "soul_title":"戊土建筑师·INTJ",
+  "wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},
+  "summary":"戊土身旺食神生财，内向直觉主导"
+}`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -103,7 +110,7 @@ module.exports = async (req, res) => {
           body: JSON.stringify({
             model: config.MODELS.CHAT,
             messages: [
-              { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
+              { role: 'user', content: prompt }
             ],
             temperature: 0.1,
             max_tokens: 2048,  // Balanced: enough for JSON response, not too large for timeout
@@ -320,26 +327,52 @@ module.exports = async (req, res) => {
 
 Generate a stunning vertical card that combines ancient wisdom with futuristic aesthetics.`;
 
-    // Call APIMart Image API directly
-    const imageResponse = await fetch(`${config.BASE_URL}/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: config.MODELS.IMAGE,
-        prompt: imagePrompt,
-        size: '1024x1792',
-        quality: 'hd',
-        n: 1
-      })
-    });
+    // Call APIMart Image API directly with timeout handling
+    let imageResponse;
+    try {
+      imageResponse = await fetch(`${config.BASE_URL}/images/generations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: config.MODELS.IMAGE,
+          prompt: imagePrompt,
+          size: '1024x1792',
+          quality: 'hd',
+          n: 1
+        })
+      });
 
-    if (!imageResponse.ok) {
-      const errorText = await imageResponse.text();
-      console.error('[GenerateWithAPImart] Image API Error:', imageResponse.status, errorText);
-      throw new Error(`Image API returned ${imageResponse.status}: ${errorText}`);
+      if (!imageResponse.ok) {
+        const errorText = await imageResponse.text();
+        console.error('[GenerateWithAPImart] Image API Error:', imageResponse.status, errorText);
+
+        // If image generation fails, return report without image
+        console.warn('[GenerateWithAPImart] Image generation failed, returning report only');
+        return res.json({
+          success: true,
+          orderId,
+          reportContent,
+          imageUrl: null,
+          analysis,
+          status: 'partial',
+          message: 'Report ready, image generation failed'
+        });
+      }
+    } catch (imageError) {
+      console.error('[GenerateWithAPImart] Image API request failed:', imageError.message);
+      // Return report without image if request fails
+      return res.json({
+        success: true,
+        orderId,
+        reportContent,
+        imageUrl: null,
+        analysis,
+        status: 'partial',
+        message: 'Report ready, image generation unavailable'
+      });
     }
 
     const imageData = await imageResponse.json();
@@ -357,7 +390,7 @@ Generate a stunning vertical card that combines ancient wisdom with futuristic a
 
     let imageUrl = null;
     let attempts = 0;
-    const maxAttempts = 30; // 60 seconds timeout (2s interval)
+    const maxAttempts = 20; // 40 seconds timeout (2s interval) - reduced to avoid Vercel timeout
 
     while (attempts < maxAttempts) {
       // Wait 2 seconds before checking
