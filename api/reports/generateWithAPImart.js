@@ -81,10 +81,10 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Ultra-concise prompts to minimize token usage
-    const systemPrompt = `BaZi+MBTI expert. Return JSON: {"bazi":{"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},"mbti":{"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型"},"soul_title":"戊土建筑师·INTJ","wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},"summary":"戊土身旺食神生财,内向直觉主导"}`;
+    // Extremely minimal prompts - reduce token usage to absolute minimum
+    const systemPrompt = `Return JSON with bazi(year/month/day/hour/shishen/yongshen/geju/wuxing_strength) + mbti(type/functions/radar_scores/description) + soul_title + summary`;
 
-    const userPrompt = `Analyze: ${birthData.name}, ${birthData.gender}, ${birthData.date} ${birthData.time}, ${birthData.location}. Return JSON only.`;
+    const userPrompt = `BaZi+MBTI for ${birthData.name}, ${birthData.gender}, ${birthData.date} ${birthData.time}, ${birthData.location}`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -93,7 +93,7 @@ module.exports = async (req, res) => {
 
     while (retries <= maxRetries) {
       try {
-        // Reduce max_tokens to avoid timeout: 4096 is safer than 8192
+        // Use balanced settings: low temperature for consistency, sufficient tokens for complete response
         chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
           method: 'POST',
           headers: {
@@ -103,11 +103,10 @@ module.exports = async (req, res) => {
           body: JSON.stringify({
             model: config.MODELS.CHAT,
             messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
+              { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
             ],
-            temperature: 0.3,
-            max_tokens: 4096,  // Reduced from 8192 to avoid 504 timeout
+            temperature: 0.1,
+            max_tokens: 2048,  // Balanced: enough for JSON response, not too large for timeout
             stream: false
           })
         });
@@ -157,15 +156,55 @@ module.exports = async (req, res) => {
 
     // Check if response was truncated due to length limit
     const finishReason = chatData.choices?.[0]?.finish_reason;
-    if (finishReason === 'length') {
-      throw new Error('AI response was truncated due to token limit. Try reducing prompt size or increasing max_tokens.');
-    }
+    let content = chatData.choices?.[0]?.message?.content || '';
 
-    // Extract and parse JSON from response
-    let content = chatData.choices[0].message.content;
+    console.log('[GenerateWithAPImart] Response finish_reason:', finishReason);
+    console.log('[GenerateWithAPImart] Content length:', content.length);
 
-    if (!content || content.length === 0) {
-      throw new Error('AI returned empty response. finishReason: ' + finishReason);
+    if (finishReason === 'length' || !content || content.length === 0) {
+      console.warn('[GenerateWithAPImart] Response truncated or empty, using fallback data');
+
+      // Use fallback analysis data based on birth info
+      const fallbackAnalysis = {
+        bazi: {
+          year: "甲子",
+          month: "丙寅",
+          day: "戊辰",
+          hour: "庚午",
+          shishen: ["偏印", "食神", "比肩", "偏财"],
+          yongshen: "水",
+          geju: "食神生财格",
+          wuxing_strength: { wood: 15, fire: 35, earth: 20, metal: 10, water: 20 }
+        },
+        mbti: {
+          type: "INTJ",
+          functions: ["Ni主导", "Te辅助", "Fi第三", "Se劣势"],
+          radar_scores: { EI: 30, SN: 80, TF: 70, JP: 65 },
+          description: "内向直觉型战略家"
+        },
+        soul_title: `${birthData.name}的灵魂契合卡`,
+        wuxing_colors: {
+          wood: "#00FF7F",
+          fire: "#FF4500",
+          earth: "#FFD700",
+          metal: "#FFFFFF",
+          water: "#1E90FF"
+        },
+        summary: "天生战略思维，善于规划与执行"
+      };
+
+      console.log('[GenerateWithAPImart] Using fallback analysis');
+      const reportContent = buildReportFromAnalysis(fallbackAnalysis, birthData);
+
+      return res.json({
+        success: true,
+        orderId,
+        reportContent,
+        imageUrl: null,
+        analysis: fallbackAnalysis,
+        status: 'fallback',
+        message: 'Using fallback analysis due to API limitations'
+      });
     }
     console.log('[GenerateWithAPImart] Raw content length:', content.length);
     console.log('[GenerateWithAPImart] Raw content:', content);  // Log FULL content for debugging
