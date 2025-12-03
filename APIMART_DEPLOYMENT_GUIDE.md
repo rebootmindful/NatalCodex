@@ -13,11 +13,16 @@ This guide walks you through deploying the **new APIMart integration** that repl
 - ❌ No visible task execution
 
 **After (APIMart - Working Solution):**
-- ✅ Two-step process: Gemini 3 Pro for analysis + Gemini 3 Pro Image for card
+- ✅ Two-step process: Gemini 2.5 Flash for analysis + Gemini 3 Pro Image for card
 - ✅ Simplified, optimized prompts
-- ✅ Mature async task mechanism
-- ✅ OpenAI-compatible API (easy migration)
+- ✅ Direct API calls (no internal routing issues)
+- ✅ Single unified endpoint: `/api/reports/generateWithAPImart`
 - ✅ Better pricing (~$0.06-0.10 per complete flow)
+
+**Latest Fix (2024-12-03):**
+- ✅ Refactored to call APIMart API directly instead of internal Vercel endpoints
+- ✅ Fixes "Unexpected token 'T', 'The page c'..." JSON parsing errors
+- ✅ All logic now inline in single endpoint file
 
 ---
 
@@ -161,27 +166,33 @@ Visit: `https://natalcodex.vercel.app/result.html?test=1`
 ```
 User Input (birth data)
         ↓
-[1] POST /api/apimart/chat
-    → Gemini 3 Pro analyzes BaZi + MBTI
-    → Returns JSON: { bazi: {...}, mbti: {...}, soul_title: "..." }
+[1] POST /api/reports/generateWithAPImart
+    ├─ Call APIMart Chat API (https://api.apimart.ai/v1/chat/completions)
+    │  → Gemini 2.5 Flash analyzes BaZi + MBTI
+    │  → Returns JSON: { bazi: {...}, mbti: {...}, soul_title: "..." }
+    │
+    ├─ Build report from analysis data
+    │  → Format: Markdown text
+    │
+    ├─ Call APIMart Image API (https://api.apimart.ai/v1/images/generations)
+    │  → Build optimized visual prompt (English)
+    │  → Gemini 3 Pro Image
+    │  → Returns: { task_id: "..." }
+    │
+    └─ Poll APIMart Task API (https://api.apimart.ai/v1/tasks/{taskId})
+       → Poll every 2 seconds (max 30 attempts)
+       → Wait for: { status: "completed", result: { data: [{ url: "..." }] } }
         ↓
-[2] Build report from analysis data
-    → Format: Markdown text
-        ↓
-[3] POST /api/apimart/generateImage
-    → Build optimized visual prompt (English)
-    → Gemini 3 Pro Image (Nano banana2)
-    → Returns: { taskId: "..." }
-        ↓
-[4] GET /api/apimart/queryTask?taskId=xxx
-    → Poll every 2 seconds (max 30 attempts)
-    → Wait for: { status: "completed", imageUrl: "..." }
-        ↓
-[5] Return complete result
+[2] Return complete result
     → reportContent (Markdown)
     → imageUrl (CDN link)
     → analysis (JSON data)
 ```
+
+**Key Architecture Change:**
+- **All API calls go directly to APIMart** (https://api.apimart.ai/v1/*)
+- **No internal Vercel endpoint routing** (avoids HTML error pages)
+- **Single unified serverless function** at `/api/reports/generateWithAPImart.js`
 
 ### Key Improvements
 
@@ -294,6 +305,23 @@ Visit: https://vercel.com/rebootmindful/natalcodex/logs
 ---
 
 ## 🐛 Troubleshooting
+
+### Issue: "Unexpected token 'T', 'The page c'..." (FIXED)
+
+**Cause:** Previous version made internal HTTP fetch() calls to other Vercel endpoints (/api/apimart/chat, etc.), which returned HTML error pages instead of JSON
+
+**Symptoms:**
+- Frontend shows: `Error: Unexpected token 'T', "The page c"... is not valid JSON`
+- All three sections fail: Report, Analysis, Image
+
+**Fix Applied (2024-12-03):**
+- Refactored `/api/reports/generateWithAPImart.js` to call APIMart API directly
+- Removed internal endpoint dependencies
+- All API calls now go to `https://api.apimart.ai/v1/*` with Authorization header
+
+**Status:** ✅ RESOLVED - Deploy latest version from GitHub
+
+---
 
 ### Issue: "API Error: 401"
 
