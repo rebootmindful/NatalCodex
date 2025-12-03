@@ -81,57 +81,13 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Build prompts
-    const systemPrompt = `You are a master of Chinese BaZi astrology and MBTI psychology. Analyze the birth data and return ONLY a valid JSON object.
+    // Build concise prompts to avoid token limit
+    const systemPrompt = `You are a BaZi (八字) and MBTI expert. Return ONLY valid JSON, no other text.
 
-CRITICAL RULES:
-1. Your response must be ONLY the JSON object - no explanations, no markdown, no code blocks
-2. Use double quotes for all strings
-3. Do NOT add trailing commas before closing braces
-4. All Chinese text must be properly escaped in JSON strings
-5. Numbers in wuxing_strength and radar_scores must be integers (no quotes)
+JSON format:
+{"bazi":{"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},"mbti":{"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型"},"soul_title":"戊土建筑师·INTJ","wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},"summary":"戊土身旺食神生财,内向直觉主导"}
 
-Response format (valid JSON only):
-{
-  "bazi": {
-    "year": "甲子",
-    "month": "丙寅",
-    "day": "戊辰",
-    "hour": "庚午",
-    "shishen": ["偏印", "食神", "比肩", "偏财"],
-    "yongshen": "水",
-    "geju": "食神生财格",
-    "wuxing_strength": {
-      "wood": 15,
-      "fire": 35,
-      "earth": 20,
-      "metal": 10,
-      "water": 20
-    }
-  },
-  "mbti": {
-    "type": "INTJ",
-    "functions": ["Ni主导直觉", "Te辅助思考", "Fi第三情感", "Se劣势实感"],
-    "radar_scores": {
-      "EI": 30,
-      "SN": 80,
-      "TF": 70,
-      "JP": 65
-    },
-    "description": "内向直觉主导的战略家型人格"
-  },
-  "soul_title": "戊土建筑师·INTJ",
-  "wuxing_colors": {
-    "wood": "#00FF7F",
-    "fire": "#FF4500",
-    "earth": "#FFD700",
-    "metal": "#FFFFFF",
-    "water": "#1E90FF"
-  },
-  "summary": "日主戊土身旺,食神生财格局。内向直觉主导,擅长系统规划。《滴天髓》云:戊土固重,中正蓄藏。"
-}
-
-Remember: Return ONLY the JSON object above. No other text.`;
+Rules: Valid JSON only, no markdown, all values as shown above.`;
 
     const userPrompt = `Birth Information:
 Name: ${birthData.name || 'Not provided'}
@@ -157,8 +113,8 @@ Analyze and return valid JSON only.`;
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.3,  // Lower temperature for more consistent JSON output
-        max_tokens: 2048,  // Reduced from 4000 to ensure complete response
+        temperature: 0.3,
+        max_tokens: 3000,  // Increased to allow complete JSON response
         stream: false
       })
     });
@@ -180,8 +136,18 @@ Analyze and return valid JSON only.`;
       finishReason: chatData.choices?.[0]?.finish_reason
     });
 
+    // Check if response was truncated due to length limit
+    const finishReason = chatData.choices?.[0]?.finish_reason;
+    if (finishReason === 'length') {
+      throw new Error('AI response was truncated due to token limit. Try reducing prompt size or increasing max_tokens.');
+    }
+
     // Extract and parse JSON from response
     let content = chatData.choices[0].message.content;
+
+    if (!content || content.length === 0) {
+      throw new Error('AI returned empty response. finishReason: ' + finishReason);
+    }
     console.log('[GenerateWithAPImart] Raw content length:', content.length);
     console.log('[GenerateWithAPImart] Raw content:', content);  // Log FULL content for debugging
 
