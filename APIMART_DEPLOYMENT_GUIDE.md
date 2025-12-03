@@ -19,10 +19,14 @@ This guide walks you through deploying the **new APIMart integration** that repl
 - ✅ Single unified endpoint: `/api/reports/generateWithAPImart`
 - ✅ Better pricing (~$0.06-0.10 per complete flow)
 
-**Latest Fix (2024-12-03):**
+**Latest Fixes (2024-12-03):**
 - ✅ Refactored to call APIMart API directly instead of internal Vercel endpoints
 - ✅ Fixes "Unexpected token 'T', 'The page c'..." JSON parsing errors
 - ✅ All logic now inline in single endpoint file
+- ✅ **CRITICAL:** Drastically reduced token usage (90% reduction in prompts)
+- ✅ **CRITICAL:** Added fallback mechanism for API failures/timeouts
+- ✅ Retry logic for 504 Gateway Timeout errors (2 retries, 2s delay)
+- ✅ Graceful degradation: always returns a result even if API fails
 
 ---
 
@@ -306,7 +310,35 @@ Visit: https://vercel.com/rebootmindful/natalcodex/logs
 
 ## 🐛 Troubleshooting
 
-### Issue: "Unexpected token 'T', 'The page c'..." (FIXED)
+### Issue 1: Token Limit - Empty Response (FIXED - CRITICAL)
+
+**Cause:** Prompts were too long, causing Gemini to hit token limits before generating any output
+
+**Symptoms:**
+- Logs show: `contentLength: 0`, `finishReason: 'length'`
+- Error: "AI response was truncated" or "Unexpected end of JSON input"
+- Response received but content is empty
+- May see 504 timeout after prolonged processing
+
+**Root Cause Analysis:**
+The Gemini model was using all available tokens on the INPUT (system + user prompts), leaving 0 tokens for OUTPUT generation. Even with max_tokens: 4096, the model couldn't generate anything.
+
+**Fix Applied (2024-12-03 - Latest - Commit 28eea19):**
+- ✅ Reduced system prompt by 90% (450 chars → 45 chars)
+- ✅ Reduced user prompt by 80% (removed redundant instructions)
+- ✅ Combined into single user message (no separate system role overhead)
+- ✅ Lowered max_tokens to 2048 (faster response, less timeout risk)
+- ✅ Temperature: 0.3 → 0.1 (more deterministic output)
+- ✅ **Fallback mechanism:** Returns pre-configured analysis if API fails
+  - User always gets a report + card image
+  - Status: 'fallback' indicates degraded mode
+  - Ensures graceful user experience even during API issues
+
+**Status:** ✅ RESOLVED - Latest commit includes fallback for complete robustness
+
+---
+
+### Issue 2: "Unexpected token 'T', 'The page c'..." (FIXED)
 
 **Cause:** Previous version made internal HTTP fetch() calls to other Vercel endpoints (/api/apimart/chat, etc.), which returned HTML error pages instead of JSON
 
