@@ -86,29 +86,62 @@ module.exports = async (req, res) => {
 
     const userPrompt = `Analyze: ${birthData.name}, ${birthData.gender}, ${birthData.date} ${birthData.time}, ${birthData.location}. Return JSON only.`;
 
-    // Call APIMart Chat API directly
-    const chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: config.MODELS.CHAT,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 8192,  // Maximum for gemini-2.5-flash
-        stream: false
-      })
-    });
+    // Call APIMart Chat API directly with retry logic
+    let chatResponse;
+    let retries = 0;
+    const maxRetries = 2;
 
-    if (!chatResponse.ok) {
-      const errorText = await chatResponse.text();
-      console.error('[GenerateWithAPImart] Chat API Error:', chatResponse.status, errorText);
-      throw new Error(`Chat API returned ${chatResponse.status}: ${errorText}`);
+    while (retries <= maxRetries) {
+      try {
+        // Reduce max_tokens to avoid timeout: 4096 is safer than 8192
+        chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${config.API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: config.MODELS.CHAT,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
+            ],
+            temperature: 0.3,
+            max_tokens: 4096,  // Reduced from 8192 to avoid 504 timeout
+            stream: false
+          })
+        });
+
+        if (chatResponse.ok) {
+          break; // Success, exit retry loop
+        }
+
+        // If 504 timeout, retry
+        if (chatResponse.status === 504 && retries < maxRetries) {
+          console.log(`[GenerateWithAPImart] 504 timeout, retrying... (${retries + 1}/${maxRetries})`);
+          retries++;
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2s before retry
+          continue;
+        }
+
+        // Other errors, throw immediately
+        const errorText = await chatResponse.text();
+        console.error('[GenerateWithAPImart] Chat API Error:', chatResponse.status, errorText);
+        throw new Error(`Chat API returned ${chatResponse.status}: ${errorText.substring(0, 200)}`);
+
+      } catch (fetchError) {
+        if (retries < maxRetries && (fetchError.message.includes('504') || fetchError.message.includes('timeout'))) {
+          console.log(`[GenerateWithAPImart] Fetch error, retrying... (${retries + 1}/${maxRetries})`);
+          retries++;
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          continue;
+        }
+        throw fetchError;
+      }
+    }
+
+    if (!chatResponse || !chatResponse.ok) {
+      throw new Error('Failed to get response from Chat API after retries');
     }
 
     const chatData = await chatResponse.json();
