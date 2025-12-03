@@ -375,8 +375,9 @@ Return ONLY valid JSON (no markdown):
     }
 
     if (!imageUrl) {
-      // Timeout, but return report anyway
-      console.warn('[GenerateWithAPImart] Image generation timeout, returning report only');
+      // Timeout, but return report anyway with taskId for frontend polling
+      console.warn('[GenerateWithAPImart] Image generation timeout after', attempts, 'attempts');
+      console.warn('[GenerateWithAPImart] Returning report with taskId for frontend polling');
       return res.json({
         success: true,
         orderId,
@@ -384,8 +385,9 @@ Return ONLY valid JSON (no markdown):
         imageUrl: null,
         analysis,
         taskId,  // Return taskId so frontend can continue polling
+        pollUrl: `${config.BASE_URL}/tasks/${taskId}`,  // Direct poll URL for frontend
         status: 'partial',
-        message: 'Report ready, image still processing'
+        message: `Report ready, image still processing (taskId: ${taskId}). Frontend can continue polling.`
       });
     }
 
