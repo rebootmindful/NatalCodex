@@ -82,22 +82,25 @@ module.exports = async (req, res) => {
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
     // Build prompts
-    const systemPrompt = `你是精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论的顶尖命理+心理学双料大师。
+    const systemPrompt = `You are a master of Chinese BaZi astrology and MBTI psychology. Analyze the birth data and return ONLY a valid JSON object.
 
-你的任务是分析用户的出生信息，输出结构化的JSON数据。
+CRITICAL RULES:
+1. Your response must be ONLY the JSON object - no explanations, no markdown, no code blocks
+2. Use double quotes for all strings
+3. Do NOT add trailing commas before closing braces
+4. All Chinese text must be properly escaped in JSON strings
+5. Numbers in wuxing_strength and radar_scores must be integers (no quotes)
 
-⚠️ 重要：你的回复必须是纯JSON格式，不要包含任何其他文字、解释或markdown代码块。直接输出JSON对象。
-
-输出JSON格式要求：
+Response format (valid JSON only):
 {
   "bazi": {
-    "year": "年柱（如：甲子）",
-    "month": "月柱（如：丙寅）",
-    "day": "日柱（如：戊辰）",
-    "hour": "时柱（如：庚午）",
-    "shishen": ["年十神", "月十神", "日十神", "时十神"],
-    "yongshen": "用神（如：水）",
-    "geju": "格局名称（如：食神生财格）",
+    "year": "甲子",
+    "month": "丙寅",
+    "day": "戊辰",
+    "hour": "庚午",
+    "shishen": ["偏印", "食神", "比肩", "偏财"],
+    "yongshen": "水",
+    "geju": "食神生财格",
     "wuxing_strength": {
       "wood": 15,
       "fire": 35,
@@ -107,17 +110,17 @@ module.exports = async (req, res) => {
     }
   },
   "mbti": {
-    "type": "MBTI类型（如：INTJ）",
-    "functions": ["主导功能", "辅助功能", "第三功能", "劣势功能"],
+    "type": "INTJ",
+    "functions": ["Ni主导直觉", "Te辅助思考", "Fi第三情感", "Se劣势实感"],
     "radar_scores": {
       "EI": 30,
       "SN": 80,
       "TF": 70,
       "JP": 65
     },
-    "description": "认知功能栈的简短描述"
+    "description": "内向直觉主导的战略家型人格"
   },
-  "soul_title": "专属灵魂称号（如：戊土建筑师·INTJ）",
+  "soul_title": "戊土建筑师·INTJ",
   "wuxing_colors": {
     "wood": "#00FF7F",
     "fire": "#FF4500",
@@ -125,27 +128,21 @@ module.exports = async (req, res) => {
     "metal": "#FFFFFF",
     "water": "#1E90FF"
   },
-  "summary": "一句话总结命格人格，引用古籍+现代翻译（100字以内）"
+  "summary": "日主戊土身旺,食神生财格局。内向直觉主导,擅长系统规划。《滴天髓》云:戊土固重,中正蓄藏。"
 }
 
-重要提示：
-1. 必须使用真太阳时校正
-2. 十神、神煞、用神必须准确
-3. MBTI推导需要详细逻辑，不能乱猜
-4. 灵魂称号要结合五行+MBTI（如"庚金剑修·INTJ"、"癸水玄女·INFP"）
-5. 必须返回完整的JSON对象，不要包含其他文字`;
+Remember: Return ONLY the JSON object above. No other text.`;
 
-    const userPrompt = `请分析我的出生信息：
+    const userPrompt = `Birth Information:
+Name: ${birthData.name || 'Not provided'}
+Gender: ${birthData.gender || 'Not provided'}
+Date: ${birthData.date || ''}
+Time: ${birthData.time || ''}
+Location: ${birthData.location || ''}
+Coordinates: ${birthData.lat || ''}, ${birthData.lon || ''}
+Timezone: ${birthData.timezone || ''}
 
-姓名：${birthData.name || '未提供'}
-性别：${birthData.gender || '未提供'}
-出生日期：${birthData.date || ''}
-出生时间：${birthData.time || ''}
-出生地点：${birthData.location || ''}
-坐标：${birthData.lat || ''}, ${birthData.lon || ''}
-时区：${birthData.timezone || ''}
-
-请严格按照系统提示的JSON格式输出分析结果。`;
+Analyze and return valid JSON only.`;
 
     // Call APIMart Chat API directly
     const chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
@@ -160,9 +157,10 @@ module.exports = async (req, res) => {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.7,
+        temperature: 0.3,  // Lower temperature for more consistent JSON output
         max_tokens: 4000,
-        stream: false
+        stream: false,
+        response_format: { type: 'json_object' }  // Force JSON mode if supported
       })
     });
 
@@ -188,8 +186,26 @@ module.exports = async (req, res) => {
       analysis = JSON.parse(content);
     } catch (parseError) {
       console.error('[GenerateWithAPImart] JSON Parse Error:', parseError);
-      console.error('[GenerateWithAPImart] Content preview:', content.substring(0, 500));
-      throw new Error('Failed to parse AI response as JSON: ' + parseError.message);
+      console.error('[GenerateWithAPImart] Full content length:', content.length);
+      console.error('[GenerateWithAPImart] Full content:', content);
+
+      // Try to fix common JSON issues
+      let fixedContent = content
+        // Remove trailing commas before } or ]
+        .replace(/,(\s*[}\]])/g, '$1')
+        // Fix single quotes to double quotes
+        .replace(/'/g, '"')
+        // Remove any BOM or invisible characters
+        .replace(/^\uFEFF/, '');
+
+      try {
+        console.log('[GenerateWithAPImart] Attempting to parse fixed content...');
+        analysis = JSON.parse(fixedContent);
+        console.log('[GenerateWithAPImart] Fixed content parsed successfully!');
+      } catch (secondError) {
+        console.error('[GenerateWithAPImart] Fixed content also failed:', secondError);
+        throw new Error('Failed to parse AI response as JSON: ' + parseError.message + ' | Content preview: ' + content.substring(0, 300));
+      }
     }
 
     console.log('[GenerateWithAPImart] Analysis completed:', analysis.soul_title);
