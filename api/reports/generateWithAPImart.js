@@ -267,65 +267,20 @@ Return ONLY valid JSON (no markdown):
     // Step 3: Create image generation task
     console.log('[GenerateWithAPImart] Step 3/4: Creating image task...');
 
-    // Build image prompt
-    const imagePrompt = `Create a mystical Chinese astrology card in vertical 9:16 portrait orientation with cyberpunk Taoist aesthetic:
+    // Build simplified image prompt - focus on core visual elements only
+    const imagePrompt = `Vertical mystical card (9:16) with cyberpunk-Taoist fusion:
 
-**TOP SECTION:**
-- Massive golden Chinese seal script title: "${birthData.name}的灵魂契合卡"
-- Holographic effect with purple-black starry gradient background
-- Glowing neon particles
+TOP: Golden title "${birthData.name}的灵魂契合卡" on purple-black starry gradient
 
-**LEFT PANEL (Traditional Chinese Style):**
-- Circular BaZi fortune wheel showing:
-  * Year pillar: ${analysis.bazi.year}
-  * Month pillar: ${analysis.bazi.month}
-  * Day pillar: ${analysis.bazi.day}
-  * Hour pillar: ${analysis.bazi.hour}
-- Ten Gods (Shishen) labeled around wheel: ${analysis.bazi.shishen.join(', ')}
-- Red highlighted element: ${analysis.bazi.yongshen}
-- Pattern type: ${analysis.bazi.geju}
-- Traditional ink wash painting style
-- Ancient calligraphy fonts
+LEFT: Traditional circular BaZi wheel with pillars ${analysis.bazi.year}, ${analysis.bazi.month}, ${analysis.bazi.day}, ${analysis.bazi.hour}
 
-**RIGHT PANEL (Cyberpunk Style):**
-- MBTI ${analysis.mbti.type} radar chart with neon glow
-- Eight cognitive functions as glowing progress bars:
-  ${analysis.mbti.functions.join(' → ')}
-- Color scheme using five-elements:
-  * Wood: bright green (#00FF7F)
-  * Fire: vibrant red (#FF4500)
-  * Earth: golden yellow (#FFD700)
-  * Metal: pure white (#FFFFFF)
-  * Water: deep blue (#1E90FF)
+RIGHT: MBTI ${analysis.mbti.type} neon radar chart
 
-**CENTER ELEMENT (Most Prominent):**
-- Gigantic golden Chinese seal script text: "${analysis.soul_title}"
-- Holographic metallic shine effect
-- Radiant glow emanating outward
+CENTER: Large golden text "${analysis.soul_title}" with holographic glow
 
-**MIDDLE CONNECTION:**
-- Horizontal five-elements energy band
-- Glowing particle stream flowing left to right
-- Gradient colors representing all five elements
-- "Destiny gear" rotating effect
-- Connecting traditional BaZi wheel to modern MBTI chart
+BOTTOM: Chinese scroll banner with "${analysis.summary}"
 
-**BOTTOM BANNER:**
-- Ancient Chinese scroll style
-- Summary text in elegant calligraphy: "${analysis.summary}"
-- Traditional seal stamp in corner
-
-**OVERALL VISUAL STYLE:**
-- Background: Black-to-purple starry gradient
-- Lighting: Neon five-element glow effects throughout
-- Texture: Laser holographic metallic finish
-- Layout: High information density but clearly layered
-- Aesthetic: Cyberpunk meets traditional Chinese Taoism
-- Resolution: Print-quality detail (4K+)
-- All Chinese text rendered clearly
-- Font mix: Seal script titles, Song/Hei body text, neon-outlined keywords
-
-Generate a stunning vertical card that combines ancient wisdom with futuristic aesthetics.`;
+Style: Neon five-element colors (green/red/gold/white/blue), laser holographic finish, 4K quality.`;
 
     // Call APIMart Image API directly with timeout handling
     let imageResponse;
