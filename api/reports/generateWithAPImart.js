@@ -95,42 +95,38 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Professional BaZi + MBTI analysis prompt
-    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
+    // Optimized professional prompt - balance between detail and token efficiency
+    const prompt = `你精通八字命理和MBTI心理学。分析：${birthData.date} ${birthData.time}，${birthData.gender}，${birthData.location}
 
-我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
+要求：
+1. 排四柱八字、十神、用神忌神、格局、日主旺衰、起运年龄
+2. 推导MBTI类型和认知功能栈，说明推理依据
+3. 创建灵魂称号（如"庚金剑修·INTJ"）
+4. 写详细朋友圈文案（200字左右，说明你的MBTI特质、优势、适合方向）
 
-请严格按以下执行：
-
-1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
-2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
-3. 通过深度推导（模拟专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理）
-4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）
-5. 最后单独输出一份纯文字总结我的MBTI，方便复制发朋友圈
-
-返回格式必须为JSON：
+返回JSON：
 {
   "bazi": {
-    "sizhu": {"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午"},
-    "shishen": ["偏印","食神","比肩","偏财"],
-    "yongshen": "水",
+    "sizhu": {"year":"己未","month":"壬申","day":"辛酉","hour":"壬辰"},
+    "shishen": ["偏印","正财","比肩","正财"],
+    "yongshen": "木",
     "jishen": "火",
-    "geju": "食神生财格",
-    "geju_level": "中上",
+    "geju": "正财格",
+    "geju_level": "上",
     "rizhu_wangshui": "身旺",
-    "dayun_qiyun": "3岁",
-    "wuxing_strength": {"wood":15,"fire":35,"earth":20,"metal":10,"water":20}
+    "dayun_qiyun": "5岁",
+    "wuxing_strength": {"wood":10,"fire":5,"earth":25,"metal":40,"water":20}
   },
   "mbti": {
     "type": "INTJ",
     "functions": ["Ni主导","Te辅助","Fi第三","Se劣势"],
-    "reasoning": "基于日主戊土身旺，内向型格局，偏印主导内在直觉...",
-    "radar_scores": {"EI":30,"SN":80,"TF":70,"JP":65},
+    "reasoning": "日主辛金身旺，偏印主导内向直觉(Ni)，正财显示逻辑思考(Te)，金水相生体现内在价值(Fi)，土重缺木表现感官劣势(Se)",
+    "radar_scores": {"EI":25,"SN":85,"TF":75,"JP":70},
     "description": "内向直觉型战略家"
   },
-  "soul_title": "戊土建筑师·INTJ",
-  "mapping": "日主戊土稳重务实对应Te辅助功能，偏印透干对应Ni主导...",
-  "summary": "你是INTJ型人格，内向直觉型战略家。Ni主导让你善于洞察本质，Te辅助让你高效执行，Fi第三让你有内在价值观，Se劣势让你不太关注当下感官体验。你的思维方式是先建立宏观框架，再逻辑拆解，适合做战略规划、系统设计类工作。人际上偏独立，重视深度而非广度。",
+  "soul_title": "辛金剑客·INTJ",
+  "mapping": "辛金日主→思维敏锐，偏印→Ni洞察，正财→Te逻辑，金水相生→Fi内省",
+  "summary": "你是INTJ战略家型人格。Ni主导让你天生擅长洞察本质、预见趋势，看问题总能直击核心。Te辅助赋予你强大的执行力和逻辑思维，适合做系统设计、战略规划类工作。Fi第三让你有坚定的内在价值观，不随波逐流。Se劣势使你不太关注当下感官细节，更专注长远目标。你的思维方式是：先建立宏观框架→逻辑拆解→高效执行。人际上独立自主，重视深度交流胜过广泛社交，是典型的「孤独的完美主义者」。",
   "wuxing_colors": {"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"}
 }`;
 
@@ -153,8 +149,8 @@ module.exports = async (req, res) => {
             messages: [
               { role: 'user', content: prompt }
             ],
-            temperature: 0.3,
-            max_tokens: 4096,  // Increased for detailed professional analysis
+            temperature: 0.4,
+            max_tokens: 3000,  // Optimized: enough for detailed response, not too large for timeout
             stream: false
           })
         });
