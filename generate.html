@@ -238,29 +238,79 @@
       display:block;
     }
 
+    .help-text {
+      font-size:13px;
+      color:#9ca3af;
+      margin-top:4px;
+    }
+    .back-link {
+      display:inline-block;
+      margin-bottom:24px;
+      padding:8px 16px;
+      background:rgba(0,255,157,0.1);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:8px;
+      color:#00ff9d;
+      text-decoration:none;
+      font-size:14px;
+      transition:all 0.3s ease;
+    }
+    .back-link:hover {
+      background:rgba(0,255,157,0.2);
+      border-color:#00ff9d;
+    }
+
     @media (max-width:768px) {
+      .container {
+        padding:20px 16px;
+      }
+      .header {
+        margin-bottom:32px;
+      }
+      .logo {
+        font-size:28px;
+      }
+      .subtitle {
+        font-size:14px;
+      }
       .form-grid {
         grid-template-columns:1fr;
+        gap:20px;
       }
       .form-section {
-        padding:24px;
+        padding:24px 20px;
       }
       .result-section {
-        padding:24px;
+        padding:24px 20px;
       }
       .result-header {
         flex-direction:column;
         gap:12px;
         align-items:flex-start;
       }
+      .result-header > div {
+        width:100%;
+      }
       .copy-btn {
         width:100%;
+        padding:12px 16px;
+      }
+      .report-content h1 {
+        font-size:22px;
+      }
+      .report-content h2 {
+        font-size:18px;
+      }
+      .report-content h3 {
+        font-size:16px;
       }
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <a href="index.html" class="back-link">← 返回首页</a>
+
     <div class="header">
       <div class="logo">NatalCodex</div>
       <div class="subtitle">生成您的八字命理与MBTI人格分析报告</div>
@@ -291,11 +341,13 @@
           <div class="form-group">
             <label for="time">出生时间</label>
             <input type="time" id="time" name="time" placeholder="14:30" required>
+            <div class="help-text">请尽量精确到分钟，用于计算真太阳时</div>
           </div>
 
           <div class="form-group full">
             <label for="location">出生地点</label>
             <input type="text" id="location" name="location" placeholder="例如：北京市海淀区" required>
+            <div class="help-text">具体到城市或区县即可，用于真太阳时修正</div>
           </div>
         </div>
 
@@ -304,6 +356,12 @@
         <button type="submit" class="btn" id="submitBtn">
           🔮 生成报告
         </button>
+
+        <div style="text-align:center;margin-top:16px">
+          <button type="button" class="copy-btn" id="fillDemoBtn" style="background:transparent;border:1px solid rgba(0,255,157,0.3)">
+            📝 填充示例数据
+          </button>
+        </div>
       </form>
     </div>
 
@@ -315,7 +373,10 @@
     <div class="result-section" id="resultSection">
       <div class="result-header">
         <div class="result-title">您的专属报告</div>
-        <button class="copy-btn" id="copyBtn">📋 复制报告</button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="copy-btn" id="copyBtn">📋 复制报告</button>
+          <button class="copy-btn" id="downloadBtn">💾 下载报告</button>
+        </div>
       </div>
       <div class="report-content" id="reportContent"></div>
     </div>
@@ -370,13 +431,24 @@
           throw new Error(data.error || '生成报告失败');
         }
 
-        // Clean markdown (remove asterisks and extra formatting)
+        // Clean markdown - remove ALL special formatting markers
         let cleanReport = data.reportContent
-          .replace(/\*\*/g, '')  // Remove bold markers
-          .replace(/\*/g, '')     // Remove italic markers
-          .replace(/#{1,6}\s/g, (match) => {  // Keep headers but clean
-            return match;
-          });
+          // Remove bold markers
+          .replace(/\*\*(.+?)\*\*/g, '$1')
+          // Remove italic markers
+          .replace(/\*(.+?)\*/g, '$1')
+          // Remove underscore emphasis
+          .replace(/__(.+?)__/g, '$1')
+          .replace(/_(.+?)_/g, '$1')
+          // Remove strikethrough
+          .replace(/~~(.+?)~~/g, '$1')
+          // Remove inline code backticks but keep content
+          .replace(/`(.+?)`/g, '$1')
+          // Clean up any remaining asterisks
+          .replace(/\*/g, '')
+          .replace(/_/g, '')
+          // Remove extra blank lines
+          .replace(/\n{3,}/g, '\n\n');
 
         // Store clean text for copying
         window.cleanReportText = cleanReport;
@@ -416,6 +488,43 @@
         console.error('Copy failed:', error);
         alert('复制失败，请手动复制');
       }
+    });
+
+    // Download button
+    const downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.addEventListener('click', () => {
+      const text = window.cleanReportText || reportContent.innerText;
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `八字MBTI报告_${document.getElementById('name').value}_${new Date().toLocaleDateString()}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      downloadBtn.textContent = '✅ 已下载';
+      downloadBtn.classList.add('copied');
+      setTimeout(() => {
+        downloadBtn.textContent = '💾 下载报告';
+        downloadBtn.classList.remove('copied');
+      }, 2000);
+    });
+
+    // Fill demo data button
+    const fillDemoBtn = document.getElementById('fillDemoBtn');
+    fillDemoBtn.addEventListener('click', () => {
+      document.getElementById('name').value = '李梅';
+      document.getElementById('gender').value = '女';
+      document.getElementById('date').value = '1999-08-08';
+      document.getElementById('time').value = '14:30';
+      document.getElementById('location').value = '上海黄浦区';
+
+      fillDemoBtn.textContent = '✅ 已填充';
+      setTimeout(() => {
+        fillDemoBtn.textContent = '📝 填充示例数据';
+      }, 1500);
     });
   </script>
 </body>
