@@ -24,26 +24,62 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'birthData required' });
   }
 
+  // Extract language preference (default to Chinese)
+  const language = birthData.language || 'zh';
+  const isEnglish = language === 'en';
+
+  // Extract timezone and coordinates if available
+  const timezone = birthData.timezone || 'Asia/Shanghai';
+  const coordinates = birthData.coordinates || null;
+
   console.log('[GenerateWithAPImart] Starting complete flow for:', birthData.name);
+  console.log('[GenerateWithAPImart] Language:', language);
+  console.log('[GenerateWithAPImart] Timezone:', timezone);
+  if (coordinates) {
+    console.log('[GenerateWithAPImart] Coordinates:', coordinates.lat, coordinates.lon);
+  }
 
   try {
-    // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
-    console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
+    // Step 1: Analyze with GPT-4o-mini (BaZi + MBTI)
+    console.log('[GenerateWithAPImart] Step 1/4: Analyzing with GPT-4o-mini...');
 
-    // Full professional prompt - user's original requirements
-    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
+    // Build location info with timezone
+    let locationInfo = `${birthData.location}`;
+    if (timezone) {
+      locationInfo += ` (时区: ${timezone})`;
+    }
 
-我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
+    // Full professional prompt - bilingual support
+    let prompt;
+    if (isEnglish) {
+      prompt = `You are a master of both classical Chinese BaZi astrology (《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》) and Jungian MBTI cognitive function theory.
+
+My birth information: ${birthData.date} ${birthData.time}, ${birthData.gender === '男' ? 'Male' : 'Female'}, ${locationInfo}
+
+Please follow these steps strictly:
+
+1. Calculate my Four Pillars (BaZi) using True Solar Time correction based on the timezone and location provided. Include: Year/Month/Day/Hour pillars, Ten Gods, Divine Stars, and Dayun (Great Luck) timing
+2. Analyze my Day Master's strength (旺衰), Useful Gods (用神), Taboo Gods (忌神), and destiny pattern classification
+3. Through deep analysis (simulating professional MBTI testing), determine my most accurate MBTI type and cognitive function stack (must include detailed reasoning, not guessing)
+4. Map my Day Master element, destiny palace master star, and pattern directly to MBTI 16 types and eight cognitive functions. Create a unique Soul Title (e.g., "Geng Metal Swordmaster·INTJ", "Gui Water Mystic·INFP", "Wu Earth Architect·ISTJ")
+5. Finally, output a pure text summary suitable for copying to social media
+
+Please output a complete detailed analysis report in markdown format. **IMPORTANT: Write the entire report in English.**`;
+    } else {
+      prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
+
+我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${locationInfo}】
 
 请严格按以下步骤执行：
 
-1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
+1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间（已提供时区信息，请据此修正真太阳时）
 2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
 3. 通过深度推导（模拟专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理）
 4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP"）
 5. 最后单独输出一份纯文字总结，方便复制发朋友圈
 
 请用markdown格式输出完整详细的分析报告。`;
+    }
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -153,12 +189,32 @@ module.exports = async (req, res) => {
     console.log('[GenerateWithAPImart] Raw content length:', content.length);
     console.log('[GenerateWithAPImart] Content preview:', content.substring(0, 500));  // Log first 500 chars
 
-    // Use AI's markdown output directly as the report
-    const reportContent = `# ${birthData.name}的八字命理与MBTI人格分析报告
+    // Use AI's markdown output directly as the report - bilingual headers
+    let reportContent;
+    if (isEnglish) {
+      reportContent = `# ${birthData.name}'s BaZi & MBTI Personality Analysis Report
+
+## Basic Information
+- Birth: ${birthData.date} ${birthData.time}
+- Location: ${birthData.location}
+- Timezone: ${timezone}
+- Gender: ${birthData.gender === '男' ? 'Male' : 'Female'}
+
+---
+
+${content}
+
+---
+*This report is AI-generated, combining traditional Chinese BaZi astrology with modern MBTI psychology*
+*Generated: ${new Date().toLocaleString('en-US', { timeZone: timezone || 'UTC' })}*
+*Order ID: ${orderId}*`;
+    } else {
+      reportContent = `# ${birthData.name}的八字命理与MBTI人格分析报告
 
 ## 基本信息
 - 出生：${birthData.date} ${birthData.time}
 - 地点：${birthData.location}
+- 时区：${timezone}
 - 性别：${birthData.gender}
 
 ---
@@ -167,8 +223,9 @@ ${content}
 
 ---
 *本报告由AI生成，融合中国传统八字命理与现代MBTI心理学*
-*生成时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}*
+*生成时间：${new Date().toLocaleString('zh-CN', { timeZone: timezone || 'Asia/Shanghai' })}*
 *订单号：${orderId}*`;
+    }
 
     // Create a minimal analysis object for compatibility
     const analysis = {
