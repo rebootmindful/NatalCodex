@@ -13,71 +13,6 @@ const config = {
   }
 };
 
-function buildReportFromAnalysis(analysis, birthData) {
-  const { bazi, mbti, soul_title, summary, mapping } = analysis;
-
-  // Support both old format (bazi.year) and new format (bazi.sizhu.year)
-  const sizhu = bazi.sizhu || { year: bazi.year, month: bazi.month, day: bazi.day, hour: bazi.hour };
-
-  return `# ${birthData.name}的灵魂契合卡报告
-
-## 基本信息
-- 出生：${birthData.date} ${birthData.time}
-- 地点：${birthData.location}
-- 性别：${birthData.gender}
-
-## 八字命盘
-**四柱：** ${sizhu.year} ${sizhu.month} ${sizhu.day} ${sizhu.hour}
-
-**十神：** ${bazi.shishen.join('  ')}
-
-**格局：** ${bazi.geju}${bazi.geju_level ? ` (${bazi.geju_level})` : ''}
-
-**日主旺衰：** ${bazi.rizhu_wangshui || '未知'}
-
-**用神：** ${bazi.yongshen}${bazi.jishen ? ` | 忌神：${bazi.jishen}` : ''}
-
-**大运起运：** ${bazi.dayun_qiyun || '未知'}
-
-**五行强度分布：**
-- 木：${bazi.wuxing_strength.wood}%
-- 火：${bazi.wuxing_strength.fire}%
-- 土：${bazi.wuxing_strength.earth}%
-- 金：${bazi.wuxing_strength.metal}%
-- 水：${bazi.wuxing_strength.water}%
-
-## MBTI人格分析
-**类型：** ${mbti.type}
-
-**认知功能栈：** ${mbti.functions.join(' > ')}
-
-**四维度得分：**
-- 外倾E / 内倾I：${mbti.radar_scores.EI}
-- 实感S / 直觉N：${mbti.radar_scores.SN}
-- 思考T / 情感F：${mbti.radar_scores.TF}
-- 判断J / 感知P：${mbti.radar_scores.JP}
-
-**功能描述：** ${mbti.description}
-
-${mbti.reasoning ? `\n**MBTI推理过程：**\n${mbti.reasoning}\n` : ''}
-
-## 灵魂称号
-**${soul_title}**
-
-${mapping ? `\n**八字与MBTI映射关系：**\n${mapping}\n` : ''}
-
-## 综合评价
-${summary}
-
-## 朋友圈文案 📱
-${summary}
-
----
-*本报告融合中国传统八字命理与现代MBTI心理学*
-*生成时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}*
-*订单号：${birthData.orderId || 'N/A'}*`;
-}
-
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -95,20 +30,19 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // User's custom prompt - AI will return free-form markdown report
-    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
+    // User's custom prompt - simplified to prevent token overflow
+    const prompt = `你精通八字命理(渊海子平、滴天髓、三命通会、穷通宝鉴)和MBTI理论。
 
-我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
+出生信息：${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男' : '女'}，${birthData.location}
 
-请严格按以下7步执行：
+请输出：
+1. 真太阳时四柱八字、十神、神煞、大运起运
+2. 日主旺衰、用神忌神、格局层级
+3. MBTI类型推导(详细推理过程)、认知功能栈
+4. 八字→MBTI映射，创建灵魂称号(如"庚金剑修·INTJ")
+5. 朋友圈文案(200字，说明MBTI特质)
 
-1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
-2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
-3. 通过深度问答式推导（模拟最专业的MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理，不能乱猜）
-4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）
-5. 最后再单独输出一张纯文字版总结，方便我复制发朋友圈
-
-请用markdown格式输出完整详细的分析报告。`;
+用markdown格式输出完整报告。`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -130,7 +64,7 @@ module.exports = async (req, res) => {
               { role: 'user', content: prompt }
             ],
             temperature: 0.5,
-            max_tokens: 8192,  // Increased for comprehensive free-form report
+            max_tokens: 4096,  // Balanced for detailed report without timeout
             stream: false
           })
         });
@@ -185,49 +119,34 @@ module.exports = async (req, res) => {
     console.log('[GenerateWithAPImart] Response finish_reason:', finishReason);
     console.log('[GenerateWithAPImart] Content length:', content.length);
 
-    if (finishReason === 'length' || !content || content.length === 0) {
-      console.warn('[GenerateWithAPImart] Response truncated or empty, using fallback data');
+    if (finishReason === 'length') {
+      console.error('[GenerateWithAPImart] Response truncated due to token limit!');
+      console.error('[GenerateWithAPImart] finishReason:', finishReason);
+      console.error('[GenerateWithAPImart] Content length:', content.length);
 
-      // Use fallback analysis data based on birth info
-      const fallbackAnalysis = {
-        bazi: {
-          year: "甲子",
-          month: "丙寅",
-          day: "戊辰",
-          hour: "庚午",
-          shishen: ["偏印", "食神", "比肩", "偏财"],
-          yongshen: "水",
-          geju: "食神生财格",
-          wuxing_strength: { wood: 15, fire: 35, earth: 20, metal: 10, water: 20 }
-        },
-        mbti: {
-          type: "INTJ",
-          functions: ["Ni主导", "Te辅助", "Fi第三", "Se劣势"],
-          radar_scores: { EI: 30, SN: 80, TF: 70, JP: 65 },
-          description: "内向直觉型战略家"
-        },
-        soul_title: `${birthData.name}的灵魂契合卡`,
-        wuxing_colors: {
-          wood: "#00FF7F",
-          fire: "#FF4500",
-          earth: "#FFD700",
-          metal: "#FFFFFF",
-          water: "#1E90FF"
-        },
-        summary: "天生战略思维，善于规划与执行"
-      };
+      return res.status(500).json({
+        success: false,
+        error: 'AI response was truncated due to token limit. The prompt may be too long or max_tokens too small.',
+        details: {
+          finishReason,
+          contentLength: content.length,
+          prompt_length: prompt.length
+        }
+      });
+    }
 
-      console.log('[GenerateWithAPImart] Using fallback analysis');
-      const reportContent = buildReportFromAnalysis(fallbackAnalysis, birthData);
+    if (!content || content.length === 0) {
+      console.error('[GenerateWithAPImart] Empty response from API!');
+      console.error('[GenerateWithAPImart] Full API response:', JSON.stringify(chatData, null, 2));
 
-      return res.json({
-        success: true,
-        orderId,
-        reportContent,
-        imageUrl: null,
-        analysis: fallbackAnalysis,
-        status: 'fallback',
-        message: 'Using fallback analysis due to API limitations'
+      return res.status(500).json({
+        success: false,
+        error: 'API returned empty content. Please check API key and model availability.',
+        details: {
+          finishReason,
+          hasChoices: !!chatData.choices,
+          choicesLength: chatData.choices?.length
+        }
       });
     }
     console.log('[GenerateWithAPImart] Raw content length:', content.length);
