@@ -4,7 +4,7 @@ apikey.txt
 .DS_Store
 Thumbs.db
 backup-original/
-reports/
+/reports/
 dist/
 tmp/
 *.env
