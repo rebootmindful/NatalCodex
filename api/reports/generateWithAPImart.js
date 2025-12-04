@@ -30,19 +30,20 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Professional prompt - GPT-4o-mini handles this well
-    const prompt = `你精通八字命理(渊海子平、滴天髓、三命通会、穷通宝鉴)和MBTI八功能理论。
+    // Full professional prompt - user's original requirements
+    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
 
-出生信息：${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}
+我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
 
-请输出：
-1. 真太阳时四柱八字、十神、神煞、大运起运时间
-2. 日主五行旺衰、用神忌神、格局层级
-3. MBTI类型深度推导(详细推理过程)、认知功能栈
-4. 八字→MBTI映射关系，创建灵魂称号(如"庚金剑修·INTJ""癸水玄女·INFP")
-5. 朋友圈文案(200字，说明MBTI特质、优势、适合方向)
+请严格按以下步骤执行：
 
-用markdown格式输出完整分析报告。`;
+1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
+2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
+3. 通过深度推导（模拟专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理）
+4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP"）
+5. 最后单独输出一份纯文字总结，方便复制发朋友圈
+
+请用markdown格式输出完整详细的分析报告。`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
