@@ -498,148 +498,260 @@
       updateLanguage(newLang);
     });
 
-    // ========== City Search with Timezone Detection ==========
+    // ========== City Database with Timezone ==========
+    const cityDatabase = [
+      // 中国主要城市
+      { zh: '北京', en: 'Beijing', pinyin: 'beijing', lat: 39.9042, lon: 116.4074, tz: 'Asia/Shanghai' },
+      { zh: '上海', en: 'Shanghai', pinyin: 'shanghai', lat: 31.2304, lon: 121.4737, tz: 'Asia/Shanghai' },
+      { zh: '广州', en: 'Guangzhou', pinyin: 'guangzhou', lat: 23.1291, lon: 113.2644, tz: 'Asia/Shanghai' },
+      { zh: '深圳', en: 'Shenzhen', pinyin: 'shenzhen', lat: 22.5431, lon: 114.0579, tz: 'Asia/Shanghai' },
+      { zh: '杭州', en: 'Hangzhou', pinyin: 'hangzhou', lat: 30.2741, lon: 120.1551, tz: 'Asia/Shanghai' },
+      { zh: '南京', en: 'Nanjing', pinyin: 'nanjing', lat: 32.0603, lon: 118.7969, tz: 'Asia/Shanghai' },
+      { zh: '成都', en: 'Chengdu', pinyin: 'chengdu', lat: 30.5728, lon: 104.0668, tz: 'Asia/Shanghai' },
+      { zh: '重庆', en: 'Chongqing', pinyin: 'chongqing', lat: 29.4316, lon: 106.9123, tz: 'Asia/Shanghai' },
+      { zh: '武汉', en: 'Wuhan', pinyin: 'wuhan', lat: 30.5928, lon: 114.3055, tz: 'Asia/Shanghai' },
+      { zh: '西安', en: "Xi'an", pinyin: 'xian', lat: 34.3416, lon: 108.9398, tz: 'Asia/Shanghai' },
+      { zh: '天津', en: 'Tianjin', pinyin: 'tianjin', lat: 39.3434, lon: 117.3616, tz: 'Asia/Shanghai' },
+      { zh: '苏州', en: 'Suzhou', pinyin: 'suzhou', lat: 31.2990, lon: 120.5853, tz: 'Asia/Shanghai' },
+      { zh: '青岛', en: 'Qingdao', pinyin: 'qingdao', lat: 36.0671, lon: 120.3826, tz: 'Asia/Shanghai' },
+      { zh: '大连', en: 'Dalian', pinyin: 'dalian', lat: 38.9140, lon: 121.6147, tz: 'Asia/Shanghai' },
+      { zh: '厦门', en: 'Xiamen', pinyin: 'xiamen', lat: 24.4798, lon: 118.0894, tz: 'Asia/Shanghai' },
+      { zh: '长沙', en: 'Changsha', pinyin: 'changsha', lat: 28.2282, lon: 112.9388, tz: 'Asia/Shanghai' },
+      { zh: '郑州', en: 'Zhengzhou', pinyin: 'zhengzhou', lat: 34.7466, lon: 113.6253, tz: 'Asia/Shanghai' },
+      { zh: '沈阳', en: 'Shenyang', pinyin: 'shenyang', lat: 41.8057, lon: 123.4315, tz: 'Asia/Shanghai' },
+      { zh: '哈尔滨', en: 'Harbin', pinyin: 'haerbin', lat: 45.8038, lon: 126.5350, tz: 'Asia/Shanghai' },
+      { zh: '济南', en: 'Jinan', pinyin: 'jinan', lat: 36.6512, lon: 117.1201, tz: 'Asia/Shanghai' },
+      { zh: '福州', en: 'Fuzhou', pinyin: 'fuzhou', lat: 26.0745, lon: 119.2965, tz: 'Asia/Shanghai' },
+      { zh: '昆明', en: 'Kunming', pinyin: 'kunming', lat: 25.0389, lon: 102.7183, tz: 'Asia/Shanghai' },
+      { zh: '无锡', en: 'Wuxi', pinyin: 'wuxi', lat: 31.4912, lon: 120.3119, tz: 'Asia/Shanghai' },
+      { zh: '宁波', en: 'Ningbo', pinyin: 'ningbo', lat: 29.8683, lon: 121.5440, tz: 'Asia/Shanghai' },
+      { zh: '合肥', en: 'Hefei', pinyin: 'hefei', lat: 31.8206, lon: 117.2272, tz: 'Asia/Shanghai' },
+      { zh: '南昌', en: 'Nanchang', pinyin: 'nanchang', lat: 28.6820, lon: 115.8579, tz: 'Asia/Shanghai' },
+      { zh: '长春', en: 'Changchun', pinyin: 'changchun', lat: 43.8171, lon: 125.3235, tz: 'Asia/Shanghai' },
+      { zh: '石家庄', en: 'Shijiazhuang', pinyin: 'shijiazhuang', lat: 38.0428, lon: 114.5149, tz: 'Asia/Shanghai' },
+      { zh: '贵阳', en: 'Guiyang', pinyin: 'guiyang', lat: 26.6470, lon: 106.6302, tz: 'Asia/Shanghai' },
+      { zh: '南宁', en: 'Nanning', pinyin: 'nanning', lat: 22.8170, lon: 108.3665, tz: 'Asia/Shanghai' },
+      { zh: '太原', en: 'Taiyuan', pinyin: 'taiyuan', lat: 37.8706, lon: 112.5489, tz: 'Asia/Shanghai' },
+      { zh: '乌鲁木齐', en: 'Urumqi', pinyin: 'wulumuqi', lat: 43.8256, lon: 87.6168, tz: 'Asia/Urumqi' },
+      { zh: '兰州', en: 'Lanzhou', pinyin: 'lanzhou', lat: 36.0611, lon: 103.8343, tz: 'Asia/Shanghai' },
+      { zh: '海口', en: 'Haikou', pinyin: 'haikou', lat: 20.0440, lon: 110.1999, tz: 'Asia/Shanghai' },
+      { zh: '呼和浩特', en: 'Hohhot', pinyin: 'huhehaote', lat: 40.8424, lon: 111.7490, tz: 'Asia/Shanghai' },
+      { zh: '银川', en: 'Yinchuan', pinyin: 'yinchuan', lat: 38.4872, lon: 106.2309, tz: 'Asia/Shanghai' },
+      { zh: '西宁', en: 'Xining', pinyin: 'xining', lat: 36.6171, lon: 101.7782, tz: 'Asia/Shanghai' },
+      { zh: '拉萨', en: 'Lhasa', pinyin: 'lasa', lat: 29.6500, lon: 91.1000, tz: 'Asia/Shanghai' },
+      // 港澳台
+      { zh: '香港', en: 'Hong Kong', pinyin: 'xianggang', lat: 22.3193, lon: 114.1694, tz: 'Asia/Hong_Kong' },
+      { zh: '澳门', en: 'Macau', pinyin: 'aomen', lat: 22.1987, lon: 113.5439, tz: 'Asia/Macau' },
+      { zh: '台北', en: 'Taipei', pinyin: 'taibei', lat: 25.0330, lon: 121.5654, tz: 'Asia/Taipei' },
+      { zh: '高雄', en: 'Kaohsiung', pinyin: 'gaoxiong', lat: 22.6273, lon: 120.3014, tz: 'Asia/Taipei' },
+      // 亚洲其他
+      { zh: '东京', en: 'Tokyo', pinyin: 'dongjing', lat: 35.6762, lon: 139.6503, tz: 'Asia/Tokyo' },
+      { zh: '大阪', en: 'Osaka', pinyin: 'daban', lat: 34.6937, lon: 135.5023, tz: 'Asia/Tokyo' },
+      { zh: '首尔', en: 'Seoul', pinyin: 'shouer', lat: 37.5665, lon: 126.9780, tz: 'Asia/Seoul' },
+      { zh: '新加坡', en: 'Singapore', pinyin: 'xinjiapo', lat: 1.3521, lon: 103.8198, tz: 'Asia/Singapore' },
+      { zh: '曼谷', en: 'Bangkok', pinyin: 'mangu', lat: 13.7563, lon: 100.5018, tz: 'Asia/Bangkok' },
+      { zh: '吉隆坡', en: 'Kuala Lumpur', pinyin: 'jilongpo', lat: 3.1390, lon: 101.6869, tz: 'Asia/Kuala_Lumpur' },
+      { zh: '雅加达', en: 'Jakarta', pinyin: 'yajiade', lat: -6.2088, lon: 106.8456, tz: 'Asia/Jakarta' },
+      { zh: '马尼拉', en: 'Manila', pinyin: 'manila', lat: 14.5995, lon: 120.9842, tz: 'Asia/Manila' },
+      { zh: '河内', en: 'Hanoi', pinyin: 'henei', lat: 21.0285, lon: 105.8542, tz: 'Asia/Ho_Chi_Minh' },
+      { zh: '胡志明市', en: 'Ho Chi Minh City', pinyin: 'huzhimingshi', lat: 10.8231, lon: 106.6297, tz: 'Asia/Ho_Chi_Minh' },
+      { zh: '孟买', en: 'Mumbai', pinyin: 'mengmai', lat: 19.0760, lon: 72.8777, tz: 'Asia/Kolkata' },
+      { zh: '新德里', en: 'New Delhi', pinyin: 'xindeli', lat: 28.6139, lon: 77.2090, tz: 'Asia/Kolkata' },
+      { zh: '迪拜', en: 'Dubai', pinyin: 'dibai', lat: 25.2048, lon: 55.2708, tz: 'Asia/Dubai' },
+      // 欧洲
+      { zh: '伦敦', en: 'London', pinyin: 'lundun', lat: 51.5074, lon: -0.1278, tz: 'Europe/London' },
+      { zh: '巴黎', en: 'Paris', pinyin: 'bali', lat: 48.8566, lon: 2.3522, tz: 'Europe/Paris' },
+      { zh: '柏林', en: 'Berlin', pinyin: 'bolin', lat: 52.5200, lon: 13.4050, tz: 'Europe/Berlin' },
+      { zh: '罗马', en: 'Rome', pinyin: 'luoma', lat: 41.9028, lon: 12.4964, tz: 'Europe/Rome' },
+      { zh: '马德里', en: 'Madrid', pinyin: 'madeli', lat: 40.4168, lon: -3.7038, tz: 'Europe/Madrid' },
+      { zh: '阿姆斯特丹', en: 'Amsterdam', pinyin: 'amusitedan', lat: 52.3676, lon: 4.9041, tz: 'Europe/Amsterdam' },
+      { zh: '莫斯科', en: 'Moscow', pinyin: 'mosike', lat: 55.7558, lon: 37.6173, tz: 'Europe/Moscow' },
+      { zh: '维也纳', en: 'Vienna', pinyin: 'weiyena', lat: 48.2082, lon: 16.3738, tz: 'Europe/Vienna' },
+      { zh: '苏黎世', en: 'Zurich', pinyin: 'sulishi', lat: 47.3769, lon: 8.5417, tz: 'Europe/Zurich' },
+      { zh: '慕尼黑', en: 'Munich', pinyin: 'munihei', lat: 48.1351, lon: 11.5820, tz: 'Europe/Berlin' },
+      { zh: '米兰', en: 'Milan', pinyin: 'milan', lat: 45.4642, lon: 9.1900, tz: 'Europe/Rome' },
+      { zh: '巴塞罗那', en: 'Barcelona', pinyin: 'basailuona', lat: 41.3851, lon: 2.1734, tz: 'Europe/Madrid' },
+      { zh: '布鲁塞尔', en: 'Brussels', pinyin: 'bulusaier', lat: 50.8503, lon: 4.3517, tz: 'Europe/Brussels' },
+      { zh: '斯德哥尔摩', en: 'Stockholm', pinyin: 'sidegeermo', lat: 59.3293, lon: 18.0686, tz: 'Europe/Stockholm' },
+      { zh: '哥本哈根', en: 'Copenhagen', pinyin: 'gebenhagen', lat: 55.6761, lon: 12.5683, tz: 'Europe/Copenhagen' },
+      { zh: '赫尔辛基', en: 'Helsinki', pinyin: 'heersiji', lat: 60.1699, lon: 24.9384, tz: 'Europe/Helsinki' },
+      { zh: '华沙', en: 'Warsaw', pinyin: 'huasha', lat: 52.2297, lon: 21.0122, tz: 'Europe/Warsaw' },
+      { zh: '布拉格', en: 'Prague', pinyin: 'bulage', lat: 50.0755, lon: 14.4378, tz: 'Europe/Prague' },
+      { zh: '布达佩斯', en: 'Budapest', pinyin: 'budapeisi', lat: 47.4979, lon: 19.0402, tz: 'Europe/Budapest' },
+      { zh: '雅典', en: 'Athens', pinyin: 'yadian', lat: 37.9838, lon: 23.7275, tz: 'Europe/Athens' },
+      { zh: '里斯本', en: 'Lisbon', pinyin: 'lisiben', lat: 38.7223, lon: -9.1393, tz: 'Europe/Lisbon' },
+      { zh: '都柏林', en: 'Dublin', pinyin: 'dubolin', lat: 53.3498, lon: -6.2603, tz: 'Europe/Dublin' },
+      { zh: '爱丁堡', en: 'Edinburgh', pinyin: 'aidingbao', lat: 55.9533, lon: -3.1883, tz: 'Europe/London' },
+      // 北美
+      { zh: '纽约', en: 'New York', pinyin: 'niuyue', lat: 40.7128, lon: -74.0060, tz: 'America/New_York' },
+      { zh: '洛杉矶', en: 'Los Angeles', pinyin: 'luosanji', lat: 34.0522, lon: -118.2437, tz: 'America/Los_Angeles' },
+      { zh: '芝加哥', en: 'Chicago', pinyin: 'zhijiage', lat: 41.8781, lon: -87.6298, tz: 'America/Chicago' },
+      { zh: '旧金山', en: 'San Francisco', pinyin: 'jiujinshan', lat: 37.7749, lon: -122.4194, tz: 'America/Los_Angeles' },
+      { zh: '西雅图', en: 'Seattle', pinyin: 'xiyatu', lat: 47.6062, lon: -122.3321, tz: 'America/Los_Angeles' },
+      { zh: '波士顿', en: 'Boston', pinyin: 'boshidun', lat: 42.3601, lon: -71.0589, tz: 'America/New_York' },
+      { zh: '华盛顿', en: 'Washington D.C.', pinyin: 'huashengdun', lat: 38.9072, lon: -77.0369, tz: 'America/New_York' },
+      { zh: '迈阿密', en: 'Miami', pinyin: 'maiami', lat: 25.7617, lon: -80.1918, tz: 'America/New_York' },
+      { zh: '休斯顿', en: 'Houston', pinyin: 'xiusidun', lat: 29.7604, lon: -95.3698, tz: 'America/Chicago' },
+      { zh: '达拉斯', en: 'Dallas', pinyin: 'dalasi', lat: 32.7767, lon: -96.7970, tz: 'America/Chicago' },
+      { zh: '丹佛', en: 'Denver', pinyin: 'danfo', lat: 39.7392, lon: -104.9903, tz: 'America/Denver' },
+      { zh: '拉斯维加斯', en: 'Las Vegas', pinyin: 'lasiweijisi', lat: 36.1699, lon: -115.1398, tz: 'America/Los_Angeles' },
+      { zh: '多伦多', en: 'Toronto', pinyin: 'duolunduo', lat: 43.6532, lon: -79.3832, tz: 'America/Toronto' },
+      { zh: '温哥华', en: 'Vancouver', pinyin: 'wengehua', lat: 49.2827, lon: -123.1207, tz: 'America/Vancouver' },
+      { zh: '蒙特利尔', en: 'Montreal', pinyin: 'mengtelier', lat: 45.5017, lon: -73.5673, tz: 'America/Montreal' },
+      { zh: '墨西哥城', en: 'Mexico City', pinyin: 'moxigecheng', lat: 19.4326, lon: -99.1332, tz: 'America/Mexico_City' },
+      // 大洋洲
+      { zh: '悉尼', en: 'Sydney', pinyin: 'xini', lat: -33.8688, lon: 151.2093, tz: 'Australia/Sydney' },
+      { zh: '墨尔本', en: 'Melbourne', pinyin: 'moerben', lat: -37.8136, lon: 144.9631, tz: 'Australia/Melbourne' },
+      { zh: '布里斯班', en: 'Brisbane', pinyin: 'bulisiban', lat: -27.4698, lon: 153.0251, tz: 'Australia/Brisbane' },
+      { zh: '珀斯', en: 'Perth', pinyin: 'posi', lat: -31.9505, lon: 115.8605, tz: 'Australia/Perth' },
+      { zh: '奥克兰', en: 'Auckland', pinyin: 'aokelan', lat: -36.8509, lon: 174.7645, tz: 'Pacific/Auckland' },
+      // 南美
+      { zh: '圣保罗', en: 'São Paulo', pinyin: 'shengbaoluo', lat: -23.5505, lon: -46.6333, tz: 'America/Sao_Paulo' },
+      { zh: '里约热内卢', en: 'Rio de Janeiro', pinyin: 'liyuereneilu', lat: -22.9068, lon: -43.1729, tz: 'America/Sao_Paulo' },
+      { zh: '布宜诺斯艾利斯', en: 'Buenos Aires', pinyin: 'buyinuosiailisi', lat: -34.6037, lon: -58.3816, tz: 'America/Argentina/Buenos_Aires' },
+      // 非洲
+      { zh: '开罗', en: 'Cairo', pinyin: 'kailuo', lat: 30.0444, lon: 31.2357, tz: 'Africa/Cairo' },
+      { zh: '约翰内斯堡', en: 'Johannesburg', pinyin: 'yuehanneisibao', lat: -26.2041, lon: 28.0473, tz: 'Africa/Johannesburg' },
+      { zh: '开普敦', en: 'Cape Town', pinyin: 'kaipudun', lat: -33.9249, lon: 18.4241, tz: 'Africa/Johannesburg' }
+    ];
+
+    // ========== City Search with Autocomplete ==========
     const locationInput = document.getElementById('location');
     const citySuggestions = document.getElementById('citySuggestions');
     const timezoneInput = document.getElementById('timezone');
     const timezoneGroup = document.getElementById('timezoneGroup');
 
-    let searchTimeout;
+    // Detect if input is Chinese
+    function isChinese(str) {
+      return /[\u4e00-\u9fa5]/.test(str);
+    }
 
-    // Debounced city search
+    // Search cities locally - instant response
+    function searchCities(query) {
+      if (!query || query.length === 0) return [];
+
+      const q = query.toLowerCase().trim();
+      const isZh = isChinese(q);
+
+      return cityDatabase.filter(city => {
+        if (isZh) {
+          // Chinese input: match Chinese name
+          return city.zh.includes(q);
+        } else {
+          // English/Pinyin input: match English name or pinyin
+          return city.en.toLowerCase().startsWith(q) ||
+                 city.pinyin.startsWith(q) ||
+                 city.en.toLowerCase().includes(q);
+        }
+      }).slice(0, 8); // Max 8 results
+    }
+
+    // Render city suggestions
+    function renderSuggestions(cities, query) {
+      if (cities.length === 0) {
+        citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af">${currentLang === 'zh' ? '未找到匹配城市' : 'No matching city found'}</div>`;
+        citySuggestions.style.display = 'block';
+        return;
+      }
+
+      const isZh = isChinese(query);
+      citySuggestions.innerHTML = cities.map(city => {
+        const displayName = currentLang === 'zh' ? `${city.zh} (${city.en})` : `${city.en} (${city.zh})`;
+        return `
+          <div class="city-option"
+               data-lat="${city.lat}"
+               data-lon="${city.lon}"
+               data-zh="${city.zh}"
+               data-en="${city.en}"
+               data-tz="${city.tz}"
+               style="padding:12px;cursor:pointer;border-bottom:1px solid rgba(0,255,157,0.1);color:#d4d4d8;transition:background 0.2s">
+            📍 ${displayName}
+            <span style="float:right;color:#6b7280;font-size:12px">${city.tz}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Add click handlers
+      document.querySelectorAll('.city-option').forEach(option => {
+        option.addEventListener('mouseenter', () => {
+          option.style.background = 'rgba(0,255,157,0.15)';
+        });
+        option.addEventListener('mouseleave', () => {
+          option.style.background = 'transparent';
+        });
+        option.addEventListener('click', () => {
+          selectCity({
+            lat: parseFloat(option.dataset.lat),
+            lon: parseFloat(option.dataset.lon),
+            zh: option.dataset.zh,
+            en: option.dataset.en,
+            tz: option.dataset.tz
+          });
+        });
+      });
+
+      citySuggestions.style.display = 'block';
+    }
+
+    // Handle input - instant search on every keystroke
     locationInput.addEventListener('input', (e) => {
       const query = e.target.value.trim();
 
-      clearTimeout(searchTimeout);
-
-      if (query.length < 2) {
+      if (query.length === 0) {
         citySuggestions.style.display = 'none';
         return;
       }
 
-      searchTimeout = setTimeout(() => searchCity(query), 500);
+      // Instant local search - no debounce needed
+      const results = searchCities(query);
+      renderSuggestions(results, query);
     });
 
-    async function searchCity(query) {
-      try {
-        citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af">${translations[currentLang].searching}</div>`;
-        citySuggestions.style.display = 'block';
+    // Select city and auto-fill timezone
+    function selectCity(city) {
+      selectedCity = {
+        lat: city.lat,
+        lon: city.lon,
+        displayName: currentLang === 'zh' ? city.zh : city.en
+      };
+      selectedTimezone = city.tz;
 
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?` +
-          `format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`,
-          {
-            headers: {
-              'User-Agent': 'NatalCodex-App/1.0'
-            }
-          }
-        );
-
-        if (!response.ok) throw new Error('Search failed');
-
-        const places = await response.json();
-
-        if (places.length === 0) {
-          citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af">No results found</div>`;
-          return;
-        }
-
-        citySuggestions.innerHTML = places.map(place => `
-          <div class="city-option"
-               data-lat="${place.lat}"
-               data-lon="${place.lon}"
-               data-name="${place.display_name}"
-               style="padding:12px;cursor:pointer;border-bottom:1px solid rgba(0,255,157,0.1);color:#d4d4d8;transition:background 0.2s">
-            📍 ${place.display_name}
-          </div>
-        `).join('');
-
-        // Add click handlers to each option
-        document.querySelectorAll('.city-option').forEach(option => {
-          option.addEventListener('mouseenter', () => {
-            option.style.background = 'rgba(0,255,157,0.15)';
-          });
-          option.addEventListener('mouseleave', () => {
-            option.style.background = 'transparent';
-          });
-          option.addEventListener('click', () => {
-            selectCity({
-              lat: parseFloat(option.dataset.lat),
-              lon: parseFloat(option.dataset.lon),
-              displayName: option.dataset.name
-            });
-          });
-        });
-
-      } catch (error) {
-        console.error('City search failed:', error);
-        citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#fca5a5">Search failed</div>`;
-      }
-    }
-
-    async function selectCity(city) {
-      selectedCity = city;
-      locationInput.value = city.displayName;
-      citySuggestions.style.display = 'none';
-
-      // Get timezone from coordinates
-      const timezone = await getTimezoneFromCoords(city.lat, city.lon);
-      selectedTimezone = timezone;
-
-      timezoneInput.value = timezone;
+      locationInput.value = currentLang === 'zh' ? `${city.zh} (${city.en})` : `${city.en} (${city.zh})`;
+      timezoneInput.value = city.tz;
       timezoneGroup.style.display = 'block';
-    }
-
-    async function getTimezoneFromCoords(lat, lon) {
-      try {
-        // Use TimeZoneDB API (free tier: 1 request/second)
-        // Alternative: Use browser's timezone as fallback
-        const browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-        // For production, you'd call a timezone API like:
-        // const response = await fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=YOUR_KEY&format=json&by=position&lat=${lat}&lng=${lon}`);
-
-        // For now, use a simple estimation based on longitude
-        const offset = Math.round(lon / 15);
-        const tzNames = {
-          '-12': 'Pacific/Wake',
-          '-11': 'Pacific/Midway',
-          '-10': 'Pacific/Honolulu',
-          '-9': 'America/Anchorage',
-          '-8': 'America/Los_Angeles',
-          '-7': 'America/Denver',
-          '-6': 'America/Chicago',
-          '-5': 'America/New_York',
-          '-4': 'America/Halifax',
-          '-3': 'America/Argentina/Buenos_Aires',
-          '-2': 'Atlantic/South_Georgia',
-          '-1': 'Atlantic/Azores',
-          '0': 'Europe/London',
-          '1': 'Europe/Paris',
-          '2': 'Europe/Athens',
-          '3': 'Europe/Moscow',
-          '4': 'Asia/Dubai',
-          '5': 'Asia/Karachi',
-          '6': 'Asia/Dhaka',
-          '7': 'Asia/Bangkok',
-          '8': 'Asia/Shanghai',
-          '9': 'Asia/Tokyo',
-          '10': 'Australia/Sydney',
-          '11': 'Pacific/Noumea',
-          '12': 'Pacific/Fiji'
-        };
-
-        return tzNames[offset.toString()] || browserTz;
-
-      } catch (error) {
-        console.error('Timezone detection failed:', error);
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
-      }
+      citySuggestions.style.display = 'none';
     }
 
     // Close suggestions when clicking outside
     document.addEventListener('click', (e) => {
       if (!locationInput.contains(e.target) && !citySuggestions.contains(e.target)) {
+        citySuggestions.style.display = 'none';
+      }
+    });
+
+    // Handle keyboard navigation
+    locationInput.addEventListener('keydown', (e) => {
+      const options = citySuggestions.querySelectorAll('.city-option');
+      if (options.length === 0) return;
+
+      let currentIndex = Array.from(options).findIndex(opt => opt.style.background.includes('0,255,157'));
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (currentIndex >= 0) options[currentIndex].style.background = 'transparent';
+        currentIndex = (currentIndex + 1) % options.length;
+        options[currentIndex].style.background = 'rgba(0,255,157,0.15)';
+        options[currentIndex].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (currentIndex >= 0) options[currentIndex].style.background = 'transparent';
+        currentIndex = currentIndex <= 0 ? options.length - 1 : currentIndex - 1;
+        options[currentIndex].style.background = 'rgba(0,255,157,0.15)';
+        options[currentIndex].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter' && currentIndex >= 0) {
+        e.preventDefault();
+        options[currentIndex].click();
+      } else if (e.key === 'Escape') {
         citySuggestions.style.display = 'none';
       }
     });
