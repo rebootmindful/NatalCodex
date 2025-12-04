@@ -340,7 +340,7 @@
 
           <div class="form-group">
             <label for="date" data-i18n="labelDate">出生日期</label>
-            <input type="date" id="date" name="date" required>
+            <input type="date" id="date" name="date" required max="">
           </div>
 
           <div class="form-group">
@@ -349,12 +349,12 @@
             <div class="help-text" data-i18n="helpTime">请尽量精确到分钟，用于计算真太阳时</div>
           </div>
 
-          <div class="form-group full">
+          <div class="form-group full" style="position:relative">
             <label for="location" data-i18n="labelLocation">出生地点</label>
             <input type="text" id="location" name="location" data-i18n-placeholder="placeholderLocation" placeholder="例如：北京市海淀区" required autocomplete="off">
             <div class="help-text" data-i18n="helpLocation">具体到城市或区县即可，用于真太阳时修正</div>
             <!-- City suggestions dropdown -->
-            <div id="citySuggestions" style="display:none;position:absolute;z-index:20;width:calc(100% - 32px);background:#0a0e27;border:1px solid rgba(0,255,157,0.5);border-radius:8px;margin-top:4px;max-height:200px;overflow-y:auto"></div>
+            <div id="citySuggestions" style="display:none;position:absolute;left:0;right:0;z-index:20;background:#0a0e27;border:1px solid rgba(0,255,157,0.5);border-radius:8px;margin-top:4px;max-height:200px;overflow-y:auto;top:100%"></div>
           </div>
 
           <div class="form-group full" id="timezoneGroup" style="display:none">
@@ -491,6 +491,10 @@
 
     // Initialize language
     updateLanguage(currentLang);
+
+    // Set max date to today (can't select future dates)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').setAttribute('max', today);
 
     // Language switcher
     document.getElementById('langSwitch').addEventListener('click', () => {
@@ -897,13 +901,29 @@
         document.getElementById('gender').value = '女';
         document.getElementById('date').value = '1999-08-08';
         document.getElementById('time').value = '14:30';
-        document.getElementById('location').value = '上海';
+        // Set Shanghai city data
+        const shanghaiCity = cityDatabase.find(c => c.zh === '上海');
+        if (shanghaiCity) {
+          selectedCity = { lat: shanghaiCity.lat, lon: shanghaiCity.lon, displayName: shanghaiCity.zh };
+          selectedTimezone = shanghaiCity.tz;
+          document.getElementById('location').value = `${shanghaiCity.zh} (${shanghaiCity.en})`;
+          document.getElementById('timezone').value = shanghaiCity.tz;
+          document.getElementById('timezoneGroup').style.display = 'block';
+        }
       } else {
         document.getElementById('name').value = 'Emma Johnson';
         document.getElementById('gender').value = '女'; // Female
         document.getElementById('date').value = '1999-08-08';
         document.getElementById('time').value = '14:30';
-        document.getElementById('location').value = 'New York';
+        // Set New York city data
+        const nyCity = cityDatabase.find(c => c.en === 'New York');
+        if (nyCity) {
+          selectedCity = { lat: nyCity.lat, lon: nyCity.lon, displayName: nyCity.en };
+          selectedTimezone = nyCity.tz;
+          document.getElementById('location').value = `${nyCity.en} (${nyCity.zh})`;
+          document.getElementById('timezone').value = nyCity.tz;
+          document.getElementById('timezoneGroup').style.display = 'block';
+        }
       }
 
       fillDemoBtn.innerHTML = `✅ <span data-i18n="demoFilled">${translations[currentLang].demoFilled}</span>`;

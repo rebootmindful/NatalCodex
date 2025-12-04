@@ -1,16 +1,13 @@
 /**
- * Main API endpoint for complete report + image generation
- * Uses APIMart: Gemini 3 Pro for analysis + Gemini 3 Pro Image for card
+ * Main API endpoint for BaZi + MBTI report generation
+ * Uses APIMart: GPT-4o-mini for analysis
  */
 
-// APIMart Configuration (inline to avoid Vercel routing issues)
+// APIMart Configuration
 const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
-  MODELS: {
-    CHAT: 'gpt-4o-mini',  // Switch to GPT-4o-mini - Gemini has token issues
-    IMAGE: 'gemini-3-pro-image-preview'
-  }
+  MODEL: 'gpt-4o-mini'
 };
 
 module.exports = async (req, res) => {
@@ -96,7 +93,7 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: config.MODELS.CHAT,
+            model: config.MODEL,
             messages: [
               { role: 'user', content: prompt }
             ],
@@ -248,145 +245,6 @@ ${content}
       analysis,
       status: 'report_only',
       message: 'Professional BaZi + MBTI analysis completed (full AI-generated report)'
-    });
-
-    // Step 3: Create image generation task (DISABLED)
-    console.log('[GenerateWithAPImart] Step 3/4: Creating image task...');
-
-    // Ultra-simplified image prompt - minimal description for faster generation
-    const imagePrompt = `Vertical mystical card, 9:16 ratio. Purple-black starry background. Golden Chinese title at top: "${birthData.name}的灵魂契合卡". Center: large golden text "${analysis.soul_title}". Traditional BaZi symbols on left, MBTI ${analysis.mbti.type} chart on right. Chinese calligraphy banner at bottom. Holographic neon style.`;
-
-    // Call APIMart Image API directly with timeout handling
-    let imageResponse;
-    try {
-      imageResponse = await fetch(`${config.BASE_URL}/images/generations`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${config.API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: config.MODELS.IMAGE,
-          prompt: imagePrompt,
-          size: '1024x1792',
-          quality: 'standard',  // Use standard instead of hd for faster generation
-          n: 1
-        })
-      });
-
-      if (!imageResponse.ok) {
-        const errorText = await imageResponse.text();
-        console.error('[GenerateWithAPImart] Image API Error:', imageResponse.status, errorText);
-
-        // If image generation fails, return report without image
-        console.warn('[GenerateWithAPImart] Image generation failed, returning report only');
-        return res.json({
-          success: true,
-          orderId,
-          reportContent,
-          imageUrl: null,
-          analysis,
-          status: 'partial',
-          message: 'Report ready, image generation failed'
-        });
-      }
-    } catch (imageError) {
-      console.error('[GenerateWithAPImart] Image API request failed:', imageError.message);
-      // Return report without image if request fails
-      return res.json({
-        success: true,
-        orderId,
-        reportContent,
-        imageUrl: null,
-        analysis,
-        status: 'partial',
-        message: 'Report ready, image generation unavailable'
-      });
-    }
-
-    const imageData = await imageResponse.json();
-    const taskId = imageData.task_id || (imageData.data && imageData.data.taskId);
-
-    if (!taskId) {
-      console.error('[GenerateWithAPImart] No task_id in response:', imageData);
-      throw new Error('No task_id returned from Image API');
-    }
-
-    console.log('[GenerateWithAPImart] Image task created:', taskId);
-
-    // Step 4: Poll for image completion
-    console.log('[GenerateWithAPImart] Step 4/4: Waiting for image...');
-
-    let imageUrl = null;
-    let attempts = 0;
-    const maxAttempts = 15; // 30 seconds timeout (2s interval) - tighter timeout
-
-    // Wait 3 seconds before first check (give image generation time to start)
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    while (attempts < maxAttempts) {
-      attempts++;
-
-      // Call APIMart Task Query API directly
-      const queryResponse = await fetch(`${config.BASE_URL}/tasks/${taskId}`, {
-        headers: {
-          'Authorization': `Bearer ${config.API_KEY}`
-        }
-      });
-
-      if (!queryResponse.ok) {
-        console.error('[GenerateWithAPImart] Query failed, attempt', attempts, '- Status:', queryResponse.status);
-        continue;
-      }
-
-      const taskData = await queryResponse.json();
-
-      console.log('[GenerateWithAPImart] Poll attempt', attempts, '- Status:', taskData.status);
-
-      // Wait 2 seconds before next check
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Extract image URL if task is completed
-      if (taskData.status === 'completed' && taskData.result && taskData.result.data) {
-        if (Array.isArray(taskData.result.data) && taskData.result.data.length > 0) {
-          imageUrl = taskData.result.data[0].url || taskData.result.data[0].image_url;
-        }
-        if (imageUrl) {
-          console.log('[GenerateWithAPImart] Image ready:', imageUrl);
-          break;
-        }
-      } else if (taskData.status === 'failed') {
-        throw new Error(`Image generation failed: ${taskData.error || 'Unknown error'}`);
-      }
-    }
-
-    if (!imageUrl) {
-      // Timeout, but return report anyway with taskId for frontend polling
-      console.warn('[GenerateWithAPImart] Image generation timeout after', attempts, 'attempts');
-      console.warn('[GenerateWithAPImart] Returning report with taskId for frontend polling');
-      return res.json({
-        success: true,
-        orderId,
-        reportContent,
-        imageUrl: null,
-        analysis,
-        taskId,  // Return taskId so frontend can continue polling
-        pollUrl: `${config.BASE_URL}/tasks/${taskId}`,  // Direct poll URL for frontend
-        status: 'partial',
-        message: `Report ready, image still processing (taskId: ${taskId}). Frontend can continue polling.`
-      });
-    }
-
-    // Success! Return everything
-    console.log('[GenerateWithAPImart] Complete flow finished successfully');
-
-    res.json({
-      success: true,
-      orderId,
-      reportContent,
-      imageUrl,
-      analysis,
-      status: 'complete'
     });
 
   } catch (error) {

@@ -42,13 +42,17 @@
 </head>
 <body>
   <div class="bg-layer"></div>
+  <!-- Language Switcher -->
+  <button id="langSwitch" style="position:fixed;top:20px;right:20px;z-index:100;padding:10px 16px;background:rgba(10,14,39,.65);border:1px solid rgba(0,255,157,.35);border-radius:10px;color:#e5e7eb;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s ease">
+    🌐 <span id="langText">EN</span>
+  </button>
   <div class="container">
     <div class="left">
       <div class="logo">NatalCodex</div>
-      <div class="tagline">Unlock the Source Code of Your Soul</div>
-      <div class="sub">Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.</div>
+      <div class="tagline" data-i18n="tagline">Unlock the Source Code of Your Soul</div>
+      <div class="sub" data-i18n="subtitle">Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.</div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a class="cta" href="generate.html">生成报告</a>
+        <a class="cta" href="generate.html" data-i18n="btnGenerate">生成报告</a>
       </div>
     </div>
     <div class="right">
@@ -65,10 +69,57 @@
     <a href="#login">Login</a>
   </nav>
   <script>
+    // Translation system
+    const translations = {
+      zh: {
+        tagline: '解锁你灵魂的源代码',
+        subtitle: '融合古老东方智慧与现代心理学，发现你的人格蓝图。输入出生信息，生成专属的灵魂卡片和深度分析报告。',
+        btnGenerate: '生成报告'
+      },
+      en: {
+        tagline: 'Unlock the Source Code of Your Soul',
+        subtitle: 'Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.',
+        btnGenerate: 'Generate Report'
+      }
+    };
+
+    let currentLang = localStorage.getItem('nc_language') || 'zh';
+
+    function updateLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('nc_language', lang);
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          el.textContent = translations[lang][key];
+        }
+      });
+      document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
+    }
+
+    // Initialize
+    updateLanguage(currentLang);
+
+    // Language switcher
+    document.getElementById('langSwitch').addEventListener('click', function() {
+      updateLanguage(currentLang === 'zh' ? 'en' : 'zh');
+    });
+
+    // Hover effect for lang switch
+    document.getElementById('langSwitch').addEventListener('mouseenter', function() {
+      this.style.background = 'linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%)';
+      this.style.color = '#0a0e27';
+      this.style.borderColor = 'transparent';
+    });
+    document.getElementById('langSwitch').addEventListener('mouseleave', function() {
+      this.style.background = 'rgba(10,14,39,.65)';
+      this.style.color = '#e5e7eb';
+      this.style.borderColor = 'rgba(0,255,157,.35)';
+    });
+
+    // Parallax effect
     document.addEventListener('mousemove',function(e){var m=document.querySelector('.mandala-wrap');var c=document.querySelector('.card');var x=(e.clientX-window.innerWidth/2)*0.01;var y=(e.clientY-window.innerHeight/2)*0.01;if(m){m.style.transform='translate('+x+'px,'+y+'px)'}if(c){c.style.transform='translateY(-50%) translate('+(x*1.6)+'px,'+(y*1.6)+'px)'}});
     document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'})}})});
-    var demo=document.getElementById('tryDemo');
-    if(demo){demo.addEventListener('click',function(e){e.preventDefault();try{localStorage.setItem('nc_test_mode','1')}catch(_){};window.location.href='input.html?test=1'})}
   </script>
 </body>
 </html>
