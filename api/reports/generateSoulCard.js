@@ -144,41 +144,60 @@ async function pollTaskResult(taskId) {
     const queryData = await queryResponse.json();
     console.log('[GenerateSoulCard] Task response:', JSON.stringify(queryData, null, 2));
 
-    // Check task status - handle various response formats
-    const status = queryData.data?.status || queryData.status || queryData.code;
+    // Extract all possible status indicators
+    const status = queryData.data?.status || queryData.status;
+    const code = queryData.code || queryData.data?.code;
     const failCode = queryData.data?.failCode || queryData.failCode;
     const failMsg = queryData.data?.failMsg || queryData.failMsg;
+    const error = queryData.error || queryData.data?.error;
 
-    console.log('[GenerateSoulCard] Status:', status, 'FailCode:', failCode, 'FailMsg:', failMsg);
+    console.log('[GenerateSoulCard] Parsed status:', { status, code, failCode, failMsg, error });
 
-    // Check for failure first
-    if (failCode || failMsg || status === 'failed' || status === 'error') {
-      const errorMsg = failMsg || failCode || 'Task failed (unknown reason)';
-      console.error('[GenerateSoulCard] Task failed:', errorMsg);
-      throw new Error(`Generation failed: ${errorMsg}`);
-    }
+    // Try to find image URL in any location (check this first!)
+    const imageUrl = queryData.data?.output?.image_url ||
+                     queryData.data?.output?.url ||
+                     queryData.data?.result?.url ||
+                     queryData.data?.result?.image_url ||
+                     queryData.data?.url ||
+                     queryData.data?.image_url ||
+                     queryData.data?.output?.[0]?.url ||
+                     queryData.data?.output?.[0]?.image_url ||
+                     queryData.data?.images?.[0]?.url ||
+                     queryData.data?.images?.[0] ||
+                     queryData.output?.url ||
+                     queryData.result?.url ||
+                     queryData.url ||
+                     queryData.image_url;
 
-    if (status === 'completed' || status === 'success' || status === 200) {
-      // Task completed - try multiple possible paths for image URL
-      const imageUrl = queryData.data?.output?.image_url ||
-                       queryData.data?.output?.url ||
-                       queryData.data?.result?.url ||
-                       queryData.data?.result?.image_url ||
-                       queryData.data?.url ||
-                       queryData.data?.image_url ||
-                       queryData.data?.output?.[0]?.url ||
-                       queryData.data?.images?.[0]?.url ||
-                       queryData.data?.images?.[0] ||
-                       queryData.output?.url ||
-                       queryData.result?.url;
-
-      if (!imageUrl) {
-        console.error('[GenerateSoulCard] No image URL found in response. Full data:', JSON.stringify(queryData, null, 2));
-        throw new Error('Task completed but no image URL found in response');
-      }
-
+    // If we found an image URL, return it immediately
+    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
+      console.log('[GenerateSoulCard] Found image URL:', imageUrl);
       return imageUrl;
     }
+
+    // Check for explicit failure
+    if (failCode || failMsg || error || status === 'failed' || status === 'error') {
+      const errorMsg = failMsg || error || failCode || 'Task failed';
+      console.error('[GenerateSoulCard] Task failed with:', errorMsg);
+      throw new Error(`Generation failed: ${typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg}`);
+    }
+
+    // Check for success status but no image (might need different path)
+    if (status === 'completed' || status === 'success' || code === 200) {
+      console.error('[GenerateSoulCard] Task completed but no image URL. Checking all data paths...');
+      console.error('[GenerateSoulCard] queryData.data:', JSON.stringify(queryData.data, null, 2));
+      throw new Error('Task completed but image URL not found. Check logs for response structure.');
+    }
+
+    // Check for processing/pending status
+    if (status === 'processing' || status === 'pending' || status === 'submitted' || status === 'running') {
+      console.log('[GenerateSoulCard] Task still processing, status:', status);
+      await sleep(POLL_INTERVAL);
+      continue;
+    }
+
+    // Unknown status - log and continue polling
+    console.log('[GenerateSoulCard] Unknown status:', status, '- continuing to poll...');
 
     // Still processing - wait and poll again
     await sleep(POLL_INTERVAL);
