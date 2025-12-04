@@ -142,30 +142,42 @@ async function pollTaskResult(taskId) {
     }
 
     const queryData = await queryResponse.json();
-    console.log('[GenerateSoulCard] Task status:', JSON.stringify(queryData, null, 2));
+    console.log('[GenerateSoulCard] Task response:', JSON.stringify(queryData, null, 2));
 
-    // Check task status
-    const status = queryData.data?.status || queryData.status;
+    // Check task status - handle various response formats
+    const status = queryData.data?.status || queryData.status || queryData.code;
+    const failCode = queryData.data?.failCode || queryData.failCode;
+    const failMsg = queryData.data?.failMsg || queryData.failMsg;
 
-    if (status === 'completed' || status === 'success') {
-      // Task completed - extract image URL
+    console.log('[GenerateSoulCard] Status:', status, 'FailCode:', failCode, 'FailMsg:', failMsg);
+
+    // Check for failure first
+    if (failCode || failMsg || status === 'failed' || status === 'error') {
+      const errorMsg = failMsg || failCode || 'Task failed (unknown reason)';
+      console.error('[GenerateSoulCard] Task failed:', errorMsg);
+      throw new Error(`Generation failed: ${errorMsg}`);
+    }
+
+    if (status === 'completed' || status === 'success' || status === 200) {
+      // Task completed - try multiple possible paths for image URL
       const imageUrl = queryData.data?.output?.image_url ||
+                       queryData.data?.output?.url ||
                        queryData.data?.result?.url ||
+                       queryData.data?.result?.image_url ||
                        queryData.data?.url ||
+                       queryData.data?.image_url ||
                        queryData.data?.output?.[0]?.url ||
-                       queryData.data?.images?.[0]?.url;
+                       queryData.data?.images?.[0]?.url ||
+                       queryData.data?.images?.[0] ||
+                       queryData.output?.url ||
+                       queryData.result?.url;
 
       if (!imageUrl) {
-        console.error('[GenerateSoulCard] No image URL in completed task:', queryData);
-        throw new Error('Task completed but no image URL found');
+        console.error('[GenerateSoulCard] No image URL found in response. Full data:', JSON.stringify(queryData, null, 2));
+        throw new Error('Task completed but no image URL found in response');
       }
 
       return imageUrl;
-    }
-
-    if (status === 'failed' || status === 'error') {
-      const errorMsg = queryData.data?.error || queryData.error || 'Task failed';
-      throw new Error(`Image generation failed: ${errorMsg}`);
     }
 
     // Still processing - wait and poll again
