@@ -1,6 +1,11 @@
 /**
  * Soul Card Image Generation API
  * Uses APIMart: gemini-3-pro-image-preview for image generation
+ *
+ * API is asynchronous:
+ * 1. Submit task -> get task_id
+ * 2. Poll task status until completed
+ * 3. Return image URL
  */
 
 const config = {
@@ -8,6 +13,10 @@ const config = {
   BASE_URL: 'https://api.apimart.ai/v1',
   IMAGE_MODEL: 'gemini-3-pro-image-preview'
 };
+
+// Polling configuration
+const POLL_INTERVAL = 2000; // 2 seconds
+const MAX_POLL_TIME = 120000; // 2 minutes max
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -33,7 +42,7 @@ module.exports = async (req, res) => {
     // Build the image generation prompt
     let imagePrompt;
     if (isEnglish) {
-      imagePrompt = `Generate a tall vertical "Soul Card" (1080x3200+) in nanobanana pro style:
+      imagePrompt = `Generate a tall vertical "Soul Card" in nanobanana pro style:
 - Top: Golden seal script title "【${name}】's Soul Card"
 - Left: Ink wash style BaZi chart: ${extractedInfo.bazi || 'Four Pillars destiny'}
 - Right: Cyber style MBTI: ${extractedInfo.mbti || 'Personality type'} cognitive stack
@@ -42,7 +51,7 @@ module.exports = async (req, res) => {
 - Colors: Black-purple starry background + neon five-element colors + gold foil
 - Style: Cyber Taoist fusion, mystical tech aesthetic`;
     } else {
-      imagePrompt = `用 nanobanana pro 风格生成一张超长竖版「灵魂契合卡」（尺寸 1080×3200 以上），布局：
+      imagePrompt = `用 nanobanana pro 风格生成一张竖版「灵魂契合卡」，布局：
 - 顶部金色篆体标题：【${name}】的灵魂契合卡
 - 左侧水墨风八字命盘：${extractedInfo.bazi || '四柱八字'}
 - 右侧赛博风MBTI：${extractedInfo.mbti || '人格类型'}认知功能栈
@@ -52,10 +61,10 @@ module.exports = async (req, res) => {
     }
 
     console.log('[GenerateSoulCard] Image prompt length:', imagePrompt.length);
-    console.log('[GenerateSoulCard] Calling image API...');
+    console.log('[GenerateSoulCard] Submitting image generation task...');
 
-    // Call APIMart Image Generation API
-    const imageResponse = await fetch(`${config.BASE_URL}/images/generations`, {
+    // Step 1: Submit task to get task_id
+    const submitResponse = await fetch(`${config.BASE_URL}/images/generations`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${config.API_KEY}`,
@@ -64,35 +73,40 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: config.IMAGE_MODEL,
         prompt: imagePrompt,
-        n: 1,
-        size: '1024x1024', // Will be adjusted by model if it supports custom sizes
-        response_format: 'url'
+        size: '9:16',  // Vertical aspect ratio for Soul Card
+        resolution: '1K',
+        n: 1
       })
     });
 
-    if (!imageResponse.ok) {
-      const errorText = await imageResponse.text();
-      console.error('[GenerateSoulCard] Image API Error:', imageResponse.status, errorText);
-      throw new Error(`Image API returned ${imageResponse.status}: ${errorText.substring(0, 200)}`);
+    if (!submitResponse.ok) {
+      const errorText = await submitResponse.text();
+      console.error('[GenerateSoulCard] Submit Error:', submitResponse.status, errorText);
+      throw new Error(`Submit failed: ${submitResponse.status} - ${errorText.substring(0, 200)}`);
     }
 
-    const imageData = await imageResponse.json();
-    console.log('[GenerateSoulCard] Image API response:', JSON.stringify(imageData, null, 2));
+    const submitData = await submitResponse.json();
+    console.log('[GenerateSoulCard] Submit response:', JSON.stringify(submitData, null, 2));
 
-    // Extract image URL from response
-    const imageUrl = imageData.data?.[0]?.url || imageData.data?.[0]?.b64_json;
-
-    if (!imageUrl) {
-      console.error('[GenerateSoulCard] No image URL in response:', imageData);
-      throw new Error('No image URL returned from API');
+    // Extract task_id from response
+    const taskId = submitData.data?.[0]?.task_id;
+    if (!taskId) {
+      console.error('[GenerateSoulCard] No task_id in response:', submitData);
+      throw new Error('No task_id returned from API');
     }
+
+    console.log('[GenerateSoulCard] Task ID:', taskId);
+
+    // Step 2: Poll for task completion
+    const imageUrl = await pollTaskResult(taskId);
 
     console.log('[GenerateSoulCard] Success! Image URL:', imageUrl.substring(0, 100) + '...');
 
     return res.json({
       success: true,
       imageUrl,
-      extractedInfo
+      extractedInfo,
+      taskId
     });
 
   } catch (error) {
@@ -103,6 +117,67 @@ module.exports = async (req, res) => {
     });
   }
 };
+
+/**
+ * Poll task status until completed or timeout
+ */
+async function pollTaskResult(taskId) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < MAX_POLL_TIME) {
+    console.log('[GenerateSoulCard] Polling task:', taskId);
+
+    const queryResponse = await fetch(`${config.BASE_URL}/tasks/${taskId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${config.API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!queryResponse.ok) {
+      const errorText = await queryResponse.text();
+      console.error('[GenerateSoulCard] Query Error:', queryResponse.status, errorText);
+      throw new Error(`Query failed: ${queryResponse.status}`);
+    }
+
+    const queryData = await queryResponse.json();
+    console.log('[GenerateSoulCard] Task status:', JSON.stringify(queryData, null, 2));
+
+    // Check task status
+    const status = queryData.data?.status || queryData.status;
+
+    if (status === 'completed' || status === 'success') {
+      // Task completed - extract image URL
+      const imageUrl = queryData.data?.output?.image_url ||
+                       queryData.data?.result?.url ||
+                       queryData.data?.url ||
+                       queryData.data?.output?.[0]?.url ||
+                       queryData.data?.images?.[0]?.url;
+
+      if (!imageUrl) {
+        console.error('[GenerateSoulCard] No image URL in completed task:', queryData);
+        throw new Error('Task completed but no image URL found');
+      }
+
+      return imageUrl;
+    }
+
+    if (status === 'failed' || status === 'error') {
+      const errorMsg = queryData.data?.error || queryData.error || 'Task failed';
+      throw new Error(`Image generation failed: ${errorMsg}`);
+    }
+
+    // Still processing - wait and poll again
+    await sleep(POLL_INTERVAL);
+  }
+
+  throw new Error('Image generation timeout (2 minutes)');
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * Extract BaZi, MBTI, and Soul Title from report content
