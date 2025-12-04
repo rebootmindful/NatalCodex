@@ -14,7 +14,10 @@ const config = {
 };
 
 function buildReportFromAnalysis(analysis, birthData) {
-  const { bazi, mbti, soul_title, summary } = analysis;
+  const { bazi, mbti, soul_title, summary, mapping } = analysis;
+
+  // Support both old format (bazi.year) and new format (bazi.sizhu.year)
+  const sizhu = bazi.sizhu || { year: bazi.year, month: bazi.month, day: bazi.day, hour: bazi.hour };
 
   return `# ${birthData.name}的灵魂契合卡报告
 
@@ -24,13 +27,17 @@ function buildReportFromAnalysis(analysis, birthData) {
 - 性别：${birthData.gender}
 
 ## 八字命盘
-**四柱：** ${bazi.year} ${bazi.month} ${bazi.day} ${bazi.hour}
+**四柱：** ${sizhu.year} ${sizhu.month} ${sizhu.day} ${sizhu.hour}
 
 **十神：** ${bazi.shishen.join('  ')}
 
-**格局：** ${bazi.geju}
+**格局：** ${bazi.geju}${bazi.geju_level ? ` (${bazi.geju_level})` : ''}
 
-**用神：** ${bazi.yongshen}
+**日主旺衰：** ${bazi.rizhu_wangshui || '未知'}
+
+**用神：** ${bazi.yongshen}${bazi.jishen ? ` | 忌神：${bazi.jishen}` : ''}
+
+**大运起运：** ${bazi.dayun_qiyun || '未知'}
 
 **五行强度分布：**
 - 木：${bazi.wuxing_strength.wood}%
@@ -52,10 +59,17 @@ function buildReportFromAnalysis(analysis, birthData) {
 
 **功能描述：** ${mbti.description}
 
+${mbti.reasoning ? `\n**MBTI推理过程：**\n${mbti.reasoning}\n` : ''}
+
 ## 灵魂称号
 **${soul_title}**
 
+${mapping ? `\n**八字与MBTI映射关系：**\n${mapping}\n` : ''}
+
 ## 综合评价
+${summary}
+
+## 朋友圈文案 📱
 ${summary}
 
 ---
@@ -81,16 +95,43 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Ultra-minimal prompt - essential info only
-    const prompt = `Analyze BaZi & MBTI for: ${birthData.name}, ${birthData.gender}, born ${birthData.date} ${birthData.time} at ${birthData.location}
+    // Professional BaZi + MBTI analysis prompt
+    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
 
-Return ONLY valid JSON (no markdown):
+我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
+
+请严格按以下执行：
+
+1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
+2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
+3. 通过深度推导（模拟专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理）
+4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）
+5. 最后单独输出一份纯文字总结我的MBTI，方便复制发朋友圈
+
+返回格式必须为JSON：
 {
-  "bazi": {"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午","shishen":["偏印","食神","比肩","偏财"],"yongshen":"水","geju":"食神生财格","wuxing_strength":{"wood":15,"fire":35,"earth":20,"metal":10,"water":20}},
-  "mbti": {"type":"INTJ","functions":["Ni主导","Te辅助","Fi第三","Se劣势"],"radar_scores":{"EI":30,"SN":80,"TF":70,"JP":65},"description":"内向直觉型战略家"},
-  "soul_title":"戊土建筑师·INTJ",
-  "wuxing_colors":{"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"},
-  "summary":"戊土身旺食神生财，内向直觉主导"
+  "bazi": {
+    "sizhu": {"year":"甲子","month":"丙寅","day":"戊辰","hour":"庚午"},
+    "shishen": ["偏印","食神","比肩","偏财"],
+    "yongshen": "水",
+    "jishen": "火",
+    "geju": "食神生财格",
+    "geju_level": "中上",
+    "rizhu_wangshui": "身旺",
+    "dayun_qiyun": "3岁",
+    "wuxing_strength": {"wood":15,"fire":35,"earth":20,"metal":10,"water":20}
+  },
+  "mbti": {
+    "type": "INTJ",
+    "functions": ["Ni主导","Te辅助","Fi第三","Se劣势"],
+    "reasoning": "基于日主戊土身旺，内向型格局，偏印主导内在直觉...",
+    "radar_scores": {"EI":30,"SN":80,"TF":70,"JP":65},
+    "description": "内向直觉型战略家"
+  },
+  "soul_title": "戊土建筑师·INTJ",
+  "mapping": "日主戊土稳重务实对应Te辅助功能，偏印透干对应Ni主导...",
+  "summary": "你是INTJ型人格，内向直觉型战略家。Ni主导让你善于洞察本质，Te辅助让你高效执行，Fi第三让你有内在价值观，Se劣势让你不太关注当下感官体验。你的思维方式是先建立宏观框架，再逻辑拆解，适合做战略规划、系统设计类工作。人际上偏独立，重视深度而非广度。",
+  "wuxing_colors": {"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"}
 }`;
 
     // Call APIMart Chat API directly with retry logic
@@ -112,8 +153,8 @@ Return ONLY valid JSON (no markdown):
             messages: [
               { role: 'user', content: prompt }
             ],
-            temperature: 0.1,
-            max_tokens: 2048,  // Balanced: enough for JSON response, not too large for timeout
+            temperature: 0.3,
+            max_tokens: 4096,  // Increased for detailed professional analysis
             stream: false
           })
         });
@@ -264,7 +305,19 @@ Return ONLY valid JSON (no markdown):
     console.log('[GenerateWithAPImart] Step 2/4: Building report...');
     const reportContent = buildReportFromAnalysis(analysis, birthData);
 
-    // Step 3: Create image generation task
+    // TEMPORARILY SKIP IMAGE GENERATION - focus on text report quality first
+    console.log('[GenerateWithAPImart] Skipping image generation for now');
+    return res.json({
+      success: true,
+      orderId,
+      reportContent,
+      imageUrl: null,
+      analysis,
+      status: 'report_only',
+      message: 'Professional BaZi + MBTI analysis completed (image generation disabled)'
+    });
+
+    // Step 3: Create image generation task (DISABLED)
     console.log('[GenerateWithAPImart] Step 3/4: Creating image task...');
 
     // Ultra-simplified image prompt - minimal description for faster generation
