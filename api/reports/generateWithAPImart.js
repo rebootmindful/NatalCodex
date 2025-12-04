@@ -30,19 +30,14 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // User's custom prompt - simplified to prevent token overflow
-    const prompt = `你精通八字命理(渊海子平、滴天髓、三命通会、穷通宝鉴)和MBTI理论。
+    // Ultra-compact prompt to minimize token usage
+    const prompt = `八字+MBTI分析：${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男' : '女'}，${birthData.location}
 
-出生信息：${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男' : '女'}，${birthData.location}
-
-请输出：
-1. 真太阳时四柱八字、十神、神煞、大运起运
-2. 日主旺衰、用神忌神、格局层级
-3. MBTI类型推导(详细推理过程)、认知功能栈
-4. 八字→MBTI映射，创建灵魂称号(如"庚金剑修·INTJ")
-5. 朋友圈文案(200字，说明MBTI特质)
-
-用markdown格式输出完整报告。`;
+输出：
+1. 四柱、十神、用神忌神、格局
+2. MBTI类型+推理+功能栈
+3. 灵魂称号(如"庚金剑修·INTJ")
+4. 朋友圈文案(150字)`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -63,8 +58,8 @@ module.exports = async (req, res) => {
             messages: [
               { role: 'user', content: prompt }
             ],
-            temperature: 0.5,
-            max_tokens: 4096,  // Balanced for detailed report without timeout
+            temperature: 0.7,
+            max_tokens: 2048,  // Conservative to avoid truncation
             stream: false
           })
         });
