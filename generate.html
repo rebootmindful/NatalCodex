@@ -840,8 +840,10 @@
         loading.classList.remove('active');
         resultSection.classList.add('active');
 
-        // Scroll to result
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Scroll to result after DOM renders
+        setTimeout(() => {
+          resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
 
       } catch (error) {
         console.error('Error:', error);
