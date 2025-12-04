@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生成报告 - NatalCodex</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {
+      font-family:'Inter',sans-serif;
+      background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);
+      color:#fff;
+      min-height:100vh;
+      padding:40px 20px;
+    }
+    .container {
+      max-width:900px;
+      margin:0 auto;
+    }
+    .header {
+      text-align:center;
+      margin-bottom:48px;
+    }
+    .logo {
+      font-size:36px;
+      font-weight:600;
+      color:#00ff9d;
+      text-shadow:0 0 18px rgba(0,255,157,.55);
+      margin-bottom:12px;
+    }
+    .subtitle {
+      font-size:16px;
+      color:#d4d4d8;
+    }
+
+    .form-section {
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(0,255,157,0.2);
+      border-radius:16px;
+      padding:40px;
+      margin-bottom:32px;
+      backdrop-filter:blur(10px);
+    }
+    .form-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+      margin-bottom:24px;
+    }
+    .form-group {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .form-group.full {
+      grid-column:1 / -1;
+    }
+    label {
+      font-size:14px;
+      font-weight:600;
+      color:#e5e7eb;
+    }
+    input, select {
+      padding:12px 16px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:8px;
+      color:#fff;
+      font-size:15px;
+      font-family:'Inter',sans-serif;
+      transition:all 0.3s ease;
+    }
+    input:focus, select:focus {
+      outline:none;
+      border-color:#00ff9d;
+      background:rgba(255,255,255,0.12);
+      box-shadow:0 0 0 3px rgba(0,255,157,0.1);
+    }
+    input::placeholder {
+      color:#9ca3af;
+    }
+
+    .btn {
+      width:100%;
+      padding:16px;
+      background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);
+      color:#0a0e27;
+      font-size:16px;
+      font-weight:700;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      transition:all 0.25s ease;
+      box-shadow:0 6px 22px rgba(0,255,157,0.42);
+      text-transform:uppercase;
+      letter-spacing:0.5px;
+    }
+    .btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 10px 30px rgba(0,255,157,0.6);
+    }
+    .btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+
+    .result-section {
+      display:none;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(0,255,157,0.2);
+      border-radius:16px;
+      padding:40px;
+      backdrop-filter:blur(10px);
+    }
+    .result-section.active {
+      display:block;
+    }
+    .result-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:24px;
+      padding-bottom:16px;
+      border-bottom:1px solid rgba(0,255,157,0.2);
+    }
+    .result-title {
+      font-size:24px;
+      font-weight:700;
+      color:#00ff9d;
+    }
+    .copy-btn {
+      padding:10px 20px;
+      background:rgba(0,255,157,0.2);
+      border:1px solid #00ff9d;
+      border-radius:8px;
+      color:#00ff9d;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+    .copy-btn:hover {
+      background:#00ff9d;
+      color:#0a0e27;
+    }
+    .copy-btn.copied {
+      background:#00ff9d;
+      color:#0a0e27;
+    }
+
+    .report-content {
+      line-height:1.8;
+      color:#e5e7eb;
+    }
+    .report-content h1 {
+      font-size:28px;
+      color:#00ff9d;
+      margin:32px 0 16px;
+      font-weight:700;
+    }
+    .report-content h2 {
+      font-size:22px;
+      color:#00d4aa;
+      margin:28px 0 14px;
+      font-weight:700;
+    }
+    .report-content h3 {
+      font-size:18px;
+      color:#00ff9d;
+      margin:24px 0 12px;
+      font-weight:600;
+    }
+    .report-content p {
+      margin:12px 0;
+    }
+    .report-content ul, .report-content ol {
+      margin:12px 0;
+      padding-left:24px;
+    }
+    .report-content li {
+      margin:8px 0;
+    }
+    .report-content strong {
+      color:#fff;
+      font-weight:600;
+    }
+    .report-content hr {
+      border:none;
+      border-top:1px solid rgba(0,255,157,0.2);
+      margin:32px 0;
+    }
+    .report-content code {
+      background:rgba(0,255,157,0.1);
+      padding:2px 6px;
+      border-radius:4px;
+      color:#00ff9d;
+      font-size:0.95em;
+    }
+
+    .loading {
+      text-align:center;
+      padding:40px;
+      display:none;
+    }
+    .loading.active {
+      display:block;
+    }
+    .spinner {
+      width:60px;
+      height:60px;
+      border:4px solid rgba(0,255,157,0.2);
+      border-top-color:#00ff9d;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:0 auto 20px;
+    }
+    @keyframes spin {
+      to {transform:rotate(360deg)}
+    }
+    .loading-text {
+      font-size:16px;
+      color:#d4d4d8;
+    }
+
+    .error {
+      display:none;
+      padding:16px;
+      background:rgba(239,68,68,0.1);
+      border:1px solid rgba(239,68,68,0.3);
+      border-radius:8px;
+      color:#fca5a5;
+      margin-bottom:24px;
+    }
+    .error.active {
+      display:block;
+    }
+
+    @media (max-width:768px) {
+      .form-grid {
+        grid-template-columns:1fr;
+      }
+      .form-section {
+        padding:24px;
+      }
+      .result-section {
+        padding:24px;
+      }
+      .result-header {
+        flex-direction:column;
+        gap:12px;
+        align-items:flex-start;
+      }
+      .copy-btn {
+        width:100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">NatalCodex</div>
+      <div class="subtitle">生成您的八字命理与MBTI人格分析报告</div>
+    </div>
+
+    <div class="form-section">
+      <form id="generateForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">姓名</label>
+            <input type="text" id="name" name="name" placeholder="请输入您的姓名" required>
+          </div>
+
+          <div class="form-group">
+            <label for="gender">性别</label>
+            <select id="gender" name="gender" required>
+              <option value="">请选择</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="date">出生日期</label>
+            <input type="date" id="date" name="date" required>
+          </div>
+
+          <div class="form-group">
+            <label for="time">出生时间</label>
+            <input type="time" id="time" name="time" placeholder="14:30" required>
+          </div>
+
+          <div class="form-group full">
+            <label for="location">出生地点</label>
+            <input type="text" id="location" name="location" placeholder="例如：北京市海淀区" required>
+          </div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          🔮 生成报告
+        </button>
+      </form>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">AI正在为您生成专属报告，请稍候...</div>
+    </div>
+
+    <div class="result-section" id="resultSection">
+      <div class="result-header">
+        <div class="result-title">您的专属报告</div>
+        <button class="copy-btn" id="copyBtn">📋 复制报告</button>
+      </div>
+      <div class="report-content" id="reportContent"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    const form = document.getElementById('generateForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    const resultSection = document.getElementById('resultSection');
+    const reportContent = document.getElementById('reportContent');
+    const copyBtn = document.getElementById('copyBtn');
+    const errorDiv = document.getElementById('error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Hide error and result
+      errorDiv.classList.remove('active');
+      resultSection.classList.remove('active');
+
+      // Show loading
+      loading.classList.add('active');
+      submitBtn.disabled = true;
+
+      // Get form data
+      const formData = new FormData(form);
+      const birthData = {
+        name: formData.get('name'),
+        gender: formData.get('gender'),
+        date: formData.get('date'),
+        time: formData.get('time'),
+        location: formData.get('location')
+      };
+
+      try {
+        const response = await fetch('/api/reports/generateWithAPImart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            orderId: 'web-' + Date.now(),
+            birthData
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || '生成报告失败');
+        }
+
+        // Clean markdown (remove asterisks and extra formatting)
+        let cleanReport = data.reportContent
+          .replace(/\*\*/g, '')  // Remove bold markers
+          .replace(/\*/g, '')     // Remove italic markers
+          .replace(/#{1,6}\s/g, (match) => {  // Keep headers but clean
+            return match;
+          });
+
+        // Store clean text for copying
+        window.cleanReportText = cleanReport;
+
+        // Render markdown to HTML
+        reportContent.innerHTML = marked.parse(cleanReport);
+
+        // Show result
+        loading.classList.remove('active');
+        resultSection.classList.add('active');
+
+        // Scroll to result
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (error) {
+        console.error('Error:', error);
+        errorDiv.textContent = '生成失败：' + error.message;
+        errorDiv.classList.add('active');
+        loading.classList.remove('active');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Copy button
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(window.cleanReportText || reportContent.innerText);
+        copyBtn.textContent = '✅ 已复制';
+        copyBtn.classList.add('copied');
+
+        setTimeout(() => {
+          copyBtn.textContent = '📋 复制报告';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      } catch (error) {
+        console.error('Copy failed:', error);
+        alert('复制失败，请手动复制');
+      }
+    });
+  </script>
+</body>
+</html>
