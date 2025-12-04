@@ -8,7 +8,7 @@ const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
   MODELS: {
-    CHAT: 'gemini-2.5-flash',
+    CHAT: 'gpt-4o-mini',  // Switch to GPT-4o-mini - Gemini has token issues
     IMAGE: 'gemini-3-pro-image-preview'
   }
 };
