@@ -95,40 +95,20 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with Gemini 3 Pro (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Gemini...');
 
-    // Optimized professional prompt - balance between detail and token efficiency
-    const prompt = `你精通八字命理和MBTI心理学。分析：${birthData.date} ${birthData.time}，${birthData.gender}，${birthData.location}
+    // User's custom prompt - AI will return free-form markdown report
+    const prompt = `你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。
 
-要求：
-1. 排四柱八字、十神、用神忌神、格局、日主旺衰、起运年龄
-2. 推导MBTI类型和认知功能栈，说明推理依据
-3. 创建灵魂称号（如"庚金剑修·INTJ"）
-4. 写详细朋友圈文案（200字左右，说明你的MBTI特质、优势、适合方向）
+我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${birthData.location}】
 
-返回JSON：
-{
-  "bazi": {
-    "sizhu": {"year":"己未","month":"壬申","day":"辛酉","hour":"壬辰"},
-    "shishen": ["偏印","正财","比肩","正财"],
-    "yongshen": "木",
-    "jishen": "火",
-    "geju": "正财格",
-    "geju_level": "上",
-    "rizhu_wangshui": "身旺",
-    "dayun_qiyun": "5岁",
-    "wuxing_strength": {"wood":10,"fire":5,"earth":25,"metal":40,"water":20}
-  },
-  "mbti": {
-    "type": "INTJ",
-    "functions": ["Ni主导","Te辅助","Fi第三","Se劣势"],
-    "reasoning": "日主辛金身旺，偏印主导内向直觉(Ni)，正财显示逻辑思考(Te)，金水相生体现内在价值(Fi)，土重缺木表现感官劣势(Se)",
-    "radar_scores": {"EI":25,"SN":85,"TF":75,"JP":70},
-    "description": "内向直觉型战略家"
-  },
-  "soul_title": "辛金剑客·INTJ",
-  "mapping": "辛金日主→思维敏锐，偏印→Ni洞察，正财→Te逻辑，金水相生→Fi内省",
-  "summary": "你是INTJ战略家型人格。Ni主导让你天生擅长洞察本质、预见趋势，看问题总能直击核心。Te辅助赋予你强大的执行力和逻辑思维，适合做系统设计、战略规划类工作。Fi第三让你有坚定的内在价值观，不随波逐流。Se劣势使你不太关注当下感官细节，更专注长远目标。你的思维方式是：先建立宏观框架→逻辑拆解→高效执行。人际上独立自主，重视深度交流胜过广泛社交，是典型的「孤独的完美主义者」。",
-  "wuxing_colors": {"wood":"#00FF7F","fire":"#FF4500","earth":"#FFD700","metal":"#FFFFFF","water":"#1E90FF"}
-}`;
+请严格按以下7步执行：
+
+1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间
+2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
+3. 通过深度问答式推导（模拟最专业的MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理，不能乱猜）
+4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）
+5. 最后再单独输出一张纯文字版总结，方便我复制发朋友圈
+
+请用markdown格式输出完整详细的分析报告。`;
 
     // Call APIMart Chat API directly with retry logic
     let chatResponse;
@@ -149,8 +129,8 @@ module.exports = async (req, res) => {
             messages: [
               { role: 'user', content: prompt }
             ],
-            temperature: 0.4,
-            max_tokens: 3000,  // Optimized: enough for detailed response, not too large for timeout
+            temperature: 0.5,
+            max_tokens: 8192,  // Increased for comprehensive free-form report
             stream: false
           })
         });
@@ -251,58 +231,38 @@ module.exports = async (req, res) => {
       });
     }
     console.log('[GenerateWithAPImart] Raw content length:', content.length);
-    console.log('[GenerateWithAPImart] Raw content:', content);  // Log FULL content for debugging
+    console.log('[GenerateWithAPImart] Content preview:', content.substring(0, 500));  // Log first 500 chars
 
-    // Clean markdown code blocks
-    content = content.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-    console.log('[GenerateWithAPImart] After markdown cleanup length:', content.length);
+    // Use AI's markdown output directly as the report
+    const reportContent = `# ${birthData.name}的八字命理与MBTI人格分析报告
 
-    // Try to extract JSON object (use greedy match to get complete JSON)
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      console.log('[GenerateWithAPImart] JSON regex matched, extracted length:', jsonMatch[0].length);
-      content = jsonMatch[0];
-    } else {
-      console.log('[GenerateWithAPImart] No JSON match found, using content as-is');
-    }
+## 基本信息
+- 出生：${birthData.date} ${birthData.time}
+- 地点：${birthData.location}
+- 性别：${birthData.gender}
 
-    console.log('[GenerateWithAPImart] Final content to parse:', content);
+---
 
-    let analysis;
-    try {
-      analysis = JSON.parse(content);
-    } catch (parseError) {
-      console.error('[GenerateWithAPImart] JSON Parse Error:', parseError);
-      console.error('[GenerateWithAPImart] Full content length:', content.length);
-      console.error('[GenerateWithAPImart] Full content:', content);
+${content}
 
-      // Try to fix common JSON issues
-      let fixedContent = content
-        // Remove trailing commas before } or ]
-        .replace(/,(\s*[}\]])/g, '$1')
-        // Fix single quotes to double quotes
-        .replace(/'/g, '"')
-        // Remove any BOM or invisible characters
-        .replace(/^\uFEFF/, '');
+---
+*本报告由AI生成，融合中国传统八字命理与现代MBTI心理学*
+*生成时间：${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}*
+*订单号：${orderId}*`;
 
-      try {
-        console.log('[GenerateWithAPImart] Attempting to parse fixed content...');
-        analysis = JSON.parse(fixedContent);
-        console.log('[GenerateWithAPImart] Fixed content parsed successfully!');
-      } catch (secondError) {
-        console.error('[GenerateWithAPImart] Fixed content also failed:', secondError);
-        throw new Error('Failed to parse AI response as JSON: ' + parseError.message + ' | Content preview: ' + content.substring(0, 300));
+    // Create a minimal analysis object for compatibility
+    const analysis = {
+      raw_content: content,
+      metadata: {
+        birthDate: birthData.date,
+        birthTime: birthData.time,
+        location: birthData.location,
+        gender: birthData.gender
       }
-    }
+    };
 
-    console.log('[GenerateWithAPImart] Analysis completed:', analysis.soul_title);
-
-    // Step 2: Build report content
-    console.log('[GenerateWithAPImart] Step 2/4: Building report...');
-    const reportContent = buildReportFromAnalysis(analysis, birthData);
-
-    // TEMPORARILY SKIP IMAGE GENERATION - focus on text report quality first
-    console.log('[GenerateWithAPImart] Skipping image generation for now');
+    // Return the complete report
+    console.log('[GenerateWithAPImart] Analysis completed, returning full markdown report');
     return res.json({
       success: true,
       orderId,
@@ -310,7 +270,7 @@ module.exports = async (req, res) => {
       imageUrl: null,
       analysis,
       status: 'report_only',
-      message: 'Professional BaZi + MBTI analysis completed (image generation disabled)'
+      message: 'Professional BaZi + MBTI analysis completed (full AI-generated report)'
     });
 
     // Step 3: Create image generation task (DISABLED)
