@@ -994,6 +994,11 @@
       cardLoading.style.display = 'block';
       cardImage.style.display = 'none';
 
+      // Scroll to card section immediately when starting generation
+      setTimeout(() => {
+        cardSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+
       try {
         const response = await fetch('/api/reports/generateSoulCard', {
           method: 'POST',
