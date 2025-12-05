@@ -733,7 +733,26 @@
     }
 
     reportTypeRadios.forEach(radio => {
-      radio.addEventListener('change', updateReportTypeStyles);
+      radio.addEventListener('change', (e) => {
+        updateReportTypeStyles();
+        
+        // Check if there's existing report data with different type
+        if (lastAnalysisData && lastAnalysisData.reportType) {
+          const newType = e.target.value;
+          const existingType = lastAnalysisData.reportType;
+          
+          if (newType !== existingType) {
+            const existingTypeName = existingType === 'kuder' ? 'KUDER职业分析' : 'MBTI人格分析';
+            const newTypeName = newType === 'kuder' ? 'KUDER职业分析' : 'MBTI人格分析';
+            
+            const msg = currentLang === 'zh' 
+              ? `⚠️ 提示：当前已生成${existingTypeName}报告。\n\n如果您要生成${newTypeName}报告，请注意：\n1. 先保存当前报告（下载PDF/TXT）\n2. 再点击"生成报告"按钮\n3. 生成卡片前请确保已生成对应类型的报告`
+              : `⚠️ Note: You have an existing ${existingType.toUpperCase()} report.\n\nIf you want to generate a ${newType.toUpperCase()} report:\n1. Save current report first (download PDF/TXT)\n2. Click "Generate Report" button\n3. Make sure to generate the matching report before creating cards`;
+            
+            alert(msg);
+          }
+        }
+      });
     });
 
     // ========== City Database with Timezone ==========
@@ -1497,8 +1516,26 @@
         return;
       }
 
+      // Get selected report type from UI
+      const selectedType = document.querySelector('input[name="reportType"]:checked')?.value || 'mbti';
+      // Get report type from stored data
+      const dataReportType = lastAnalysisData.reportType || 'mbti';
+
+      // Check if selected type matches the generated report type
+      if (selectedType !== dataReportType) {
+        const dataTypeName = dataReportType === 'kuder' ? 'KUDER职业分析' : 'MBTI人格分析';
+        const selectedTypeName = selectedType === 'kuder' ? 'KUDER职业卡' : 'MBTI灵魂卡';
+        
+        const msg = currentLang === 'zh'
+          ? `⚠️ 类型不匹配！\n\n当前报告是：${dataTypeName}\n您选择生成：${selectedTypeName}\n\n请先点击"生成报告"按钮生成对应类型的报告，再生成卡片。`
+          : `⚠️ Type mismatch!\n\nCurrent report: ${dataReportType.toUpperCase()}\nSelected card: ${selectedType.toUpperCase()}\n\nPlease click "Generate Report" first to create the matching report type.`;
+        
+        alert(msg);
+        return;
+      }
+
       // Determine report type
-      const reportType = lastAnalysisData.reportType || window.currentReportType || 'mbti';
+      const reportType = dataReportType;
       const isKuder = reportType === 'kuder';
 
       // Show loading with appropriate text
