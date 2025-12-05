@@ -1,8 +1,8 @@
 /**
  * Soul Card Image Generation API
- * Uses APIMart: doubao-seedance-4-5 (Seedream 4.5) for image generation
+ * Uses APIMart: gemini-3-pro-image-preview for image generation
  *
- * Supported sizes: 1:1, 4:3, 3:4, 16:9, 9:16, 3:2, 2:3, 21:9
+ * Supported sizes: 1024x1024, 1536x1024, 1024x1536
  * Image links valid for 24 hours
  *
  * API is asynchronous:
@@ -14,7 +14,7 @@
 const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
-  IMAGE_MODEL: 'doubao-seedance-4-5'  // Changed from gemini-3-pro-image-preview
+  IMAGE_MODEL: 'gemini-3-pro-image-preview'  // Switched back from doubao-seedance-4-5
 };
 
 // Polling configuration
@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: config.IMAGE_MODEL,
         prompt: imagePrompt,
-        size: '9:16',  // Vertical aspect ratio for Soul Card (supported: 1:1, 4:3, 3:4, 16:9, 9:16, 3:2, 2:3, 21:9)
+        size: '1024x1536',  // Vertical for Soul Card (Gemini supports: 1024x1024, 1536x1024, 1024x1536)
         n: 1
       })
     });
