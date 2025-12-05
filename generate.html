@@ -3,7 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>生成报告 - NatalCodex</title>
+  <title>生成报告 - NatalCodex | Generate Your Soul Report</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Generate your personalized BaZi + MBTI soul analysis report. AI-powered insights combining ancient Chinese astrology with modern personality science. 生成您的八字MBTI命理报告和灵魂契合卡。">
+  <meta name="keywords" content="BaZi report, 八字报告, MBTI analysis, soul card, 灵魂契合卡, personality report, 命理分析">
+  <meta name="author" content="NatalCodex">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://natalcodex.vercel.app/generate.html">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://natalcodex.vercel.app/generate.html">
+  <meta property="og:title" content="Generate Your Soul Report - NatalCodex">
+  <meta property="og:description" content="Create your personalized BaZi + MBTI soul analysis report and Soul Card with AI.">
+  <meta property="og:image" content="https://natalcodex.vercel.app/og-image.png">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://natalcodex.vercel.app/generate.html">
+  <meta name="twitter:title" content="Generate Your Soul Report - NatalCodex">
+  <meta name="twitter:description" content="Create your personalized BaZi + MBTI soul analysis report and Soul Card with AI.">
+  <meta name="twitter:image" content="https://natalcodex.vercel.app/og-image.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0a0e27">
+  <meta name="msapplication-TileColor" content="#0a0e27">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
@@ -396,13 +428,26 @@
 
       <!-- Soul Card Section -->
       <div id="cardSection" style="display:none;margin-top:32px;padding-top:24px;border-top:1px solid rgba(0,255,157,0.2)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
           <div style="font-size:20px;font-weight:700;color:#00ff9d" data-i18n="cardTitle">您的灵魂契合卡</div>
-          <button class="copy-btn" id="downloadCardBtn">💾 <span data-i18n="btnDownloadCard">下载图片</span></button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="copy-btn" id="downloadCardBtn">💾 <span data-i18n="btnDownloadCard">下载图片</span></button>
+            <button class="copy-btn" id="shareWechatBtn" title="WeChat">📱 <span data-i18n="btnShareWechat">微信</span></button>
+            <button class="copy-btn" id="shareWeiboBtn" title="Weibo">🔴 <span data-i18n="btnShareWeibo">微博</span></button>
+            <button class="copy-btn" id="shareTwitterBtn" title="Twitter/X">🐦 <span data-i18n="btnShareTwitter">X</span></button>
+            <button class="copy-btn" id="copyLinkBtn" title="Copy Link">🔗 <span data-i18n="btnCopyLink">复制链接</span></button>
+          </div>
         </div>
         <div id="cardLoading" style="display:none;text-align:center;padding:40px">
           <div class="spinner"></div>
           <div class="loading-text" data-i18n="cardLoading">AI正在生成您的灵魂契合卡...</div>
+          <div id="progressContainer" style="margin-top:20px;max-width:300px;margin-left:auto;margin-right:auto">
+            <div style="background:rgba(0,255,157,0.1);border-radius:10px;height:8px;overflow:hidden">
+              <div id="progressBar" style="background:linear-gradient(90deg,#00ff9d,#00d4aa);height:100%;width:0%;transition:width 0.3s ease;border-radius:10px"></div>
+            </div>
+            <div id="progressText" style="margin-top:8px;font-size:12px;color:#9ca3af">0%</div>
+            <div id="progressTip" style="margin-top:12px;font-size:13px;color:#d4d4d8" data-i18n="cardProgressTip">图片生成通常需要30-60秒...</div>
+          </div>
         </div>
         <div id="cardImage" style="text-align:center">
           <img id="soulCardImg" src="" alt="Soul Card" style="max-width:100%;border-radius:12px;box-shadow:0 8px 32px rgba(0,255,157,0.3)">
@@ -449,7 +494,17 @@
         btnDownloadCard: '下载图片',
         cardLoading: 'AI正在生成您的灵魂契合卡...',
         cardGenerating: '生成中...',
-        cardError: '图片生成失败：'
+        cardError: '图片生成失败：',
+        btnShareWechat: '微信',
+        btnShareWeibo: '微博',
+        btnShareTwitter: 'X',
+        btnCopyLink: '复制链接',
+        linkCopied: '链接已复制',
+        shareTitle: '我的灵魂契合卡',
+        shareText: '看看我的八字+MBTI灵魂契合卡！',
+        wechatTip: '请截图后在微信中分享',
+        cardProgressTip: '图片生成通常需要30-60秒...',
+        cardProgressTips: ['正在分析八字信息...', '正在设计卡片布局...', '正在渲染五行元素...', '正在生成MBTI图表...', '即将完成...']
       },
       en: {
         backHome: 'Back Home',
@@ -485,7 +540,17 @@
         btnDownloadCard: 'Download Image',
         cardLoading: 'AI is generating your Soul Card...',
         cardGenerating: 'Generating...',
-        cardError: 'Image generation failed: '
+        cardError: 'Image generation failed: ',
+        btnShareWechat: 'WeChat',
+        btnShareWeibo: 'Weibo',
+        btnShareTwitter: 'X',
+        btnCopyLink: 'Copy Link',
+        linkCopied: 'Link Copied',
+        shareTitle: 'My Soul Card',
+        shareText: 'Check out my BaZi + MBTI Soul Card!',
+        wechatTip: 'Please screenshot and share in WeChat',
+        cardProgressTip: 'Image generation usually takes 30-60 seconds...',
+        cardProgressTips: ['Analyzing BaZi data...', 'Designing card layout...', 'Rendering Five Elements...', 'Generating MBTI chart...', 'Almost done...']
       }
     };
 
@@ -1176,6 +1241,53 @@
     // Store analysis data for card generation
     let lastAnalysisData = null;
 
+    // Progress bar elements
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const progressTip = document.getElementById('progressTip');
+    let progressInterval = null;
+
+    // Simulated progress animation (since API doesn't provide real progress)
+    function startProgressAnimation() {
+      let progress = 0;
+      let tipIndex = 0;
+      const tips = translations[currentLang].cardProgressTips;
+
+      // Reset progress
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+      progressTip.textContent = tips[0];
+
+      progressInterval = setInterval(() => {
+        // Slow progress that never quite reaches 100%
+        if (progress < 90) {
+          progress += Math.random() * 3 + 0.5;
+          if (progress > 90) progress = 90;
+
+          progressBar.style.width = `${progress}%`;
+          progressText.textContent = `${Math.round(progress)}%`;
+
+          // Update tip message at certain progress points
+          const newTipIndex = Math.floor(progress / 20);
+          if (newTipIndex !== tipIndex && newTipIndex < tips.length) {
+            tipIndex = newTipIndex;
+            progressTip.textContent = tips[tipIndex];
+          }
+        }
+      }, 500);
+    }
+
+    function stopProgressAnimation(success = true) {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      if (success) {
+        progressBar.style.width = '100%';
+        progressText.textContent = '100%';
+      }
+    }
+
     generateCardBtn.addEventListener('click', async () => {
       if (!lastAnalysisData) {
         alert(currentLang === 'zh' ? '请先生成报告' : 'Please generate report first');
@@ -1188,6 +1300,9 @@
       cardSection.style.display = 'block';
       cardLoading.style.display = 'block';
       cardImage.style.display = 'none';
+
+      // Start progress animation
+      startProgressAnimation();
 
       // Scroll to card section immediately when starting generation
       setTimeout(() => {
@@ -1210,6 +1325,9 @@
           throw new Error(data.error || 'Card generation failed');
         }
 
+        // Stop progress animation with success
+        stopProgressAnimation(true);
+
         // Display the image
         soulCardImg.src = data.imageUrl;
         cardLoading.style.display = 'none';
@@ -1222,7 +1340,13 @@
 
       } catch (error) {
         console.error('Card generation error:', error);
-        cardLoading.innerHTML = `<div style="color:#fca5a5">${translations[currentLang].cardError}${error.message}</div>`;
+        stopProgressAnimation(false);
+        cardLoading.innerHTML = `<div style="color:#fca5a5">${translations[currentLang].cardError}${error.message}<br><button id="retryCardBtn" class="copy-btn" style="margin-top:16px">🔄 ${currentLang === 'zh' ? '重试' : 'Retry'}</button></div>`;
+
+        // Add retry button listener
+        document.getElementById('retryCardBtn')?.addEventListener('click', () => {
+          generateCardBtn.click();
+        });
       } finally {
         generateCardBtn.disabled = false;
         generateCardBtn.innerHTML = `🎴 <span data-i18n="btnCard">${translations[currentLang].btnCard}</span>`;
@@ -1252,6 +1376,65 @@
         }, 2000);
       } catch (error) {
         console.error('Download failed:', error);
+      }
+    });
+
+    // ========== Social Share Functions ==========
+    const shareWechatBtn = document.getElementById('shareWechatBtn');
+    const shareWeiboBtn = document.getElementById('shareWeiboBtn');
+    const shareTwitterBtn = document.getElementById('shareTwitterBtn');
+    const copyLinkBtn = document.getElementById('copyLinkBtn');
+
+    // Get share URL (current page URL)
+    function getShareUrl() {
+      return window.location.href;
+    }
+
+    // Get share title based on user name
+    function getShareTitle() {
+      const name = document.getElementById('name').value || '';
+      const baseTitle = translations[currentLang].shareTitle;
+      return name ? `${name} - ${baseTitle}` : baseTitle;
+    }
+
+    // WeChat share (show QR code tip)
+    shareWechatBtn.addEventListener('click', () => {
+      alert(translations[currentLang].wechatTip);
+    });
+
+    // Weibo share
+    shareWeiboBtn.addEventListener('click', () => {
+      const url = getShareUrl();
+      const title = getShareTitle();
+      const text = translations[currentLang].shareText;
+      const pic = soulCardImg.src || '';
+
+      const weiboUrl = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title + ' ' + text)}&pic=${encodeURIComponent(pic)}`;
+      window.open(weiboUrl, '_blank', 'width=600,height=500');
+    });
+
+    // Twitter/X share
+    shareTwitterBtn.addEventListener('click', () => {
+      const url = getShareUrl();
+      const text = `${getShareTitle()} - ${translations[currentLang].shareText}`;
+
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+      window.open(twitterUrl, '_blank', 'width=600,height=400');
+    });
+
+    // Copy link
+    copyLinkBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(getShareUrl());
+        copyLinkBtn.innerHTML = `✅ <span>${translations[currentLang].linkCopied}</span>`;
+        copyLinkBtn.classList.add('copied');
+
+        setTimeout(() => {
+          copyLinkBtn.innerHTML = `🔗 <span data-i18n="btnCopyLink">${translations[currentLang].btnCopyLink}</span>`;
+          copyLinkBtn.classList.remove('copied');
+        }, 2000);
+      } catch (error) {
+        console.error('Copy failed:', error);
       }
     });
   </script>
