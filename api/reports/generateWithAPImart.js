@@ -1,7 +1,10 @@
 /**
  * Main API endpoint for BaZi + MBTI report generation
  * Uses APIMart: GPT-4o-mini for analysis
+ * Includes caching for identical birth data requests
  */
+
+const cache = require('../../lib/cache');
 
 // APIMart Configuration
 const config = {
@@ -37,6 +40,18 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // Check cache first (same birth data = same analysis result)
+    const cachedResult = cache.get(birthData);
+    if (cachedResult) {
+      console.log('[GenerateWithAPImart] CACHE HIT - returning cached result');
+      // Update orderId for the new request
+      return res.json({
+        ...cachedResult,
+        orderId,
+        cached: true
+      });
+    }
+
     // Step 1: Analyze with GPT-4o-mini (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with GPT-4o-mini...');
 
@@ -235,16 +250,25 @@ ${content}
       }
     };
 
-    // Return the complete report
-    console.log('[GenerateWithAPImart] Analysis completed, returning full markdown report');
-    return res.json({
+    // Prepare result object
+    const result = {
       success: true,
-      orderId,
       reportContent,
       imageUrl: null,
       analysis,
       status: 'report_only',
       message: 'Professional BaZi + MBTI analysis completed (full AI-generated report)'
+    };
+
+    // Save to cache for future identical requests
+    cache.set(birthData, result);
+
+    // Return the complete report
+    console.log('[GenerateWithAPImart] Analysis completed, returning full markdown report');
+    return res.json({
+      ...result,
+      orderId,
+      cached: false
     });
 
   } catch (error) {

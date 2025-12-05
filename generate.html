@@ -447,9 +447,21 @@
         </div>
       </div>
     </div>
+
+    <!-- Report History Section -->
+    <div class="form-section" id="historySection" style="display:none;margin-top:32px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:20px;font-weight:700;color:#00ff9d">📚 <span data-i18n="historyTitle">历史报告</span></div>
+        <button class="copy-btn" id="clearHistoryBtn" style="background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);color:#fca5a5">
+          🗑️ <span data-i18n="btnClearHistory">清空历史</span>
+        </button>
+      </div>
+      <div id="historyList"></div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
     // ========== Translation System ==========
     const translations = {
@@ -490,7 +502,14 @@
         cardGenerating: '生成中...',
         cardError: '图片生成失败：',
         cardProgressTip: '图片生成通常需要30-60秒...',
-        cardProgressTips: ['正在分析八字信息...', '正在设计卡片布局...', '正在渲染五行元素...', '正在生成MBTI图表...', '即将完成...']
+        cardProgressTips: ['正在分析八字信息...', '正在设计卡片布局...', '正在渲染五行元素...', '正在生成MBTI图表...', '即将完成...'],
+        historyTitle: '历史报告',
+        btnClearHistory: '清空历史',
+        historyEmpty: '暂无历史报告',
+        historyView: '查看',
+        historyDelete: '删除',
+        historyConfirmClear: '确定要清空所有历史报告吗？',
+        historyConfirmDelete: '确定要删除这条报告吗？'
       },
       en: {
         backHome: 'Back Home',
@@ -529,7 +548,14 @@
         cardGenerating: 'Generating...',
         cardError: 'Image generation failed: ',
         cardProgressTip: 'Image generation usually takes 30-60 seconds...',
-        cardProgressTips: ['Analyzing BaZi data...', 'Designing card layout...', 'Rendering Five Elements...', 'Generating MBTI chart...', 'Almost done...']
+        cardProgressTips: ['Analyzing BaZi data...', 'Designing card layout...', 'Rendering Five Elements...', 'Generating MBTI chart...', 'Almost done...'],
+        historyTitle: 'Report History',
+        btnClearHistory: 'Clear History',
+        historyEmpty: 'No history reports',
+        historyView: 'View',
+        historyDelete: 'Delete',
+        historyConfirmClear: 'Are you sure you want to clear all history?',
+        historyConfirmDelete: 'Are you sure you want to delete this report?'
       }
     };
 
@@ -1111,6 +1137,16 @@
         // Render markdown to HTML
         reportContent.innerHTML = marked.parse(cleanReport);
 
+        // Save to history
+        saveToHistory({
+          name: birthData.name,
+          gender: birthData.gender,
+          date: birthData.date,
+          time: birthData.time,
+          location: birthData.location,
+          content: cleanReport
+        });
+
         // Show result
         loading.classList.remove('active');
         resultSection.classList.add('active');
@@ -1170,40 +1206,45 @@
       }, 2000);
     });
 
-    // PDF Download button
+    // PDF Download button - Client-side generation with Chinese font support
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     downloadPdfBtn.addEventListener('click', async () => {
-      const text = window.cleanReportText || reportContent.innerText;
       const name = document.getElementById('name').value || 'User';
-      const orderId = 'web-' + Date.now();
+      const title = currentLang === 'zh' ? `${name}的八字MBTI分析报告` : `${name}'s BaZi & MBTI Analysis Report`;
 
       downloadPdfBtn.innerHTML = `⏳ <span>${currentLang === 'zh' ? '生成中...' : 'Generating...'}</span>`;
       downloadPdfBtn.disabled = true;
 
       try {
-        const response = await fetch('/api/export/pdf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderId,
-            content: text,
-            title: currentLang === 'zh' ? `${name}的八字MBTI分析报告` : `${name}'s BaZi & MBTI Analysis Report`
-          })
-        });
+        // Create a styled container for PDF generation
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.cssText = `
+          font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+          color: #333;
+          padding: 20px;
+          background: #fff;
+          line-height: 1.8;
+        `;
+        pdfContainer.innerHTML = `
+          <h1 style="text-align:center;color:#1a1f4d;margin-bottom:20px;font-size:24px">${title}</h1>
+          <p style="text-align:center;color:#666;margin-bottom:30px;font-size:12px">${currentLang === 'zh' ? '生成时间' : 'Generated'}: ${new Date().toLocaleString()}</p>
+          <hr style="border:none;border-top:2px solid #00d4aa;margin-bottom:20px">
+          <div style="font-size:12px">${reportContent.innerHTML}</div>
+          <hr style="border:none;border-top:1px solid #ddd;margin-top:30px">
+          <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">Powered by NatalCodex - BaZi & MBTI Analysis</p>
+        `;
 
-        if (!response.ok) {
-          throw new Error('PDF generation failed');
-        }
+        // PDF options
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: `BaZi-MBTI-Report_${name}_${new Date().toLocaleDateString()}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `BaZi-MBTI-Report_${name}_${new Date().toLocaleDateString()}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Generate PDF
+        await html2pdf().set(opt).from(pdfContainer).save();
 
         downloadPdfBtn.innerHTML = `✅ <span data-i18n="btnDownloaded">${translations[currentLang].btnDownloaded}</span>`;
         downloadPdfBtn.classList.add('copied');
@@ -1409,6 +1450,120 @@
         console.error('Download failed:', error);
       }
     });
+
+    // ========== Report History System ==========
+    const HISTORY_KEY = 'nc_report_history';
+    const MAX_HISTORY = 10; // Keep max 10 reports
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function saveToHistory(report) {
+      const history = getHistory();
+      // Add new report at the beginning
+      history.unshift({
+        id: Date.now(),
+        name: report.name,
+        gender: report.gender,
+        date: report.date,
+        time: report.time,
+        location: report.location,
+        content: report.content,
+        createdAt: new Date().toISOString()
+      });
+      // Keep only last MAX_HISTORY reports
+      if (history.length > MAX_HISTORY) {
+        history.pop();
+      }
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      renderHistory();
+    }
+
+    function deleteFromHistory(id) {
+      const history = getHistory().filter(r => r.id !== id);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+    }
+
+    function viewReport(id) {
+      const report = getHistory().find(r => r.id === id);
+      if (!report) return;
+
+      // Show result section with this report
+      window.cleanReportText = report.content;
+      reportContent.innerHTML = marked.parse(report.content);
+      resultSection.classList.add('active');
+
+      // Set up data for soul card generation
+      lastAnalysisData = {
+        name: report.name,
+        gender: report.gender,
+        reportContent: report.content,
+        rawAnalysis: report.content
+      };
+
+      // Hide card section when viewing history
+      cardSection.style.display = 'none';
+
+      // Scroll to result
+      setTimeout(() => {
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function renderHistory() {
+      const history = getHistory();
+      const historySection = document.getElementById('historySection');
+      const historyList = document.getElementById('historyList');
+
+      if (history.length === 0) {
+        historySection.style.display = 'none';
+        return;
+      }
+
+      historySection.style.display = 'block';
+      historyList.innerHTML = history.map(report => {
+        const date = new Date(report.createdAt);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        return `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:8px;border:1px solid rgba(0,255,157,0.1)">
+            <div style="flex:1">
+              <div style="font-weight:600;color:#e5e7eb">${report.name} <span style="color:#9ca3af;font-weight:400;font-size:13px">(${report.gender})</span></div>
+              <div style="font-size:12px;color:#6b7280;margin-top:4px">${report.date} ${report.time} · ${report.location}</div>
+              <div style="font-size:11px;color:#4b5563;margin-top:2px">${dateStr}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="viewReport(${report.id})" class="copy-btn" style="padding:6px 12px;font-size:12px">
+                👁️ ${translations[currentLang].historyView}
+              </button>
+              <button onclick="if(confirm('${translations[currentLang].historyConfirmDelete}')){deleteFromHistory(${report.id})}" class="copy-btn" style="padding:6px 12px;font-size:12px;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#fca5a5">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Clear history button
+    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+      if (confirm(translations[currentLang].historyConfirmClear)) {
+        clearHistory();
+      }
+    });
+
+    // Initialize history display
+    renderHistory();
 
   </script>
 </body>
