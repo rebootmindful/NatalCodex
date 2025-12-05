@@ -653,13 +653,16 @@
     const timezoneInput = document.getElementById('timezone');
     const timezoneGroup = document.getElementById('timezoneGroup');
 
+    // Debounce timer for API calls
+    let searchDebounceTimer = null;
+
     // Detect if input is Chinese
     function isChinese(str) {
       return /[\u4e00-\u9fa5]/.test(str);
     }
 
     // Search cities locally - instant response
-    function searchCities(query) {
+    function searchCitiesLocal(query) {
       if (!query || query.length === 0) return [];
 
       const q = query.toLowerCase().trim();
@@ -678,17 +681,111 @@
       }).slice(0, 8); // Max 8 results
     }
 
+    // Search cities via OpenStreetMap Nominatim API (fallback)
+    async function searchCitiesOnline(query) {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=8&addressdetails=1`,
+          {
+            headers: {
+              'User-Agent': 'NatalCodex-App/1.0',
+              'Accept-Language': currentLang === 'zh' ? 'zh-CN,zh' : 'en'
+            }
+          }
+        );
+
+        if (!response.ok) return [];
+
+        const data = await response.json();
+
+        // Convert OSM results to our format
+        return data.map(place => {
+          const lat = parseFloat(place.lat);
+          const lon = parseFloat(place.lon);
+          const displayName = place.display_name.split(',').slice(0, 2).join(',');
+          const tz = guessTimezoneFromCoords(lat, lon);
+
+          return {
+            lat,
+            lon,
+            zh: displayName,
+            en: displayName,
+            tz,
+            isOnline: true
+          };
+        });
+      } catch (error) {
+        console.error('Online city search failed:', error);
+        return [];
+      }
+    }
+
+    // Guess timezone from coordinates (approximate)
+    function guessTimezoneFromCoords(lat, lon) {
+      // Rough timezone estimation based on longitude
+      // Each timezone is approximately 15 degrees wide
+      const offset = Math.round(lon / 15);
+
+      // Common timezone mappings by region
+      if (lat >= 20 && lat <= 55 && lon >= 73 && lon <= 135) {
+        // China region
+        return 'Asia/Shanghai';
+      } else if (lat >= 24 && lat <= 46 && lon >= 122 && lon <= 154) {
+        // Japan region
+        return 'Asia/Tokyo';
+      } else if (lat >= 33 && lat <= 43 && lon >= 124 && lon <= 132) {
+        // Korea region
+        return 'Asia/Seoul';
+      } else if (lat >= -10 && lat <= 10 && lon >= 95 && lon <= 141) {
+        // Southeast Asia
+        return 'Asia/Singapore';
+      } else if (lat >= 35 && lat <= 72 && lon >= -10 && lon <= 40) {
+        // Europe
+        if (lon < 0) return 'Europe/London';
+        if (lon < 15) return 'Europe/Paris';
+        if (lon < 25) return 'Europe/Berlin';
+        return 'Europe/Moscow';
+      } else if (lat >= 25 && lat <= 50 && lon >= -130 && lon <= -60) {
+        // North America
+        if (lon < -115) return 'America/Los_Angeles';
+        if (lon < -100) return 'America/Denver';
+        if (lon < -85) return 'America/Chicago';
+        return 'America/New_York';
+      } else if (lat >= -45 && lat <= -10 && lon >= 110 && lon <= 155) {
+        // Australia
+        return 'Australia/Sydney';
+      }
+
+      // Fallback: calculate UTC offset
+      if (offset >= 0) {
+        return `Etc/GMT-${offset}`;
+      } else {
+        return `Etc/GMT+${Math.abs(offset)}`;
+      }
+    }
+
     // Render city suggestions
-    function renderSuggestions(cities, query) {
+    function renderSuggestions(cities, query, isLoading = false) {
+      if (isLoading) {
+        citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af">
+          <span style="display:inline-block;animation:spin 1s linear infinite">⏳</span>
+          ${currentLang === 'zh' ? '搜索中...' : 'Searching...'}
+        </div>`;
+        citySuggestions.style.display = 'block';
+        return;
+      }
+
       if (cities.length === 0) {
         citySuggestions.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af">${currentLang === 'zh' ? '未找到匹配城市' : 'No matching city found'}</div>`;
         citySuggestions.style.display = 'block';
         return;
       }
 
-      const isZh = isChinese(query);
       citySuggestions.innerHTML = cities.map(city => {
-        const displayName = currentLang === 'zh' ? `${city.zh} (${city.en})` : `${city.en} (${city.zh})`;
+        const displayName = city.isOnline
+          ? city.en
+          : (currentLang === 'zh' ? `${city.zh} (${city.en})` : `${city.en} (${city.zh})`);
+        const icon = city.isOnline ? '🌐' : '📍';
         return `
           <div class="city-option"
                data-lat="${city.lat}"
@@ -697,7 +794,7 @@
                data-en="${city.en}"
                data-tz="${city.tz}"
                style="padding:12px;cursor:pointer;border-bottom:1px solid rgba(0,255,157,0.1);color:#d4d4d8;transition:background 0.2s">
-            📍 ${displayName}
+            ${icon} ${displayName}
             <span style="float:right;color:#6b7280;font-size:12px">${city.tz}</span>
           </div>
         `;
@@ -725,18 +822,39 @@
       citySuggestions.style.display = 'block';
     }
 
-    // Handle input - instant search on every keystroke
-    locationInput.addEventListener('input', (e) => {
+    // Handle input - local search first, then online fallback
+    locationInput.addEventListener('input', async (e) => {
       const query = e.target.value.trim();
+
+      // Clear previous debounce timer
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
 
       if (query.length === 0) {
         citySuggestions.style.display = 'none';
         return;
       }
 
-      // Instant local search - no debounce needed
-      const results = searchCities(query);
-      renderSuggestions(results, query);
+      // First, try local search (instant)
+      const localResults = searchCitiesLocal(query);
+
+      if (localResults.length > 0) {
+        // Local results found - show immediately
+        renderSuggestions(localResults, query);
+      } else if (query.length >= 2) {
+        // No local results and query is long enough - try online search
+        renderSuggestions([], query, true); // Show loading
+
+        // Debounce the API call (500ms)
+        searchDebounceTimer = setTimeout(async () => {
+          const onlineResults = await searchCitiesOnline(query);
+          renderSuggestions(onlineResults, query);
+        }, 500);
+      } else {
+        // Query too short for online search
+        renderSuggestions([], query);
+      }
     });
 
     // Select city and auto-fill timezone
