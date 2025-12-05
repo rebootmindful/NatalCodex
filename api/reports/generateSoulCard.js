@@ -58,6 +58,9 @@ module.exports = async (req, res) => {
     const yongShen = extractedInfo.yongShen || '木';
     const shenSha = extractedInfo.shenSha.length > 0 ? extractedInfo.shenSha.join('、') : '天乙贵人、文昌';
 
+    // Personality quote for bottom summary
+    const personalityQuote = extractedInfo.personalityQuote || '命中藏锦绣，待时而发光';
+
     // Map day master to element
     const dayMasterElements = {
       '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土',
@@ -75,7 +78,7 @@ LAYOUT:
 - RIGHT HALF (Cyber-tech): Holographic ${mbtiType} radar diagram with neon circuits, cognitive function bars (Ni/Ne/Si/Se/Ti/Te/Fi/Fe) in Five Element colors
 - CENTER: Massive gilded seal script showing soul title "${soulTitle}" with golden rays
 - MIDDLE: Five Element energy streams (Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black) connecting both sides like destiny gears
-- BOTTOM: Ancient scroll style summary text
+- BOTTOM: Ancient scroll style with one-line personality summary: "${personalityQuote}"
 
 STYLE: Black-purple gradient starfield, neon Five Element colors, partial gold foil, holographic laser texture, maximum information density, NO watermarks`;
     } else {
@@ -95,7 +98,7 @@ STYLE: Black-purple gradient starfield, neon Five Element colors, partial gold f
   - 用五行颜色渐变：木青、火红、土黄、金白、水黑
 ■ 正中央最显眼：超大鎏金篆体灵魂称号「${soulTitle}」，金光四射
 ■ 中间横贯：五行能量光带连接左右，形成命运齿轮转动感
-■ 底部：古籍卷轴风格命格总评
+■ 底部：古籍卷轴风格横批，一句话人格总评「${personalityQuote}」
 
 【风格要求】
 黑紫渐变星空底，霓虹五行色，局部烫金，镭射全息质感，信息密度极高但层次分明
@@ -283,7 +286,8 @@ function extractInfoFromReport(content, isEnglish) {
     shenSha: [],          // 神煞
     fiveElements: null,   // 五行强弱
     cognitiveFunctions: null,  // MBTI认知功能
-    summary: null         // 总评
+    summary: null,        // 总评
+    personalityQuote: null // 人格金句（古籍原文+现代翻译）
   };
 
   if (!content) return result;
@@ -390,6 +394,34 @@ function extractInfoFromReport(content, isEnglish) {
     if (match) {
       result.summary = match[1].substring(0, 80);
       break;
+    }
+  }
+
+  // Extract personality quote / 人格金句（古籍原文+现代翻译）
+  const quotePatterns = [
+    /人格金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /一句话人格[金句]*[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /《[^》]+》[云曰][：:]*\s*[「"']*([^「"'\n]+)[」"']*/,  // 《滴天髓》云：'xxx'
+    /金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/
+  ];
+  for (const pattern of quotePatterns) {
+    const match = content.match(pattern);
+    if (match && match[1]) {
+      const quote = match[1].trim().replace(/[*#「」"']/g, '');
+      if (quote.length > 5 && quote.length < 100) {
+        result.personalityQuote = quote;
+        console.log('[ExtractInfo] Found personality quote:', result.personalityQuote);
+        break;
+      }
+    }
+  }
+
+  // If no quote found, try to find ancient text pattern
+  if (!result.personalityQuote) {
+    const ancientMatch = content.match(/[「"']([^「"'\n]{10,50})[」"'][，,]?\s*[译现代]*[：:]*\s*([^「"'\n]{10,50})/);
+    if (ancientMatch) {
+      result.personalityQuote = `${ancientMatch[1]}，译：${ancientMatch[2]}`;
+      console.log('[ExtractInfo] Found personality quote from ancient text:', result.personalityQuote);
     }
   }
 
