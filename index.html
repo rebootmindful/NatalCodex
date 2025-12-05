@@ -30,6 +30,13 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NatalCodex">
+
   <!-- Theme Color -->
   <meta name="theme-color" content="#0a0e27">
   <meta name="msapplication-TileColor" content="#0a0e27">
@@ -142,9 +149,9 @@
     </div>
     <div class="hero-right">
       <div class="mandala-wrap">
-        <img class="mandala" src="mandala.webp.png" alt="Five Elements Mandala">
+        <img class="mandala" src="mandala.webp.png" alt="Five Elements Mandala" loading="eager">
       </div>
-      <img class="card-preview" src="soulprint-card.webp.png" alt="Soulprint Card Preview">
+      <img class="card-preview" src="soulprint-card.webp.png" alt="Soulprint Card Preview" loading="lazy">
     </div>
   </section>
 
@@ -160,7 +167,7 @@
         <p data-i18n="aboutHowText">我们将八字五行理论与MBTI认知功能、库德尔职业兴趣量表相结合，通过AI深度分析，为你生成独一无二的人格与职业洞察报告。</p>
       </div>
       <div class="about-image">
-        <img src="mandala.webp.png" alt="Eastern Wisdom" style="max-width:400px;opacity:0.8">
+        <img src="mandala.webp.png" alt="Eastern Wisdom" style="max-width:400px;opacity:0.8" loading="lazy">
       </div>
     </div>
   </section>
@@ -226,6 +233,11 @@
   <!-- Footer -->
   <footer class="footer">
     <p data-i18n="footerText">© 2025 NatalCodex. 融合东方智慧与现代科技。</p>
+    <p style="margin-top:12px">
+      <a href="privacy.html" data-i18n="footerPrivacy">隐私政策</a>
+      <span style="margin:0 12px;color:#4b5563">|</span>
+      <a href="terms.html" data-i18n="footerTerms">服务条款</a>
+    </p>
   </footer>
 
   <!-- Navigation -->
@@ -240,41 +252,43 @@
     const translations = {
       zh: {
         tagline: '解锁你灵魂的源代码',
-        subtitle: '融合古老东方智慧与现代心理学，发现你的人格蓝图。输入出生信息，生成专属的灵魂卡片和深度分析报告。',
+        subtitle: '融合古老东方智慧与现代AI技术，帮助Z世代探索自我。通过极简交互与极具冲击力的视觉体验，发现你独特的人格蓝图。',
         btnGenerate: '立即生成报告',
         aboutTitle: '关于 NatalCodex',
-        aboutDesc: '我们将千年东方命理智慧与现代心理学完美融合，用AI技术为你解码灵魂密码。',
-        aboutWhatTitle: '什么是八字命理？',
-        aboutWhatText: '八字（BaZi）是中国古老的命理学系统，通过出生年、月、日、时的天干地支组合，揭示一个人的性格特质、人生轨迹和潜在天赋。',
-        aboutHowTitle: '如何与现代心理学结合？',
-        aboutHowText: '我们将八字五行理论与MBTI认知功能、库德尔职业兴趣量表相结合，通过AI深度分析，为你生成独一无二的人格与职业洞察报告。',
+        aboutDesc: '打造一款融合东方古老智慧与现代AI技术的自我探索工具，通过极简交互和极具冲击力的视觉体验，帮助你探索真实的自我。',
+        aboutWhatTitle: '什么是四柱能量系统？',
+        aboutWhatText: '四柱能量系统（The Four Pillars of Energy）源自中国古老的八字命理学，通过出生年、月、日、时的天干地支组合，以科学化的方式揭示你的性格特质、人生轨迹和潜在天赋。',
+        aboutHowTitle: '东方智慧 × 现代心理学',
+        aboutHowText: '我们将八字五行理论与荣格MBTI八功能、库德尔职业兴趣量表（Kuder Preference Record 1934-2024）深度融合，通过Vertex AI技术为你生成独一无二的灵魂指纹卡（Soulprint Card）。',
         featuresTitle: '核心功能',
-        featuresDesc: '两种专业分析报告，满足你对自我探索的不同需求。',
+        featuresDesc: '两种专业分析报告，Cyber-Zen赛博禅意风格，满足你对自我探索的不同需求。',
         feature1Title: 'MBTI 人格分析',
-        feature1Desc: '基于八字推导MBTI 16型人格，生成认知功能栈分析和专属灵魂称号，配合精美灵魂契合卡。',
+        feature1Desc: '精通《渊海子平》《滴天髓》与荣格MBTI八功能理论，通过深度问答式推导给出最准确的MBTI四字母与认知功能栈，建立专属灵魂称号。',
         feature2Title: 'KUDER 职业推算',
-        feature2Desc: '结合库德尔职业兴趣量表，分析你的十大职业领域倾向，推荐最适合的职业方向和宿命职业卡。',
-        feature3Title: 'AI 生成卡片',
-        feature3Desc: 'AI自动生成赛博道教风格的精美卡片，融合传统水墨与现代设计，可下载分享到社交媒体。',
+        feature2Desc: '结合库德尔职业兴趣量表十大领域（户外、机械、计算、科学、说服、艺术、文学、音乐、社会服务、文书），精准推导你的宿命职业称号。',
+        feature3Title: 'AI 灵魂卡片',
+        feature3Desc: '用nanobanana pro风格生成超长竖版灵魂契合卡，黑紫渐变星空底、霓虹五行色、镭射全息质感，信息密度爆炸但层次分明。',
         feature4Title: '深度报告',
-        feature4Desc: '3000+字专业分析报告，涵盖八字命盘、五行分析、人格/职业匹配，支持PDF下载。',
-        feature5Title: '全球时区支持',
-        feature5Desc: '内置全球200+城市数据库，自动识别时区并计算真太阳时，确保八字排盘的精确性。',
-        feature6Title: '隐私保护',
-        feature6Desc: '所有数据仅存储在你的浏览器本地，我们不收集任何个人信息，完全保护你的隐私。',
+        feature4Desc: '2000+字专业分析报告，涵盖八字命盘圆盘图、十神标注、神煞分析、五行能量光带，支持PDF/TXT下载。',
+        feature5Title: '真太阳时精算',
+        feature5Desc: '内置全球200+城市数据库，自动识别经纬度和时区，用真太阳时精准排出四柱八字，确保命盘精确度。',
+        feature6Title: '隐私优先设计',
+        feature6Desc: '遵循GDPR最小化合规原则，所有数据仅存储在浏览器本地（LocalStorage），我们不保存任何个人敏感信息到服务器。',
         pricingTitle: '价格方案',
-        pricingDesc: '目前完全免费，尽情探索你的灵魂密码！',
+        pricingDesc: '目前完全免费开放，尽情探索你的灵魂密码！',
         pricingBadge: '限时免费',
         pricingForever: '/ 永久',
         pricingSubtitle: '无需注册，无需付款',
         pricingF1: '无限次 MBTI 人格分析',
         pricingF2: '无限次 KUDER 职业推算',
-        pricingF3: 'AI 生成灵魂契合卡/职业卡',
-        pricingF4: 'PDF 报告下载',
+        pricingF3: 'AI 生成灵魂契合卡/宿命职业卡',
+        pricingF4: 'PDF/TXT 报告下载',
         pricingF5: '中英双语支持',
         pricingF6: '历史记录本地保存',
         pricingCta: '立即开始',
         footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
+        footerPrivacy: '隐私政策',
+        footerTerms: '服务条款',
         navAbout: '关于',
         navFeatures: '功能',
         navPricing: '价格',
@@ -282,41 +296,43 @@
       },
       en: {
         tagline: 'Unlock the Source Code of Your Soul',
-        subtitle: 'Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.',
+        subtitle: 'A self-exploration tool fusing ancient Eastern wisdom with modern AI. Through minimalist interaction and stunning visuals, discover your unique personality blueprint.',
         btnGenerate: 'Generate Report Now',
         aboutTitle: 'About NatalCodex',
-        aboutDesc: 'We perfectly blend millennia-old Eastern wisdom with modern psychology, using AI to decode your soul\'s secrets.',
-        aboutWhatTitle: 'What is BaZi?',
-        aboutWhatText: 'BaZi (Eight Characters) is an ancient Chinese astrology system that reveals personality traits, life path, and hidden talents through the Heavenly Stems and Earthly Branches of your birth time.',
-        aboutHowTitle: 'How does it combine with modern psychology?',
-        aboutHowText: 'We integrate BaZi Five Elements theory with MBTI cognitive functions and Kuder Preference Record, using AI analysis to generate unique personality and career insights.',
+        aboutDesc: 'A digital spiritual product designed for Gen Z, blending millennia-old Eastern wisdom with cutting-edge AI to help you explore your true self.',
+        aboutWhatTitle: 'What is The Four Pillars of Energy?',
+        aboutWhatText: 'The Four Pillars of Energy is a de-mystified, scientific repackaging of traditional Chinese BaZi astrology. It reveals your personality traits, life path, and hidden talents through the Heavenly Stems and Earthly Branches of your birth time.',
+        aboutHowTitle: 'Eastern Wisdom × Modern Psychology',
+        aboutHowText: 'We integrate BaZi Five Elements theory with Jung\'s MBTI Eight Functions and Kuder Preference Record (1934-2024), using Vertex AI to generate your unique Soulprint Card.',
         featuresTitle: 'Core Features',
-        featuresDesc: 'Two professional analysis reports to meet your different self-exploration needs.',
+        featuresDesc: 'Two professional analysis reports in Cyber-Zen style, meeting your different self-exploration needs.',
         feature1Title: 'MBTI Personality Analysis',
-        feature1Desc: 'Derive your MBTI 16-type personality from BaZi, generate cognitive function stack analysis and unique Soul Title, with a beautiful Soul Card.',
+        feature1Desc: 'Mastering "Yuan Hai Zi Ping" and "Di Tian Sui" classics with Jung\'s MBTI Eight Functions theory, providing accurate MBTI letters and cognitive function stack with unique Soul Title.',
         feature2Title: 'KUDER Career Analysis',
-        feature2Desc: 'Combined with Kuder Preference Record, analyze your ten career interest domains and recommend the most suitable career directions.',
-        feature3Title: 'AI-Generated Cards',
-        feature3Desc: 'AI generates beautiful cyber-Taoist style cards, blending traditional ink art with modern design, downloadable for social media sharing.',
+        feature2Desc: 'Combined with Kuder Preference Record\'s ten domains (Outdoor, Mechanical, Computational, Scientific, Persuasive, Artistic, Literary, Musical, Social Service, Clerical) to derive your Destiny Career Title.',
+        feature3Title: 'AI Soul Cards',
+        feature3Desc: 'Generate ultra-tall vertical Soulprint Cards in nanobanana pro style - black-purple gradient starfield, neon Five Element colors, holographic laser texture, extreme info density yet well-layered.',
         feature4Title: 'In-depth Reports',
-        feature4Desc: '3000+ word professional analysis covering BaZi chart, Five Elements analysis, personality/career matching, with PDF download support.',
-        feature5Title: 'Global Timezone Support',
-        feature5Desc: 'Built-in database of 200+ cities worldwide, auto-detecting timezone and calculating true solar time for accurate BaZi calculation.',
-        feature6Title: 'Privacy Protection',
-        feature6Desc: 'All data is stored only in your browser locally. We don\'t collect any personal information, fully protecting your privacy.',
+        feature4Desc: '2000+ word professional analysis covering circular BaZi chart, Ten Gods annotations, Divine Stars analysis, Five Element energy streams, with PDF/TXT download.',
+        feature5Title: 'True Solar Time Precision',
+        feature5Desc: 'Built-in database of 200+ cities worldwide, auto-detecting coordinates and timezone, calculating true solar time for precise Four Pillars arrangement.',
+        feature6Title: 'Privacy-First Design',
+        feature6Desc: 'Following GDPR minimization principles, all data stored only in browser LocalStorage. We never save personal sensitive information to servers.',
         pricingTitle: 'Pricing',
         pricingDesc: 'Currently completely free - explore your soul code to the fullest!',
-        pricingBadge: 'Limited Free',
+        pricingBadge: 'Free Access',
         pricingForever: '/ Forever',
         pricingSubtitle: 'No registration, no payment required',
         pricingF1: 'Unlimited MBTI Personality Analysis',
         pricingF2: 'Unlimited KUDER Career Analysis',
-        pricingF3: 'AI-generated Soul Card / Career Card',
-        pricingF4: 'PDF Report Download',
+        pricingF3: 'AI-generated Soul Card / Destiny Card',
+        pricingF4: 'PDF/TXT Report Download',
         pricingF5: 'Bilingual Support (EN/ZH)',
         pricingF6: 'History saved locally',
         pricingCta: 'Get Started',
         footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
+        footerPrivacy: 'Privacy Policy',
+        footerTerms: 'Terms of Service',
         navAbout: 'About',
         navFeatures: 'Features',
         navPricing: 'Pricing',
@@ -367,6 +383,15 @@
         }
       });
     });
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
   </script>
 </body>
 </html>

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy | 隐私政策 - NatalCodex</title>
+  <meta name="description" content="NatalCodex Privacy Policy - How we protect your data and privacy.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <meta name="theme-color" content="#0a0e27">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);color:#e5e7eb;min-height:100vh;line-height:1.8}
+    .container {max-width:800px;margin:0 auto;padding:60px 24px}
+    .back-link {display:inline-flex;align-items:center;gap:8px;color:#00ff9d;text-decoration:none;font-size:14px;margin-bottom:32px;transition:opacity .2s}
+    .back-link:hover {opacity:.8}
+    h1 {font-family:'Playfair Display',serif;font-size:36px;color:#00ff9d;margin-bottom:8px}
+    .subtitle {color:#9ca3af;font-size:14px;margin-bottom:40px}
+    h2 {font-size:22px;color:#fff;margin:32px 0 16px;padding-bottom:8px;border-bottom:1px solid rgba(0,255,157,0.2)}
+    h3 {font-size:18px;color:#00ff9d;margin:24px 0 12px}
+    p {color:#d4d4d8;margin-bottom:16px}
+    ul {margin:16px 0 16px 24px;color:#d4d4d8}
+    li {margin-bottom:8px}
+    .highlight {background:rgba(0,255,157,0.1);border-left:3px solid #00ff9d;padding:16px 20px;margin:24px 0;border-radius:0 8px 8px 0}
+    .lang-switch {position:fixed;top:20px;right:20px;padding:10px 16px;background:rgba(10,14,39,.65);border:1px solid rgba(0,255,157,.35);border-radius:10px;color:#e5e7eb;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s}
+    .lang-switch:hover {background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);color:#0a0e27}
+    .footer {text-align:center;padding:40px 24px;color:#6b7280;font-size:14px;border-top:1px solid rgba(255,255,255,0.1);margin-top:60px}
+    .footer a {color:#00ff9d;text-decoration:none}
+  </style>
+</head>
+<body>
+  <button id="langSwitch" class="lang-switch">🌐 <span id="langText">EN</span></button>
+
+  <div class="container">
+    <a href="index.html" class="back-link">← <span data-i18n="backHome">返回首页</span></a>
+
+    <h1 data-i18n="title">隐私政策</h1>
+    <p class="subtitle" data-i18n="lastUpdated">最后更新：2025年1月</p>
+
+    <div class="highlight">
+      <p data-i18n="tldr"><strong>简要说明：</strong>NatalCodex 采用隐私优先设计。我们不收集、不存储、不传输您的任何个人信息到服务器。所有数据仅保存在您的浏览器本地。</p>
+    </div>
+
+    <h2 data-i18n="section1Title">1. 信息收集</h2>
+    <h3 data-i18n="section1aTitle">1.1 我们收集的信息</h3>
+    <p data-i18n="section1aText">为了提供八字分析服务，您需要输入以下信息：</p>
+    <ul>
+      <li data-i18n="info1">姓名（用于报告标题，可使用昵称）</li>
+      <li data-i18n="info2">性别</li>
+      <li data-i18n="info3">出生日期和时间</li>
+      <li data-i18n="info4">出生地点（用于真太阳时计算）</li>
+    </ul>
+
+    <h3 data-i18n="section1bTitle">1.2 我们不收集的信息</h3>
+    <ul>
+      <li data-i18n="noInfo1">电子邮件地址</li>
+      <li data-i18n="noInfo2">电话号码</li>
+      <li data-i18n="noInfo3">支付信息</li>
+      <li data-i18n="noInfo4">IP地址或设备标识符</li>
+      <li data-i18n="noInfo5">Cookie跟踪数据</li>
+    </ul>
+
+    <h2 data-i18n="section2Title">2. 数据存储</h2>
+    <p data-i18n="section2Text1">所有您输入的信息和生成的报告仅存储在您的浏览器本地存储（LocalStorage）中。</p>
+    <div class="highlight">
+      <p data-i18n="section2Highlight">我们的服务器不保存任何用户数据。当您请求生成报告时，数据仅在请求期间临时传输到AI服务，处理完成后立即丢弃。</p>
+    </div>
+
+    <h2 data-i18n="section3Title">3. 数据共享</h2>
+    <p data-i18n="section3Text">我们不会将您的个人信息出售、交易或以其他方式转让给第三方。生成报告时使用的AI服务（Google Vertex AI）仅接收必要的出生信息用于分析，且不会存储这些数据。</p>
+
+    <h2 data-i18n="section4Title">4. 数据安全</h2>
+    <p data-i18n="section4Text">我们采取以下措施保护您的数据：</p>
+    <ul>
+      <li data-i18n="security1">所有通信通过HTTPS加密传输</li>
+      <li data-i18n="security2">API密钥安全存储在服务器环境变量中</li>
+      <li data-i18n="security3">不在服务器端保存任何用户数据</li>
+      <li data-i18n="security4">定期安全审计和更新</li>
+    </ul>
+
+    <h2 data-i18n="section5Title">5. 您的权利</h2>
+    <p data-i18n="section5Text">由于所有数据存储在您的浏览器本地，您拥有完全控制权：</p>
+    <ul>
+      <li data-i18n="rights1">查看数据：在浏览器开发者工具中查看LocalStorage</li>
+      <li data-i18n="rights2">删除数据：清除浏览器数据或使用应用内"清除历史"功能</li>
+      <li data-i18n="rights3">导出数据：下载生成的PDF/TXT报告</li>
+    </ul>
+
+    <h2 data-i18n="section6Title">6. Cookie政策</h2>
+    <p data-i18n="section6Text">我们仅使用必要的功能性存储（LocalStorage）来保存您的语言偏好和报告历史。我们不使用第三方跟踪Cookie或分析工具。</p>
+
+    <h2 data-i18n="section7Title">7. 儿童隐私</h2>
+    <p data-i18n="section7Text">我们的服务面向18岁及以上用户。我们不会故意收集13岁以下儿童的信息。</p>
+
+    <h2 data-i18n="section8Title">8. 政策更新</h2>
+    <p data-i18n="section8Text">我们可能会不时更新本隐私政策。任何更改都将在此页面上发布，并更新"最后更新"日期。</p>
+
+    <h2 data-i18n="section9Title">9. 联系我们</h2>
+    <p data-i18n="section9Text">如果您对本隐私政策有任何疑问，请通过以下方式联系我们：</p>
+    <p>Email: privacy@natalcodex.com</p>
+
+    <div class="footer">
+      <p data-i18n="footerText">© 2025 NatalCodex. 融合东方智慧与现代科技。</p>
+      <p style="margin-top:12px">
+        <a href="index.html" data-i18n="backHome">返回首页</a>
+        <span style="margin:0 12px;color:#4b5563">|</span>
+        <a href="terms.html" data-i18n="termsLink">服务条款</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      zh: {
+        backHome: '返回首页',
+        title: '隐私政策',
+        lastUpdated: '最后更新：2025年1月',
+        tldr: '简要说明：NatalCodex 采用隐私优先设计。我们不收集、不存储、不传输您的任何个人信息到服务器。所有数据仅保存在您的浏览器本地。',
+        section1Title: '1. 信息收集',
+        section1aTitle: '1.1 我们收集的信息',
+        section1aText: '为了提供八字分析服务，您需要输入以下信息：',
+        info1: '姓名（用于报告标题，可使用昵称）',
+        info2: '性别',
+        info3: '出生日期和时间',
+        info4: '出生地点（用于真太阳时计算）',
+        section1bTitle: '1.2 我们不收集的信息',
+        noInfo1: '电子邮件地址',
+        noInfo2: '电话号码',
+        noInfo3: '支付信息',
+        noInfo4: 'IP地址或设备标识符',
+        noInfo5: 'Cookie跟踪数据',
+        section2Title: '2. 数据存储',
+        section2Text1: '所有您输入的信息和生成的报告仅存储在您的浏览器本地存储（LocalStorage）中。',
+        section2Highlight: '我们的服务器不保存任何用户数据。当您请求生成报告时，数据仅在请求期间临时传输到AI服务，处理完成后立即丢弃。',
+        section3Title: '3. 数据共享',
+        section3Text: '我们不会将您的个人信息出售、交易或以其他方式转让给第三方。生成报告时使用的AI服务（Google Vertex AI）仅接收必要的出生信息用于分析，且不会存储这些数据。',
+        section4Title: '4. 数据安全',
+        section4Text: '我们采取以下措施保护您的数据：',
+        security1: '所有通信通过HTTPS加密传输',
+        security2: 'API密钥安全存储在服务器环境变量中',
+        security3: '不在服务器端保存任何用户数据',
+        security4: '定期安全审计和更新',
+        section5Title: '5. 您的权利',
+        section5Text: '由于所有数据存储在您的浏览器本地，您拥有完全控制权：',
+        rights1: '查看数据：在浏览器开发者工具中查看LocalStorage',
+        rights2: '删除数据：清除浏览器数据或使用应用内"清除历史"功能',
+        rights3: '导出数据：下载生成的PDF/TXT报告',
+        section6Title: '6. Cookie政策',
+        section6Text: '我们仅使用必要的功能性存储（LocalStorage）来保存您的语言偏好和报告历史。我们不使用第三方跟踪Cookie或分析工具。',
+        section7Title: '7. 儿童隐私',
+        section7Text: '我们的服务面向18岁及以上用户。我们不会故意收集13岁以下儿童的信息。',
+        section8Title: '8. 政策更新',
+        section8Text: '我们可能会不时更新本隐私政策。任何更改都将在此页面上发布，并更新"最后更新"日期。',
+        section9Title: '9. 联系我们',
+        section9Text: '如果您对本隐私政策有任何疑问，请通过以下方式联系我们：',
+        footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
+        termsLink: '服务条款'
+      },
+      en: {
+        backHome: 'Back to Home',
+        title: 'Privacy Policy',
+        lastUpdated: 'Last Updated: January 2025',
+        tldr: 'TL;DR: NatalCodex is designed with privacy-first principles. We do not collect, store, or transmit any of your personal information to our servers. All data is stored locally in your browser.',
+        section1Title: '1. Information Collection',
+        section1aTitle: '1.1 Information We Collect',
+        section1aText: 'To provide BaZi analysis services, you need to enter the following information:',
+        info1: 'Name (for report title, nickname acceptable)',
+        info2: 'Gender',
+        info3: 'Date and time of birth',
+        info4: 'Place of birth (for true solar time calculation)',
+        section1bTitle: '1.2 Information We Do Not Collect',
+        noInfo1: 'Email address',
+        noInfo2: 'Phone number',
+        noInfo3: 'Payment information',
+        noInfo4: 'IP address or device identifiers',
+        noInfo5: 'Cookie tracking data',
+        section2Title: '2. Data Storage',
+        section2Text1: 'All information you enter and reports generated are stored only in your browser\'s LocalStorage.',
+        section2Highlight: 'Our servers do not store any user data. When you request a report, data is only temporarily transmitted to the AI service during the request and discarded immediately after processing.',
+        section3Title: '3. Data Sharing',
+        section3Text: 'We do not sell, trade, or otherwise transfer your personal information to third parties. The AI service (Google Vertex AI) used to generate reports only receives necessary birth information for analysis and does not store this data.',
+        section4Title: '4. Data Security',
+        section4Text: 'We take the following measures to protect your data:',
+        security1: 'All communications encrypted via HTTPS',
+        security2: 'API keys securely stored in server environment variables',
+        security3: 'No user data stored on server side',
+        security4: 'Regular security audits and updates',
+        section5Title: '5. Your Rights',
+        section5Text: 'Since all data is stored locally in your browser, you have full control:',
+        rights1: 'View data: Check LocalStorage in browser developer tools',
+        rights2: 'Delete data: Clear browser data or use in-app "Clear History" function',
+        rights3: 'Export data: Download generated PDF/TXT reports',
+        section6Title: '6. Cookie Policy',
+        section6Text: 'We only use necessary functional storage (LocalStorage) to save your language preferences and report history. We do not use third-party tracking cookies or analytics tools.',
+        section7Title: '7. Children\'s Privacy',
+        section7Text: 'Our service is intended for users 18 years and older. We do not knowingly collect information from children under 13.',
+        section8Title: '8. Policy Updates',
+        section8Text: 'We may update this privacy policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date.',
+        section9Title: '9. Contact Us',
+        section9Text: 'If you have any questions about this privacy policy, please contact us at:',
+        footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
+        termsLink: 'Terms of Service'
+      }
+    };
+
+    let currentLang = localStorage.getItem('nc_language') || 'zh';
+
+    function updateLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('nc_language', lang);
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+          if (key === 'tldr') {
+            el.innerHTML = '<strong>' + (lang === 'zh' ? '简要说明：' : 'TL;DR: ') + '</strong>' + translations[lang][key].replace(/^(简要说明：|TL;DR: )/, '');
+          } else {
+            el.textContent = translations[lang][key];
+          }
+        }
+      });
+      document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    }
+
+    updateLanguage(currentLang);
+
+    document.getElementById('langSwitch').addEventListener('click', function() {
+      updateLanguage(currentLang === 'zh' ? 'en' : 'zh');
+    });
+  </script>
+</body>
+</html>
