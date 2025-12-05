@@ -736,6 +736,10 @@
       radio.addEventListener('change', (e) => {
         updateReportTypeStyles();
         
+        // Update card button text based on selected type
+        const selectedType = e.target.value;
+        updateCardButtonText(selectedType);
+        
         // Check if there's existing report data with different type
         if (lastAnalysisData && lastAnalysisData.reportType) {
           const newType = e.target.value;
