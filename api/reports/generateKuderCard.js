@@ -60,6 +60,9 @@ module.exports = async (req, res) => {
       ? extractedInfo.careers.join('、')
       : '设计师、作家、心理咨询师';
 
+    // Talent quote
+    const talentQuote = extractedInfo.talentQuote || '命中注定的天赋，终将照亮前行的路';
+
     // Map day master to element
     const dayMasterElements = {
       '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土',
@@ -74,6 +77,7 @@ module.exports = async (req, res) => {
 LAYOUT:
 - BACKGROUND: Deep space navy blue + golden star orbits + vintage mechanical gears
 - TOP: Giant golden foil title "${name}'s Kuder Destiny Career Card" with metallic glow
+- SUBTITLE (below title): Talent quote in elegant script: "${talentQuote}"
 - LEFT HALF (Traditional Chinese): Circular BaZi chart wheel showing Four Pillars "${baziPillars}", Day Master ${dayMaster}(${dayElement}), Ten Gods: ${shiShen}, Favorable Element: ${yongShen} in RED, Divine Stars: ${shenSha}
 - RIGHT HALF (Retro-tech): Classic Kuder decagonal radar diagram with 10 career interest domains, filled with Five Element colors (Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black). TOP 3 domains glowing bright: ${top3Domains}. BOTTOM 3 domains dimmed: ${bottom3Domains}
 - CENTER: Massive gilded seal script showing destiny title "${careerTitle}" with golden rays
@@ -87,6 +91,7 @@ STYLE: Cyberpunk retro + vaporwave + laser gold foil + particle texture, maximum
 【布局要求】
 ■ 背景：深空墨蓝 + 金色星轨 + 复古机械齿轮纹理
 ■ 顶部：巨大烫金标题「${name}的库德尔宿命职业卡」，金属质感发光
+■ 标题下方：天赋金句「${talentQuote}」，用优雅的行书字体，银白色发光
 ■ 左半区(传统水墨风)：
   - 八字命盘圆盘图，四柱：${baziPillars}
   - 日主${dayMaster}(${dayElement})居中
@@ -273,22 +278,44 @@ function extractKuderInfo(content, isEnglish) {
   console.log('[ExtractKuderInfo] Content preview:', content.substring(0, 500));
 
   // Extract Career Title - look for patterns (more flexible matching)
-  const careerTitlePatterns = [
-    /宿命职业称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
-    /职业称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
-    /专属.*?称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
-    /Destiny Career Title[：:]\s*[「"']?([^「"'\n]+)[」"']?/i,
-    /Career Title[：:]\s*[「"']?([^「"'\n]+)[」"']?/i,
-    /["「【]([^"」】]+[·][^"」】]+)["」】]/,  // Match patterns like "XX·YY"
-    /([甲乙丙丁戊己庚辛壬癸][^\s·，。]{1,6}[·][^\s，。]{2,10})/  // Match like "庚金剑修·征服者"
+  // First try to find it in section 4 (第四步/步骤4/4.)
+  const section4Patterns = [
+    /(?:第四|步骤4|4\.|四、|4、)[^]*?(?:宿命职业称号|专属.*?称号|职业称号)[：:]\s*[「"'【]?([^「"'】\n，。]+)[」"'】]?/,
+    /(?:第四|步骤4|4\.|四、|4、)[^]*?[「"'【]([^「"'】\n]+[·][^「"'】\n]+)[」"'】]/,
+    /(?:宿命职业称号|专属.*?称号|职业称号)[：:]\s*[「"'【\*]*([^「"'】\n*，。]+)[」"'】\*]*/,
+    /给出.*?称号[：:]*\s*[「"'【\*]*([^「"'】\n*，。]+[·][^「"'】\n*，。]+)[」"'】\*]*/
   ];
 
-  for (const pattern of careerTitlePatterns) {
+  for (const pattern of section4Patterns) {
     const match = content.match(pattern);
-    if (match) {
-      result.careerTitle = match[1].trim().replace(/[*#]/g, '');
-      console.log('[ExtractKuderInfo] Found career title:', result.careerTitle);
-      break;
+    if (match && match[1]) {
+      const title = match[1].trim().replace(/[*#「」"'【】]/g, '');
+      if (title.length > 2 && title.length < 30) {
+        result.careerTitle = title;
+        console.log('[ExtractKuderInfo] Found career title from section 4:', result.careerTitle);
+        break;
+      }
+    }
+  }
+
+  // If not found, try more general patterns
+  if (!result.careerTitle) {
+    const careerTitlePatterns = [
+      /[「"'【]([^「"'】\n]+[·][^「"'】\n]+)[」"'】]/,  // Match patterns like "XX·YY" in quotes
+      /\*\*([^*\n]+[·][^*\n]+)\*\*/,  // Match **XX·YY** markdown bold
+      /([甲乙丙丁戊己庚辛壬癸][金木水火土]?[^\s·，。]{0,6}[·][^\s，。\n]{2,15})/  // Match like "庚金剑修·征服者"
+    ];
+
+    for (const pattern of careerTitlePatterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        const title = match[1].trim().replace(/[*#]/g, '');
+        if (title.length > 2 && title.length < 30 && title.includes('·')) {
+          result.careerTitle = title;
+          console.log('[ExtractKuderInfo] Found career title from general pattern:', result.careerTitle);
+          break;
+        }
+      }
     }
   }
 
@@ -455,17 +482,33 @@ function extractKuderInfo(content, isEnglish) {
   }
   console.log('[ExtractKuderInfo] Careers:', result.careers);
 
-  // Extract talent quote / 天赋金句
+  // Extract talent quote / 天赋金句 - enhanced patterns
   const quotePatterns = [
-    /天赋金句[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
-    /一句话.*?[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
-    /金句[：:]\s*[「"']?([^「"'\n]+)[」"']?/
+    /天赋金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /一句话天赋[金句]*[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /一句话[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /总结[：:]\s*[「"']*([^「"'\n]{10,50})[」"']*/,  // Short summary
+    /职业天赋总结[：:]\s*[「"']*([^「"'\n]+)[」"']*/
   ];
   for (const pattern of quotePatterns) {
     const quoteMatch = content.match(pattern);
-    if (quoteMatch) {
-      result.talentQuote = quoteMatch[1].trim();
-      break;
+    if (quoteMatch && quoteMatch[1]) {
+      const quote = quoteMatch[1].trim().replace(/[*#「」"']/g, '');
+      if (quote.length > 5 && quote.length < 100) {
+        result.talentQuote = quote;
+        console.log('[ExtractKuderInfo] Found talent quote:', result.talentQuote);
+        break;
+      }
+    }
+  }
+
+  // If no quote found, try to extract from the last section (纯文字总结)
+  if (!result.talentQuote) {
+    const summarySection = content.match(/(?:纯文字总结|文字总结|总结)[^]*?(?:天赋金句|一句话)[：:]\s*[「"']*([^「"'\n]+)[」"']*/);
+    if (summarySection && summarySection[1]) {
+      result.talentQuote = summarySection[1].trim().replace(/[*#「」"']/g, '');
+      console.log('[ExtractKuderInfo] Found talent quote from summary:', result.talentQuote);
     }
   }
 
