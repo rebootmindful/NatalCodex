@@ -530,6 +530,80 @@
       updateLanguage(newLang);
     });
 
+    // ========== Form Data Persistence (localStorage) ==========
+    const STORAGE_KEY = 'nc_form_data';
+
+    // Save form data to localStorage
+    function saveFormData() {
+      const formData = {
+        name: document.getElementById('name').value,
+        gender: document.getElementById('gender').value,
+        date: document.getElementById('date').value,
+        time: document.getElementById('time').value,
+        location: document.getElementById('location').value,
+        timezone: document.getElementById('timezone').value,
+        selectedCity: selectedCity,
+        selectedTimezone: selectedTimezone,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    }
+
+    // Restore form data from localStorage
+    function restoreFormData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (!saved) return false;
+
+        const formData = JSON.parse(saved);
+
+        // Check if data is older than 30 days
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - formData.savedAt > thirtyDays) {
+          localStorage.removeItem(STORAGE_KEY);
+          return false;
+        }
+
+        // Restore form fields
+        if (formData.name) document.getElementById('name').value = formData.name;
+        if (formData.gender) document.getElementById('gender').value = formData.gender;
+        if (formData.date) document.getElementById('date').value = formData.date;
+        if (formData.time) document.getElementById('time').value = formData.time;
+        if (formData.location) document.getElementById('location').value = formData.location;
+
+        // Restore city and timezone selection
+        if (formData.selectedCity) {
+          selectedCity = formData.selectedCity;
+          selectedTimezone = formData.selectedTimezone;
+          if (formData.timezone) {
+            document.getElementById('timezone').value = formData.timezone;
+            document.getElementById('timezoneGroup').style.display = 'block';
+          }
+        }
+
+        return true;
+      } catch (e) {
+        console.error('Failed to restore form data:', e);
+        return false;
+      }
+    }
+
+    // Add event listeners to save form data on input change
+    function setupFormPersistence() {
+      const fields = ['name', 'gender', 'date', 'time', 'location'];
+      fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+          field.addEventListener('change', saveFormData);
+          field.addEventListener('blur', saveFormData);
+        }
+      });
+    }
+
+    // Initialize form persistence
+    restoreFormData();
+    setupFormPersistence();
+
     // ========== City Database with Timezone ==========
     const cityDatabase = [
       // 中国主要城市
@@ -870,6 +944,9 @@
       timezoneInput.value = city.tz;
       timezoneGroup.style.display = 'block';
       citySuggestions.style.display = 'none';
+
+      // Save form data after city selection
+      saveFormData();
     }
 
     // Close suggestions when clicking outside
