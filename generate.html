@@ -375,21 +375,6 @@
             </select>
           </div>
 
-          <div class="form-group full">
-            <label data-i18n="labelReportType">报告类型</label>
-            <div class="report-type-container" style="display:flex;gap:16px;margin-top:8px">
-              <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:8px;flex:1;justify-content:center" id="typeOptionMbti">
-                <input type="radio" name="reportType" value="mbti" checked style="accent-color:#00ff9d;width:18px;height:18px">
-                <span style="font-weight:600">🧠 MBTI人格分析</span>
-              </label>
-              <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(255,255,255,0.05);border:2px solid rgba(0,255,157,0.3);border-radius:8px;flex:1;justify-content:center" id="typeOptionKuder">
-                <input type="radio" name="reportType" value="kuder" style="accent-color:#00ff9d;width:18px;height:18px">
-                <span style="font-weight:600">💼 KUDER职业推算</span>
-              </label>
-            </div>
-            <div class="help-text" data-i18n="helpReportType">选择MBTI获取人格分析+灵魂契合卡，选择KUDER获取职业分析+宿命职业卡</div>
-          </div>
-
           <div class="form-group">
             <label for="date" data-i18n="labelDate">出生日期</label>
             <input type="date" id="date" name="date" required max="">
@@ -417,6 +402,21 @@
         </div>
 
         <div class="error" id="error"></div>
+
+        <div class="form-group full" style="margin-bottom:20px">
+          <label data-i18n="labelReportType">报告类型</label>
+          <div class="report-type-container" style="display:flex;gap:16px;margin-top:8px">
+            <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:8px;flex:1;justify-content:center" id="typeOptionMbti">
+              <input type="radio" name="reportType" value="mbti" checked style="accent-color:#00ff9d;width:18px;height:18px">
+              <span style="font-weight:600">🧠 <span data-i18n="reportTypeMbti">MBTI人格分析</span></span>
+            </label>
+            <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(255,255,255,0.05);border:2px solid rgba(0,255,157,0.3);border-radius:8px;flex:1;justify-content:center" id="typeOptionKuder">
+              <input type="radio" name="reportType" value="kuder" style="accent-color:#00ff9d;width:18px;height:18px">
+              <span style="font-weight:600">💼 <span data-i18n="reportTypeKuder">KUDER职业推算</span></span>
+            </label>
+          </div>
+          <div class="help-text" data-i18n="helpReportType">选择MBTI获取人格分析+灵魂契合卡，选择KUDER获取职业分析+宿命职业卡</div>
+        </div>
 
         <button type="submit" class="btn" id="submitBtn">
           🔮 <span data-i18n="btnGenerate">生成报告</span>
