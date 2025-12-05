@@ -7,7 +7,7 @@
 
   <!-- SEO Meta Tags -->
   <meta name="description" content="NatalCodex combines ancient Chinese BaZi (八字) astrology with modern MBTI personality analysis. Discover your unique soul blueprint through AI-powered insights. 结合八字命理与MBTI人格分析，AI解码您的灵魂密码。">
-  <meta name="keywords" content="BaZi, 八字, MBTI, personality, astrology, soul card, 命理, 人格分析, 灵魂契合卡, AI analysis">
+  <meta name="keywords" content="BaZi, 八字, MBTI, Kuder, personality, astrology, soul card, 命理, 人格分析, 职业分析, 灵魂契合卡, AI analysis">
   <meta name="author" content="NatalCodex">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://natalcodex.vercel.app/">
@@ -36,80 +36,291 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
   <style>
     * {margin:0;padding:0;box-sizing:border-box}
-    body {font-family:'Inter',sans-serif;overflow-x:hidden;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);color:#fff;min-height:100vh}
+    html {scroll-behavior:smooth}
+    body {font-family:'Inter',sans-serif;overflow-x:hidden;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);color:#fff}
     .bg-layer {position:fixed;inset:0;background-image:url('bg.png');background-size:cover;background-position:center;opacity:.35;z-index:0}
-    .container {position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:64px 40px;min-height:100vh;display:flex;align-items:center;justify-content:space-between}
-    .left {flex:1;max-width:560px;padding-right:48px}
+
+    /* Hero Section */
+    .hero {position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:64px 40px;min-height:100vh;display:flex;align-items:center;justify-content:space-between}
+    .hero-left {flex:1;max-width:560px;padding-right:48px}
     .logo {font-size:48px;font-weight:600;color:#00ff9d;text-shadow:0 0 18px rgba(0,255,157,.55);letter-spacing:-.5px;margin-bottom:24px}
     .tagline {font-family:'Playfair Display',serif;font-size:44px;line-height:1.25;margin-bottom:20px}
     .sub {font-size:16px;line-height:1.9;color:#d4d4d8;margin-bottom:32px}
     .cta {display:inline-block;padding:16px 36px;background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);color:#0a0e27;font-size:16px;font-weight:600;border:none;border-radius:10px;text-decoration:none;transition:all .25s ease;box-shadow:0 6px 22px rgba(0,255,157,.42)}
     .cta:hover {transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,255,157,.6)}
-    .cta.ghost {background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35);box-shadow:none}
-    .cta.ghost:hover {color:#0a0e27;background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);border-color:transparent;box-shadow:0 8px 24px rgba(0,255,157,.45)}
-    .right {flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:600px}
+    .hero-right {flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:600px}
     .mandala-wrap {position:relative;width:500px;height:500px;display:flex;align-items:center;justify-content:center}
     .mandala {width:100%;height:100%;filter:drop-shadow(0 0 38px rgba(0,255,157,.5));animation:spin 60s linear infinite}
     @keyframes spin {from{transform:rotate(0)}to{transform:rotate(360deg)}}
-    .card {position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:280px;filter:drop-shadow(0 12px 42px rgba(0,255,157,.28));animation:float 4s ease-in-out infinite}
+    .card-preview {position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:280px;filter:drop-shadow(0 12px 42px rgba(0,255,157,.28));animation:float 4s ease-in-out infinite}
     @keyframes float {0%,100%{transform:translateY(-50%) translateX(0)}50%{transform:translateY(-54%) translateX(6px)}}
-    .nav {position:absolute;bottom:56px;left:50%;transform:translateX(-50%);display:flex;gap:16px;z-index:2;justify-content:center;flex-wrap:nowrap}
-    .nav a {position:relative;display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid rgba(0,255,157,.35);border-radius:12px;background:rgba(10,14,39,.45);backdrop-filter:blur(6px);color:#e5e7eb;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:.2px;box-shadow:0 0 0 rgba(0,255,157,0);transition:all .2s ease}
-    .nav a::before {content:'';position:absolute;inset:-2px;border-radius:14px;box-shadow:0 0 18px rgba(0,255,157,.35);opacity:.0;transition:opacity .2s ease}
-    .nav a:hover {color:#0a0e27;background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);border-color:transparent;box-shadow:0 8px 24px rgba(0,255,157,.45)}
-    .nav a:hover::before {opacity:1}
-    @keyframes pulseGlow {0%,100%{box-shadow:0 0 0 rgba(0,255,157,0)}50%{box-shadow:0 0 22px rgba(0,255,157,.28)}}
-    .nav a {animation:pulseGlow 3s ease-in-out infinite}
-    @media (max-width:1200px){.container{flex-direction:column;text-align:center;padding:40px 24px}.left{max-width:100%;padding-right:0;margin-bottom:48px}.mandala-wrap{width:400px;height:400px}.card{position:relative;right:auto;top:auto;transform:none;margin-top:24px;width:240px}.nav{gap:12px}}
-    @media (max-width:768px){.logo{font-size:36px}.tagline{font-size:32px}.mandala-wrap{width:300px;height:300px}.card{width:200px}.nav{gap:10px;flex-wrap:nowrap}}
-  </style>
-  <style>
-    @media (max-width:768px){.nav{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(10,14,39,.55);padding:8px 10px;border-radius:14px;border:1px solid rgba(0,255,157,.3)}}
+
+    /* Sections Common */
+    .section {position:relative;z-index:1;padding:100px 40px;max-width:1200px;margin:0 auto}
+    .section-title {font-family:'Playfair Display',serif;font-size:36px;text-align:center;margin-bottom:16px;color:#00ff9d}
+    .section-desc {text-align:center;color:#d4d4d8;font-size:16px;max-width:700px;margin:0 auto 60px;line-height:1.8}
+
+    /* About Section */
+    #about {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    .about-grid {display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+    .about-text h3 {font-size:24px;color:#00ff9d;margin-bottom:16px}
+    .about-text p {color:#d4d4d8;line-height:1.9;margin-bottom:16px}
+    .about-image {text-align:center}
+    .about-image img {max-width:100%;border-radius:16px;box-shadow:0 20px 60px rgba(0,255,157,0.2)}
+
+    /* Features Section */
+    .features-grid {display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+    .feature-card {background:rgba(255,255,255,0.05);border:1px solid rgba(0,255,157,0.2);border-radius:16px;padding:32px;text-align:center;transition:all 0.3s ease}
+    .feature-card:hover {transform:translateY(-8px);border-color:#00ff9d;box-shadow:0 20px 40px rgba(0,255,157,0.15)}
+    .feature-icon {font-size:48px;margin-bottom:20px}
+    .feature-title {font-size:20px;font-weight:700;margin-bottom:12px;color:#fff}
+    .feature-desc {color:#9ca3af;font-size:14px;line-height:1.7}
+
+    /* Pricing Section */
+    #pricing {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    .pricing-card {max-width:480px;margin:0 auto;background:linear-gradient(135deg,rgba(0,255,157,0.1) 0%,rgba(0,212,170,0.05) 100%);border:2px solid #00ff9d;border-radius:24px;padding:48px;text-align:center}
+    .pricing-badge {display:inline-block;background:#00ff9d;color:#0a0e27;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;margin-bottom:24px}
+    .pricing-price {font-size:56px;font-weight:700;color:#fff;margin-bottom:8px}
+    .pricing-price span {font-size:20px;color:#9ca3af}
+    .pricing-subtitle {color:#9ca3af;margin-bottom:32px}
+    .pricing-features {text-align:left;margin-bottom:32px}
+    .pricing-features li {display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:#d4d4d8}
+    .pricing-features li:last-child {border-bottom:none}
+    .pricing-check {color:#00ff9d;font-size:20px}
+    .pricing-cta {width:100%;padding:18px;font-size:18px}
+
+    /* Footer */
+    .footer {position:relative;z-index:1;text-align:center;padding:40px;color:#6b7280;font-size:14px}
+    .footer a {color:#00ff9d;text-decoration:none}
+
+    /* Navigation */
+    .nav {position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:100;background:rgba(10,14,39,.85);padding:12px 20px;border-radius:16px;border:1px solid rgba(0,255,157,.3);backdrop-filter:blur(10px)}
+    .nav a {display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border:1px solid transparent;border-radius:10px;color:#e5e7eb;text-decoration:none;font-size:14px;font-weight:600;transition:all .2s ease}
+    .nav a:hover {color:#0a0e27;background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%)}
+
+    /* Language Switch */
+    .lang-switch {position:fixed;top:20px;right:20px;z-index:100;padding:10px 16px;background:rgba(10,14,39,.65);border:1px solid rgba(0,255,157,.35);border-radius:10px;color:#e5e7eb;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s ease}
+    .lang-switch:hover {background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);color:#0a0e27;border-color:transparent}
+
+    /* Responsive */
+    @media (max-width:1200px){
+      .hero{flex-direction:column;text-align:center;padding:40px 24px}
+      .hero-left{max-width:100%;padding-right:0;margin-bottom:48px}
+      .mandala-wrap{width:400px;height:400px}
+      .card-preview{position:relative;right:auto;top:auto;transform:none;margin-top:24px;width:240px}
+      .about-grid{grid-template-columns:1fr}
+      .features-grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:768px){
+      .logo{font-size:36px}
+      .tagline{font-size:32px}
+      .section-title{font-size:28px}
+      .mandala-wrap{width:300px;height:300px}
+      .card-preview{width:200px}
+      .features-grid{grid-template-columns:1fr}
+      .nav{gap:8px;padding:10px 16px}
+      .nav a{padding:8px 12px;font-size:12px}
+    }
   </style>
 </head>
 <body>
   <div class="bg-layer"></div>
+
   <!-- Language Switcher -->
-  <button id="langSwitch" style="position:fixed;top:20px;right:20px;z-index:100;padding:10px 16px;background:rgba(10,14,39,.65);border:1px solid rgba(0,255,157,.35);border-radius:10px;color:#e5e7eb;font-size:14px;font-weight:600;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s ease">
-    🌐 <span id="langText">EN</span>
-  </button>
-  <div class="container">
-    <div class="left">
+  <button id="langSwitch" class="lang-switch">🌐 <span id="langText">EN</span></button>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-left">
       <div class="logo">NatalCodex</div>
-      <div class="tagline" data-i18n="tagline">Unlock the Source Code of Your Soul</div>
-      <div class="sub" data-i18n="subtitle">Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.</div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a class="cta" href="generate.html" data-i18n="btnGenerate">生成报告</a>
-      </div>
+      <h1 class="tagline" data-i18n="tagline">解锁你灵魂的源代码</h1>
+      <p class="sub" data-i18n="subtitle">融合古老东方智慧与现代心理学，发现你的人格蓝图。输入出生信息，生成专属的灵魂卡片和深度分析报告。</p>
+      <a class="cta" href="generate.html" data-i18n="btnGenerate">立即生成报告</a>
     </div>
-    <div class="right">
+    <div class="hero-right">
       <div class="mandala-wrap">
         <img class="mandala" src="mandala.webp.png" alt="Five Elements Mandala">
       </div>
-      <img class="card" src="soulprint-card.webp.png" alt="Soulprint Card Preview">
+      <img class="card-preview" src="soulprint-card.webp.png" alt="Soulprint Card Preview">
     </div>
-  </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="section">
+    <h2 class="section-title" data-i18n="aboutTitle">关于 NatalCodex</h2>
+    <p class="section-desc" data-i18n="aboutDesc">我们将千年东方命理智慧与现代心理学完美融合，用AI技术为你解码灵魂密码。</p>
+    <div class="about-grid">
+      <div class="about-text">
+        <h3 data-i18n="aboutWhatTitle">什么是八字命理？</h3>
+        <p data-i18n="aboutWhatText">八字（BaZi）是中国古老的命理学系统，通过出生年、月、日、时的天干地支组合，揭示一个人的性格特质、人生轨迹和潜在天赋。</p>
+        <h3 data-i18n="aboutHowTitle">如何与现代心理学结合？</h3>
+        <p data-i18n="aboutHowText">我们将八字五行理论与MBTI认知功能、库德尔职业兴趣量表相结合，通过AI深度分析，为你生成独一无二的人格与职业洞察报告。</p>
+      </div>
+      <div class="about-image">
+        <img src="mandala.webp.png" alt="Eastern Wisdom" style="max-width:400px;opacity:0.8">
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section">
+    <h2 class="section-title" data-i18n="featuresTitle">核心功能</h2>
+    <p class="section-desc" data-i18n="featuresDesc">两种专业分析报告，满足你对自我探索的不同需求。</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3 class="feature-title" data-i18n="feature1Title">MBTI 人格分析</h3>
+        <p class="feature-desc" data-i18n="feature1Desc">基于八字推导MBTI 16型人格，生成认知功能栈分析和专属灵魂称号，配合精美灵魂契合卡。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💼</div>
+        <h3 class="feature-title" data-i18n="feature2Title">KUDER 职业推算</h3>
+        <p class="feature-desc" data-i18n="feature2Desc">结合库德尔职业兴趣量表，分析你的十大职业领域倾向，推荐最适合的职业方向和宿命职业卡。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎴</div>
+        <h3 class="feature-title" data-i18n="feature3Title">AI 生成卡片</h3>
+        <p class="feature-desc" data-i18n="feature3Desc">AI自动生成赛博道教风格的精美卡片，融合传统水墨与现代设计，可下载分享到社交媒体。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3 class="feature-title" data-i18n="feature4Title">深度报告</h3>
+        <p class="feature-desc" data-i18n="feature4Desc">3000+字专业分析报告，涵盖八字命盘、五行分析、人格/职业匹配，支持PDF下载。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3 class="feature-title" data-i18n="feature5Title">全球时区支持</h3>
+        <p class="feature-desc" data-i18n="feature5Desc">内置全球200+城市数据库，自动识别时区并计算真太阳时，确保八字排盘的精确性。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3 class="feature-title" data-i18n="feature6Title">隐私保护</h3>
+        <p class="feature-desc" data-i18n="feature6Desc">所有数据仅存储在你的浏览器本地，我们不收集任何个人信息，完全保护你的隐私。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section id="pricing" class="section">
+    <h2 class="section-title" data-i18n="pricingTitle">价格方案</h2>
+    <p class="section-desc" data-i18n="pricingDesc">目前完全免费，尽情探索你的灵魂密码！</p>
+    <div class="pricing-card">
+      <div class="pricing-badge" data-i18n="pricingBadge">限时免费</div>
+      <div class="pricing-price">$0 <span data-i18n="pricingForever">/ 永久</span></div>
+      <p class="pricing-subtitle" data-i18n="pricingSubtitle">无需注册，无需付款</p>
+      <ul class="pricing-features">
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF1">无限次 MBTI 人格分析</span></li>
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF2">无限次 KUDER 职业推算</span></li>
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF3">AI 生成灵魂契合卡/职业卡</span></li>
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF4">PDF 报告下载</span></li>
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
+        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6">历史记录本地保存</span></li>
+      </ul>
+      <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCta">立即开始</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p data-i18n="footerText">© 2025 NatalCodex. 融合东方智慧与现代科技。</p>
+  </footer>
+
+  <!-- Navigation -->
   <nav class="nav">
-    <a href="#about">About</a>
-    <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#login">Login</a>
+    <a href="#about" data-i18n="navAbout">关于</a>
+    <a href="#features" data-i18n="navFeatures">功能</a>
+    <a href="#pricing" data-i18n="navPricing">价格</a>
+    <a href="generate.html" data-i18n="navGenerate">生成</a>
   </nav>
+
   <script>
-    // Translation system
     const translations = {
       zh: {
         tagline: '解锁你灵魂的源代码',
         subtitle: '融合古老东方智慧与现代心理学，发现你的人格蓝图。输入出生信息，生成专属的灵魂卡片和深度分析报告。',
-        btnGenerate: '生成报告'
+        btnGenerate: '立即生成报告',
+        aboutTitle: '关于 NatalCodex',
+        aboutDesc: '我们将千年东方命理智慧与现代心理学完美融合，用AI技术为你解码灵魂密码。',
+        aboutWhatTitle: '什么是八字命理？',
+        aboutWhatText: '八字（BaZi）是中国古老的命理学系统，通过出生年、月、日、时的天干地支组合，揭示一个人的性格特质、人生轨迹和潜在天赋。',
+        aboutHowTitle: '如何与现代心理学结合？',
+        aboutHowText: '我们将八字五行理论与MBTI认知功能、库德尔职业兴趣量表相结合，通过AI深度分析，为你生成独一无二的人格与职业洞察报告。',
+        featuresTitle: '核心功能',
+        featuresDesc: '两种专业分析报告，满足你对自我探索的不同需求。',
+        feature1Title: 'MBTI 人格分析',
+        feature1Desc: '基于八字推导MBTI 16型人格，生成认知功能栈分析和专属灵魂称号，配合精美灵魂契合卡。',
+        feature2Title: 'KUDER 职业推算',
+        feature2Desc: '结合库德尔职业兴趣量表，分析你的十大职业领域倾向，推荐最适合的职业方向和宿命职业卡。',
+        feature3Title: 'AI 生成卡片',
+        feature3Desc: 'AI自动生成赛博道教风格的精美卡片，融合传统水墨与现代设计，可下载分享到社交媒体。',
+        feature4Title: '深度报告',
+        feature4Desc: '3000+字专业分析报告，涵盖八字命盘、五行分析、人格/职业匹配，支持PDF下载。',
+        feature5Title: '全球时区支持',
+        feature5Desc: '内置全球200+城市数据库，自动识别时区并计算真太阳时，确保八字排盘的精确性。',
+        feature6Title: '隐私保护',
+        feature6Desc: '所有数据仅存储在你的浏览器本地，我们不收集任何个人信息，完全保护你的隐私。',
+        pricingTitle: '价格方案',
+        pricingDesc: '目前完全免费，尽情探索你的灵魂密码！',
+        pricingBadge: '限时免费',
+        pricingForever: '/ 永久',
+        pricingSubtitle: '无需注册，无需付款',
+        pricingF1: '无限次 MBTI 人格分析',
+        pricingF2: '无限次 KUDER 职业推算',
+        pricingF3: 'AI 生成灵魂契合卡/职业卡',
+        pricingF4: 'PDF 报告下载',
+        pricingF5: '中英双语支持',
+        pricingF6: '历史记录本地保存',
+        pricingCta: '立即开始',
+        footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
+        navAbout: '关于',
+        navFeatures: '功能',
+        navPricing: '价格',
+        navGenerate: '生成'
       },
       en: {
         tagline: 'Unlock the Source Code of Your Soul',
         subtitle: 'Discover your personality blueprint by fusing ancient Eastern wisdom with modern psychology. Enter your birth data to generate a shareable Soulprint Card and an in-depth report.',
-        btnGenerate: 'Generate Report'
+        btnGenerate: 'Generate Report Now',
+        aboutTitle: 'About NatalCodex',
+        aboutDesc: 'We perfectly blend millennia-old Eastern wisdom with modern psychology, using AI to decode your soul\'s secrets.',
+        aboutWhatTitle: 'What is BaZi?',
+        aboutWhatText: 'BaZi (Eight Characters) is an ancient Chinese astrology system that reveals personality traits, life path, and hidden talents through the Heavenly Stems and Earthly Branches of your birth time.',
+        aboutHowTitle: 'How does it combine with modern psychology?',
+        aboutHowText: 'We integrate BaZi Five Elements theory with MBTI cognitive functions and Kuder Preference Record, using AI analysis to generate unique personality and career insights.',
+        featuresTitle: 'Core Features',
+        featuresDesc: 'Two professional analysis reports to meet your different self-exploration needs.',
+        feature1Title: 'MBTI Personality Analysis',
+        feature1Desc: 'Derive your MBTI 16-type personality from BaZi, generate cognitive function stack analysis and unique Soul Title, with a beautiful Soul Card.',
+        feature2Title: 'KUDER Career Analysis',
+        feature2Desc: 'Combined with Kuder Preference Record, analyze your ten career interest domains and recommend the most suitable career directions.',
+        feature3Title: 'AI-Generated Cards',
+        feature3Desc: 'AI generates beautiful cyber-Taoist style cards, blending traditional ink art with modern design, downloadable for social media sharing.',
+        feature4Title: 'In-depth Reports',
+        feature4Desc: '3000+ word professional analysis covering BaZi chart, Five Elements analysis, personality/career matching, with PDF download support.',
+        feature5Title: 'Global Timezone Support',
+        feature5Desc: 'Built-in database of 200+ cities worldwide, auto-detecting timezone and calculating true solar time for accurate BaZi calculation.',
+        feature6Title: 'Privacy Protection',
+        feature6Desc: 'All data is stored only in your browser locally. We don\'t collect any personal information, fully protecting your privacy.',
+        pricingTitle: 'Pricing',
+        pricingDesc: 'Currently completely free - explore your soul code to the fullest!',
+        pricingBadge: 'Limited Free',
+        pricingForever: '/ Forever',
+        pricingSubtitle: 'No registration, no payment required',
+        pricingF1: 'Unlimited MBTI Personality Analysis',
+        pricingF2: 'Unlimited KUDER Career Analysis',
+        pricingF3: 'AI-generated Soul Card / Career Card',
+        pricingF4: 'PDF Report Download',
+        pricingF5: 'Bilingual Support (EN/ZH)',
+        pricingF6: 'History saved locally',
+        pricingCta: 'Get Started',
+        footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
+        navAbout: 'About',
+        navFeatures: 'Features',
+        navPricing: 'Pricing',
+        navGenerate: 'Generate'
       }
     };
 
@@ -127,29 +338,35 @@
       document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
     }
 
-    // Initialize
     updateLanguage(currentLang);
 
-    // Language switcher
     document.getElementById('langSwitch').addEventListener('click', function() {
       updateLanguage(currentLang === 'zh' ? 'en' : 'zh');
     });
 
-    // Hover effect for lang switch
-    document.getElementById('langSwitch').addEventListener('mouseenter', function() {
-      this.style.background = 'linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%)';
-      this.style.color = '#0a0e27';
-      this.style.borderColor = 'transparent';
-    });
-    document.getElementById('langSwitch').addEventListener('mouseleave', function() {
-      this.style.background = 'rgba(10,14,39,.65)';
-      this.style.color = '#e5e7eb';
-      this.style.borderColor = 'rgba(0,255,157,.35)';
+    // Parallax effect for hero
+    document.addEventListener('mousemove', function(e) {
+      const m = document.querySelector('.mandala-wrap');
+      const c = document.querySelector('.card-preview');
+      if (!m || !c) return;
+      const x = (e.clientX - window.innerWidth / 2) * 0.01;
+      const y = (e.clientY - window.innerHeight / 2) * 0.01;
+      m.style.transform = `translate(${x}px, ${y}px)`;
+      if (window.innerWidth > 1200) {
+        c.style.transform = `translateY(-50%) translate(${x * 1.6}px, ${y * 1.6}px)`;
+      }
     });
 
-    // Parallax effect
-    document.addEventListener('mousemove',function(e){var m=document.querySelector('.mandala-wrap');var c=document.querySelector('.card');var x=(e.clientX-window.innerWidth/2)*0.01;var y=(e.clientY-window.innerHeight/2)*0.01;if(m){m.style.transform='translate('+x+'px,'+y+'px)'}if(c){c.style.transform='translateY(-50%) translate('+(x*1.6)+'px,'+(y*1.6)+'px)'}});
-    document.querySelectorAll('a[href^="#"]').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault();var t=document.querySelector(this.getAttribute('href'));if(t){t.scrollIntoView({behavior:'smooth'})}})});
+    // Smooth scroll for nav links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
   </script>
 </body>
 </html>

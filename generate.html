@@ -334,6 +334,13 @@
       .report-content h3 {
         font-size:16px;
       }
+      .report-type-container {
+        flex-direction:column !important;
+        gap:12px !important;
+      }
+      .report-type-option {
+        padding:14px 16px !important;
+      }
     }
   </style>
 </head>
@@ -370,12 +377,12 @@
 
           <div class="form-group full">
             <label data-i18n="labelReportType">报告类型</label>
-            <div style="display:flex;gap:16px;margin-top:8px">
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:8px;flex:1;justify-content:center" id="typeOptionMbti">
+            <div class="report-type-container" style="display:flex;gap:16px;margin-top:8px">
+              <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:8px;flex:1;justify-content:center" id="typeOptionMbti">
                 <input type="radio" name="reportType" value="mbti" checked style="accent-color:#00ff9d;width:18px;height:18px">
                 <span style="font-weight:600">🧠 MBTI人格分析</span>
               </label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(255,255,255,0.05);border:2px solid rgba(0,255,157,0.3);border-radius:8px;flex:1;justify-content:center" id="typeOptionKuder">
+              <label class="report-type-option" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(255,255,255,0.05);border:2px solid rgba(0,255,157,0.3);border-radius:8px;flex:1;justify-content:center" id="typeOptionKuder">
                 <input type="radio" name="reportType" value="kuder" style="accent-color:#00ff9d;width:18px;height:18px">
                 <span style="font-weight:600">💼 KUDER职业推算</span>
               </label>
