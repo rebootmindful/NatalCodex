@@ -77,12 +77,11 @@ module.exports = async (req, res) => {
 LAYOUT:
 - BACKGROUND: Deep space navy blue + golden star orbits + vintage mechanical gears
 - TOP: Giant golden foil title "${name}'s Kuder Destiny Career Card" with metallic glow
-- SUBTITLE (below title): Talent quote in elegant script: "${talentQuote}"
 - LEFT HALF (Traditional Chinese): Circular BaZi chart wheel showing Four Pillars "${baziPillars}", Day Master ${dayMaster}(${dayElement}), Ten Gods: ${shiShen}, Favorable Element: ${yongShen} in RED, Divine Stars: ${shenSha}
 - RIGHT HALF (Retro-tech): Classic Kuder decagonal radar diagram with 10 career interest domains, filled with Five Element colors (Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black). TOP 3 domains glowing bright: ${top3Domains}. BOTTOM 3 domains dimmed: ${bottom3Domains}
 - CENTER: Massive gilded seal script showing destiny title "${careerTitle}" with golden rays
 - MIDDLE: Five Element energy streams connecting both sides like a "destiny balance scale"
-- BOTTOM: Vintage scroll style career summary - Best careers: ${careers}
+- BOTTOM: Vintage scroll style with one-line talent summary (ancient wisdom + modern translation): "${talentQuote}"
 
 STYLE: Cyberpunk retro + vaporwave + laser gold foil + particle texture, maximum PUNCH, extreme information density yet well-layered, NO watermarks`;
     } else {
@@ -91,7 +90,6 @@ STYLE: Cyberpunk retro + vaporwave + laser gold foil + particle texture, maximum
 【布局要求】
 ■ 背景：深空墨蓝 + 金色星轨 + 复古机械齿轮纹理
 ■ 顶部：巨大烫金标题「${name}的库德尔宿命职业卡」，金属质感发光
-■ 标题下方：天赋金句「${talentQuote}」，用优雅的行书字体，银白色发光
 ■ 左半区(传统水墨风)：
   - 八字命盘圆盘图，四柱：${baziPillars}
   - 日主${dayMaster}(${dayElement})居中
@@ -105,7 +103,7 @@ STYLE: Cyberpunk retro + vaporwave + laser gold foil + particle texture, maximum
   - 后三弱领域暗淡：${bottom3Domains}
 ■ 正中央最显眼：超大鎏金篆体宿命称号「${careerTitle}」，金光四射
 ■ 中间横贯：五行能量光带连接左右，形成"命运天平"转动感
-■ 底部：复古卷轴横批 - 最佳职业方向：${careers}
+■ 底部：复古卷轴横批，一句话天赋总结「${talentQuote}」
 
 【风格要求】
 赛博复古 + 蒸汽波 + 镭射烫金 + 微粒感，极致PUNCH
@@ -482,13 +480,13 @@ function extractKuderInfo(content, isEnglish) {
   }
   console.log('[ExtractKuderInfo] Careers:', result.careers);
 
-  // Extract talent quote / 天赋金句 - enhanced patterns
+  // Extract talent quote / 天赋金句 - enhanced patterns (支持古籍格式)
   const quotePatterns = [
     /天赋金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
     /一句话天赋[金句]*[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
     /一句话[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
+    /《[^》]+》[云曰][：:]*\s*[「"']*([^「"'\n]+)[」"']*/,  // 《穷通宝鉴》云：'xxx'
     /金句[：:]\s*[「"']*([^「"'\n]+)[」"']*/,
-    /总结[：:]\s*[「"']*([^「"'\n]{10,50})[」"']*/,  // Short summary
     /职业天赋总结[：:]\s*[「"']*([^「"'\n]+)[」"']*/
   ];
   for (const pattern of quotePatterns) {
@@ -509,6 +507,15 @@ function extractKuderInfo(content, isEnglish) {
     if (summarySection && summarySection[1]) {
       result.talentQuote = summarySection[1].trim().replace(/[*#「」"']/g, '');
       console.log('[ExtractKuderInfo] Found talent quote from summary:', result.talentQuote);
+    }
+  }
+
+  // If still no quote, try ancient text format: 「xxx」，译：xxx
+  if (!result.talentQuote) {
+    const ancientMatch = content.match(/[「"']([^「"'\n]{10,50})[」"'][，,]?\s*[译现代]*[：:]*\s*([^「"'\n]{10,50})/);
+    if (ancientMatch) {
+      result.talentQuote = `${ancientMatch[1]}，译：${ancientMatch[2]}`;
+      console.log('[ExtractKuderInfo] Found talent quote from ancient text:', result.talentQuote);
     }
   }
 
