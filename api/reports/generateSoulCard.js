@@ -42,25 +42,32 @@ module.exports = async (req, res) => {
     const extractedInfo = extractInfoFromReport(rawAnalysis || reportContent, isEnglish);
     console.log('[GenerateSoulCard] Extracted info:', extractedInfo);
 
-    // Build the image generation prompt
+    // Build the image generation prompt - focus on visual description, no style watermarks
+    const mbtiType = extractedInfo.mbti || 'INFJ';
+    const soulTitle = extractedInfo.soulTitle || `${name}之魂`;
+    const baziInfo = extractedInfo.bazi || '命理八字';
+
     let imagePrompt;
     if (isEnglish) {
-      imagePrompt = `Generate a tall vertical "Soul Card" in nanobanana pro style:
-- Top: Golden seal script title "【${name}】's Soul Card"
-- Left: Ink wash style BaZi chart: ${extractedInfo.bazi || 'Four Pillars destiny'}
-- Right: Cyber style MBTI: ${extractedInfo.mbti || 'Personality type'} cognitive stack
-- Center: Gilded seal script: "${extractedInfo.soulTitle || name + ' Soul'}"
-- Five element light bands connecting, destiny gear aesthetic
-- Colors: Black-purple starry background + neon five-element colors + gold foil
-- Style: Cyber Taoist fusion, mystical tech aesthetic`;
+      imagePrompt = `A mystical vertical tarot-style "Soul Card" design:
+- Dark purple cosmic background with stars and nebula
+- Top center: Elegant gold Chinese calligraphy title "${name}'s Soul Card"
+- Left side: Traditional Chinese ink wash painting style showing BaZi fortune symbols
+- Right side: Futuristic holographic display showing "${mbtiType}" personality type with glowing circuits
+- Center focal point: Large ornate golden seal with text "${soulTitle}"
+- Five Elements (Wood, Fire, Earth, Metal, Water) represented as glowing colored energy streams connecting the elements
+- Style: Blend of ancient Eastern mysticism and modern cyberpunk aesthetics
+- NO watermarks, NO logos, NO English text except MBTI type`;
     } else {
-      imagePrompt = `用 nanobanana pro 风格生成一张竖版「灵魂契合卡」，布局：
-- 顶部金色篆体标题：【${name}】的灵魂契合卡
-- 左侧水墨风八字命盘：${extractedInfo.bazi || '四柱八字'}
-- 右侧赛博风MBTI：${extractedInfo.mbti || '人格类型'}认知功能栈
-- 中央鎏金篆体：「${extractedInfo.soulTitle || name + '之魂'}」
-- 五行光带连接，命运齿轮感
-- 配色：黑紫星空底+霓虹五行色+烫金，赛博道教风`;
+      imagePrompt = `神秘风格竖版塔罗牌式「灵魂契合卡」设计：
+- 深紫色宇宙星空背景，星云缭绕
+- 顶部居中：金色书法标题「${name}的灵魂契合卡」
+- 左侧区域：中国传统水墨画风格，展示八字命盘符号「${baziInfo}」
+- 右侧区域：未来科技全息投影风格，显示人格类型「${mbtiType}」，配以发光电路纹理
+- 中央焦点：华丽金色印章，刻有「${soulTitle}」
+- 五行元素（木火土金水）以发光彩色能量流形式连接各区域
+- 风格：古老东方神秘主义与现代赛博朋克美学融合
+- 不要添加任何水印或无关文字`;
     }
 
     console.log('[GenerateSoulCard] Image prompt length:', imagePrompt.length);
