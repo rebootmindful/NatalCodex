@@ -368,6 +368,21 @@
             </select>
           </div>
 
+          <div class="form-group full">
+            <label data-i18n="labelReportType">报告类型</label>
+            <div style="display:flex;gap:16px;margin-top:8px">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(0,255,157,0.15);border:2px solid #00ff9d;border-radius:8px;flex:1;justify-content:center" id="typeOptionMbti">
+                <input type="radio" name="reportType" value="mbti" checked style="accent-color:#00ff9d;width:18px;height:18px">
+                <span style="font-weight:600">🧠 MBTI人格分析</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:12px 20px;background:rgba(255,255,255,0.05);border:2px solid rgba(0,255,157,0.3);border-radius:8px;flex:1;justify-content:center" id="typeOptionKuder">
+                <input type="radio" name="reportType" value="kuder" style="accent-color:#00ff9d;width:18px;height:18px">
+                <span style="font-weight:600">💼 KUDER职业推算</span>
+              </label>
+            </div>
+            <div class="help-text" data-i18n="helpReportType">选择MBTI获取人格分析+灵魂契合卡，选择KUDER获取职业分析+宿命职业卡</div>
+          </div>
+
           <div class="form-group">
             <label for="date" data-i18n="labelDate">出生日期</label>
             <input type="date" id="date" name="date" required max="">
@@ -503,6 +518,14 @@
         cardError: '图片生成失败：',
         cardProgressTip: '图片生成通常需要30-60秒...',
         cardProgressTips: ['正在分析八字信息...', '正在设计卡片布局...', '正在渲染五行元素...', '正在生成MBTI图表...', '即将完成...'],
+        labelReportType: '报告类型',
+        helpReportType: '选择MBTI获取人格分析+灵魂契合卡，选择KUDER获取职业分析+宿命职业卡',
+        reportTypeMbti: 'MBTI人格分析',
+        reportTypeKuder: 'KUDER职业推算',
+        btnCardKuder: '生成宿命职业卡',
+        cardTitleKuder: '您的宿命职业卡',
+        cardLoadingKuder: 'AI正在生成您的宿命职业卡...',
+        cardProgressTipsKuder: ['正在分析八字信息...', '正在匹配职业领域...', '正在渲染库德尔图表...', '正在生成职业卡...', '即将完成...'],
         historyTitle: '历史报告',
         btnClearHistory: '清空历史',
         historyEmpty: '暂无历史报告',
@@ -549,6 +572,14 @@
         cardError: 'Image generation failed: ',
         cardProgressTip: 'Image generation usually takes 30-60 seconds...',
         cardProgressTips: ['Analyzing BaZi data...', 'Designing card layout...', 'Rendering Five Elements...', 'Generating MBTI chart...', 'Almost done...'],
+        labelReportType: 'Report Type',
+        helpReportType: 'Choose MBTI for personality analysis + Soul Card, or KUDER for career analysis + Destiny Career Card',
+        reportTypeMbti: 'MBTI Personality',
+        reportTypeKuder: 'KUDER Career',
+        btnCardKuder: 'Generate Destiny Card',
+        cardTitleKuder: 'Your Destiny Career Card',
+        cardLoadingKuder: 'AI is generating your Destiny Career Card...',
+        cardProgressTipsKuder: ['Analyzing BaZi data...', 'Matching career domains...', 'Rendering Kuder chart...', 'Generating career card...', 'Almost done...'],
         historyTitle: 'Report History',
         btnClearHistory: 'Clear History',
         historyEmpty: 'No history reports',
@@ -673,6 +704,30 @@
     // Initialize form persistence
     restoreFormData();
     setupFormPersistence();
+
+    // ========== Report Type Selection Visual Feedback ==========
+    const typeOptionMbti = document.getElementById('typeOptionMbti');
+    const typeOptionKuder = document.getElementById('typeOptionKuder');
+    const reportTypeRadios = document.querySelectorAll('input[name="reportType"]');
+
+    function updateReportTypeStyles() {
+      const selectedType = document.querySelector('input[name="reportType"]:checked')?.value || 'mbti';
+      if (selectedType === 'mbti') {
+        typeOptionMbti.style.background = 'rgba(0,255,157,0.15)';
+        typeOptionMbti.style.borderColor = '#00ff9d';
+        typeOptionKuder.style.background = 'rgba(255,255,255,0.05)';
+        typeOptionKuder.style.borderColor = 'rgba(0,255,157,0.3)';
+      } else {
+        typeOptionKuder.style.background = 'rgba(0,255,157,0.15)';
+        typeOptionKuder.style.borderColor = '#00ff9d';
+        typeOptionMbti.style.background = 'rgba(255,255,255,0.05)';
+        typeOptionMbti.style.borderColor = 'rgba(0,255,157,0.3)';
+      }
+    }
+
+    reportTypeRadios.forEach(radio => {
+      radio.addEventListener('change', updateReportTypeStyles);
+    });
 
     // ========== City Database with Timezone ==========
     const cityDatabase = [
@@ -1075,6 +1130,7 @@
 
       // Get form data
       const formData = new FormData(form);
+      const reportType = formData.get('reportType') || 'mbti';
       const birthData = {
         name: formData.get('name'),
         gender: formData.get('gender'),
@@ -1086,8 +1142,19 @@
         language: currentLang
       };
 
+      // Store current report type for card generation
+      window.currentReportType = reportType;
+
+      // Update card button text based on report type
+      updateCardButtonText(reportType);
+
       try {
-        const response = await fetch('/api/reports/generateWithAPImart', {
+        // Choose API endpoint based on report type
+        const apiEndpoint = reportType === 'kuder'
+          ? '/api/reports/generateKuder'
+          : '/api/reports/generateWithAPImart';
+
+        const response = await fetch(apiEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -1131,7 +1198,8 @@
           name: birthData.name,
           gender: birthData.gender,
           reportContent: cleanReport,
-          rawAnalysis: data.analysis?.raw_content || cleanReport
+          rawAnalysis: data.analysis?.raw_content || cleanReport,
+          reportType: reportType
         };
 
         // Render markdown to HTML
@@ -1144,7 +1212,8 @@
           date: birthData.date,
           time: birthData.time,
           location: birthData.location,
-          content: cleanReport
+          content: cleanReport,
+          reportType: reportType
         });
 
         // Show result
@@ -1219,32 +1288,59 @@
         // Create a styled container for PDF generation
         const pdfContainer = document.createElement('div');
         pdfContainer.style.cssText = `
-          font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-          color: #333;
-          padding: 20px;
+          font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'SimHei', sans-serif;
+          color: #000;
+          padding: 30px;
           background: #fff;
           line-height: 1.8;
+          position: fixed;
+          left: -9999px;
+          top: 0;
+          width: 800px;
         `;
+
+        // Clone and clean report content - override all colors to black text on white
+        const cleanContent = reportContent.cloneNode(true);
+        cleanContent.querySelectorAll('*').forEach(el => {
+          el.style.color = '#000';
+          el.style.background = 'transparent';
+          el.style.backgroundColor = 'transparent';
+        });
+        cleanContent.querySelectorAll('h1, h2, h3').forEach(el => {
+          el.style.color = '#1a1f4d';
+          el.style.marginTop = '20px';
+          el.style.marginBottom = '10px';
+        });
+
         pdfContainer.innerHTML = `
-          <h1 style="text-align:center;color:#1a1f4d;margin-bottom:20px;font-size:24px">${title}</h1>
+          <h1 style="text-align:center;color:#1a1f4d;margin-bottom:20px;font-size:24px;margin-top:0">${title}</h1>
           <p style="text-align:center;color:#666;margin-bottom:30px;font-size:12px">${currentLang === 'zh' ? '生成时间' : 'Generated'}: ${new Date().toLocaleString()}</p>
           <hr style="border:none;border-top:2px solid #00d4aa;margin-bottom:20px">
-          <div style="font-size:12px">${reportContent.innerHTML}</div>
+          <div id="pdfReportBody" style="font-size:13px;color:#000"></div>
           <hr style="border:none;border-top:1px solid #ddd;margin-top:30px">
           <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">Powered by NatalCodex - BaZi & MBTI Analysis</p>
         `;
 
+        // Append cleaned content
+        pdfContainer.querySelector('#pdfReportBody').appendChild(cleanContent);
+
+        // Add to DOM temporarily for proper rendering
+        document.body.appendChild(pdfContainer);
+
         // PDF options
         const opt = {
-          margin: [15, 15, 15, 15],
+          margin: [10, 10, 10, 10],
           filename: `BaZi-MBTI-Report_${name}_${new Date().toLocaleDateString()}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, logging: false },
+          image: { type: 'jpeg', quality: 0.95 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         // Generate PDF
         await html2pdf().set(opt).from(pdfContainer).save();
+
+        // Remove temporary container
+        document.body.removeChild(pdfContainer);
 
         downloadPdfBtn.innerHTML = `✅ <span data-i18n="btnDownloaded">${translations[currentLang].btnDownloaded}</span>`;
         downloadPdfBtn.classList.add('copied');
@@ -1320,10 +1416,13 @@
     let progressInterval = null;
 
     // Simulated progress animation (since API doesn't provide real progress)
-    function startProgressAnimation() {
+    function startProgressAnimation(isKuder = false) {
       let progress = 0;
       let tipIndex = 0;
-      const tips = translations[currentLang].cardProgressTips;
+      // Choose tips based on report type
+      const tips = isKuder
+        ? translations[currentLang].cardProgressTipsKuder
+        : translations[currentLang].cardProgressTips;
 
       // Reset progress
       progressBar.style.width = '0%';
@@ -1349,6 +1448,13 @@
       }, 500);
     }
 
+    // Update card button text based on report type
+    function updateCardButtonText(reportType) {
+      const isKuder = reportType === 'kuder';
+      const btnText = isKuder ? translations[currentLang].btnCardKuder : translations[currentLang].btnCard;
+      generateCardBtn.innerHTML = `🎴 <span data-i18n="${isKuder ? 'btnCardKuder' : 'btnCard'}">${btnText}</span>`;
+    }
+
     function stopProgressAnimation(success = true) {
       if (progressInterval) {
         clearInterval(progressInterval);
@@ -1366,15 +1472,36 @@
         return;
       }
 
-      // Show loading
+      // Determine report type
+      const reportType = lastAnalysisData.reportType || window.currentReportType || 'mbti';
+      const isKuder = reportType === 'kuder';
+
+      // Show loading with appropriate text
       generateCardBtn.disabled = true;
       generateCardBtn.innerHTML = `⏳ <span>${translations[currentLang].cardGenerating}</span>`;
       cardSection.style.display = 'block';
       cardLoading.style.display = 'block';
       cardImage.style.display = 'none';
 
-      // Start progress animation
-      startProgressAnimation();
+      // Update card section title
+      const cardTitleEl = cardSection.querySelector('[data-i18n="cardTitle"], [data-i18n="cardTitleKuder"]');
+      if (cardTitleEl) {
+        cardTitleEl.textContent = isKuder
+          ? translations[currentLang].cardTitleKuder
+          : translations[currentLang].cardTitle;
+        cardTitleEl.setAttribute('data-i18n', isKuder ? 'cardTitleKuder' : 'cardTitle');
+      }
+
+      // Update loading text
+      const loadingTextEl = cardLoading.querySelector('.loading-text');
+      if (loadingTextEl) {
+        loadingTextEl.textContent = isKuder
+          ? translations[currentLang].cardLoadingKuder
+          : translations[currentLang].cardLoading;
+      }
+
+      // Start progress animation with appropriate tips
+      startProgressAnimation(isKuder);
 
       // Scroll to card section immediately when starting generation
       setTimeout(() => {
@@ -1382,7 +1509,12 @@
       }, 100);
 
       try {
-        const response = await fetch('/api/reports/generateSoulCard', {
+        // Choose API endpoint based on report type
+        const cardApiEndpoint = isKuder
+          ? '/api/reports/generateKuderCard'
+          : '/api/reports/generateSoulCard';
+
+        const response = await fetch(cardApiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -1421,7 +1553,9 @@
         });
       } finally {
         generateCardBtn.disabled = false;
-        generateCardBtn.innerHTML = `🎴 <span data-i18n="btnCard">${translations[currentLang].btnCard}</span>`;
+        // Restore button text based on report type
+        const btnText = isKuder ? translations[currentLang].btnCardKuder : translations[currentLang].btnCard;
+        generateCardBtn.innerHTML = `🎴 <span data-i18n="${isKuder ? 'btnCardKuder' : 'btnCard'}">${btnText}</span>`;
       }
     });
 
@@ -1504,16 +1638,25 @@
       reportContent.innerHTML = marked.parse(report.content);
       resultSection.classList.add('active');
 
+      // Set report type from history
+      const reportType = report.reportType || 'mbti';
+      window.currentReportType = reportType;
+
+      // Update card button text
+      updateCardButtonText(reportType);
+
       // Set up data for soul card generation
       lastAnalysisData = {
         name: report.name,
         gender: report.gender,
         reportContent: report.content,
-        rawAnalysis: report.content
+        rawAnalysis: report.content,
+        reportType: reportType
       };
 
-      // Hide card section when viewing history
-      cardSection.style.display = 'none';
+      // Don't hide cardSection - keep current card generation state intact
+      // Only hide the card image if it was from a different report
+      // User can still see the card being generated
 
       // Scroll to result
       setTimeout(() => {
@@ -1535,10 +1678,14 @@
       historyList.innerHTML = history.map(report => {
         const date = new Date(report.createdAt);
         const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const reportTypeLabel = report.reportType === 'kuder'
+          ? (currentLang === 'zh' ? 'KUDER' : 'KUDER')
+          : 'MBTI';
+        const reportTypeColor = report.reportType === 'kuder' ? '#fbbf24' : '#00ff9d';
         return `
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:8px;border:1px solid rgba(0,255,157,0.1)">
             <div style="flex:1">
-              <div style="font-weight:600;color:#e5e7eb">${report.name} <span style="color:#9ca3af;font-weight:400;font-size:13px">(${report.gender})</span></div>
+              <div style="font-weight:600;color:#e5e7eb">${report.name} <span style="color:#9ca3af;font-weight:400;font-size:13px">(${report.gender})</span> <span style="background:${reportTypeColor};color:#0a0e27;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:6px">${reportTypeLabel}</span></div>
               <div style="font-size:12px;color:#6b7280;margin-top:4px">${report.date} ${report.time} · ${report.location}</div>
               <div style="font-size:11px;color:#4b5563;margin-top:2px">${dateStr}</div>
             </div>
