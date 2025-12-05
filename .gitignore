@@ -1,6 +1,7 @@
 node_modules/
 apikey.txt
 *.log
+logs_*.csv
 .DS_Store
 Thumbs.db
 backup-original/
@@ -8,3 +9,20 @@ backup-original/
 dist/
 tmp/
 *.env
+.vercel/
+
+# Development docs (internal)
+*设计方案.md
+*产品方案.md
+*逻辑文档.md
+*开发方案.md
+*数据库设计.md
+*检查清单.md
+*说明书.md
+*Sample*.md
+*示例.md
+*Report_*.md
+时区和地点选择组件完整代码.md
+
+# Deprecated API files
+api/reports/generate.js
