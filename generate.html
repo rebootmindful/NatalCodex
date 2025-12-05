@@ -1286,12 +1286,30 @@
     const downloadPdfBtn = document.getElementById('downloadPdfBtn');
     downloadPdfBtn.addEventListener('click', async () => {
       const name = document.getElementById('name').value || 'User';
-      const title = currentLang === 'zh' ? `${name}的八字MBTI分析报告` : `${name}'s BaZi & MBTI Analysis Report`;
+
+      // Determine report type for PDF title and filename
+      const reportType = lastAnalysisData?.reportType || window.currentReportType || 'mbti';
+      const isKuder = reportType === 'kuder';
+
+      const title = isKuder
+        ? (currentLang === 'zh' ? `${name}的八字库德尔职业分析报告` : `${name}'s BaZi & Kuder Career Analysis Report`)
+        : (currentLang === 'zh' ? `${name}的八字MBTI分析报告` : `${name}'s BaZi & MBTI Analysis Report`);
+
+      const footerText = isKuder
+        ? 'Powered by NatalCodex - BaZi & Kuder Career Analysis'
+        : 'Powered by NatalCodex - BaZi & MBTI Analysis';
+
+      const filenamePrefix = isKuder ? 'BaZi-Kuder-Report' : 'BaZi-MBTI-Report';
 
       downloadPdfBtn.innerHTML = `⏳ <span>${currentLang === 'zh' ? '生成中...' : 'Generating...'}</span>`;
       downloadPdfBtn.disabled = true;
 
       try {
+        // Check if reportContent has content
+        if (!reportContent.innerHTML || reportContent.innerHTML.trim() === '') {
+          throw new Error(currentLang === 'zh' ? '报告内容为空，请先生成报告' : 'Report content is empty, please generate report first');
+        }
+
         // Create a styled container for PDF generation
         const pdfContainer = document.createElement('div');
         pdfContainer.style.cssText = `
@@ -1325,7 +1343,7 @@
           <hr style="border:none;border-top:2px solid #00d4aa;margin-bottom:20px">
           <div id="pdfReportBody" style="font-size:13px;color:#000"></div>
           <hr style="border:none;border-top:1px solid #ddd;margin-top:30px">
-          <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">Powered by NatalCodex - BaZi & MBTI Analysis</p>
+          <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">${footerText}</p>
         `;
 
         // Append cleaned content
@@ -1337,7 +1355,7 @@
         // PDF options
         const opt = {
           margin: [10, 10, 10, 10],
-          filename: `BaZi-MBTI-Report_${name}_${new Date().toLocaleDateString()}.pdf`,
+          filename: `${filenamePrefix}_${name}_${new Date().toLocaleDateString()}.pdf`,
           image: { type: 'jpeg', quality: 0.95 },
           html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
