@@ -53,24 +53,52 @@ module.exports = async (req, res) => {
       locationInfo += ` (时区: ${timezone})`;
     }
 
-    // KUDER prompt - optimized to match MBTI format
+    // KUDER prompt - optimized to match MBTI format with 7 steps
     let prompt;
     if (isEnglish) {
       prompt = `You are a master of both classical Chinese BaZi astrology (《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》《神峰通考》) and the Kuder Preference Record (1934-2024 all versions), expertly mapping the Ten Career Interest Domains (0-Outdoor, 1-Mechanical, 2-Computational, 3-Scientific, 4-Persuasive, 5-Artistic, 6-Literary, 7-Musical, 8-Social Service, 9-Clerical) to the Five Elements and Ten Gods.
 
 My birth information: ${birthData.date} ${birthData.time}, ${birthData.gender === '男' ? 'Male' : 'Female'}, ${locationInfo}
 
-Please follow these 6 steps strictly:
+Please follow these 7 steps strictly:
 
-1. Calculate my Four Pillars (BaZi) using True Solar Time correction. Include: Year/Month/Day/Hour pillars, Ten Gods, Divine Stars, Dayun timing, Empty Void positions
-2. Analyze Day Master strength, Useful Gods, Taboo Gods, destiny pattern classification, favorable colors
-3. Based on Kuder's ten domains and their official definitions, combined with my Ten Gods, Divine Stars, Palace positions, and Dayun flow, derive my TOP 3 strongest and BOTTOM 3 weakest interest domains (must include detailed reasoning with scores 0-100)
+1. Calculate my Four Pillars (BaZi) using True Solar Time correction. Must include:
+   - Year/Month/Day/Hour pillars with Hidden Stems (地支藏干)
+   - Ten Gods (十神) for each pillar
+   - Divine Stars (神煞)
+   - Empty Void positions (空亡)
+   - Dayun (Great Luck) starting age and cycle
+
+2. Analyze using traditional methods:
+   - Day Master's Five Element and strength (旺衰)
+   - Useful Gods (用神) and Taboo Gods (忌神)
+   - Destiny pattern classification and level (格局层级)
+   - Favorable/Unfavorable Colors (喜忌颜色) based on Five Elements
+
+3. Based on Kuder's ten domains and their official definitions, combined with my Ten Gods, Divine Stars, Palace positions, and Dayun flow, derive my TOP 3 strongest and BOTTOM 3 weakest interest domains. Must include detailed reasoning and scores (0-100 scale), no guessing.
+
 4. Map BaZi characteristics to Kuder's ten domains deeply, create my unique "Destiny Career Title", such as:
    - Shang Guan + Hua Gai + Empty Void → Art/Music extremely strong → "Crimson Shang Guan · Born Artist"
    - Qi Sha + Yang Ren + Lu Shen → Outdoor/Mechanical extremely strong → "Yang Ren Qi Sha · Conqueror"
    - Zheng Cai + Shi Shen + Tian De → Social Service/Clerical extremely strong → "Shi Shen Sheng Cai · Healer"
-5. Output a pure text summary including: complete BaZi, Kuder top 3 + bottom 3 domains with scores, 3-5 matching modern careers, Destiny Career Title, one-sentence talent quote - for easy social sharing
-6. Generate the complete report directly, no confirmation needed
+
+5. Recommend 3-5 specific modern careers that best match my BaZi profile and Kuder strengths.
+
+6. Output a pure text summary in the EXACT format below for easy social media sharing:
+
+---SOCIAL MEDIA SUMMARY START---
+【BaZi】Year-Pillar Month-Pillar Day-Pillar Hour-Pillar
+【Day Master】X Element (strength)
+【Useful God】X Element
+【Favorable Color】Color1, Color2
+【Top 3 Domains】①Domain(score) ②Domain(score) ③Domain(score)
+【Bottom 3 Domains】①Domain(score) ②Domain(score) ③Domain(score)
+【Recommended Careers】Career1, Career2, Career3
+【Destiny Career Title】XXX·XXX
+【Talent Quote】「Ancient text quote」—《Book Name》, Translation: modern interpretation
+---SOCIAL MEDIA SUMMARY END---
+
+7. Generate the complete report directly, no confirmation needed!
 
 Please output a complete detailed analysis report in markdown format. **IMPORTANT: Write the entire report in English.**`;
     } else {
@@ -78,24 +106,46 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
 
 我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${locationInfo}】
 
-请严格按以下6步执行：
+请严格按以下7步执行：
 
-1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间、空亡（已提供时区信息，请据此修正真太阳时）
-2. 用传统古法排出日主五行旺衰、用神忌神、格局层级、喜忌颜色
-3. 按照库德尔量表十大领域的官方定义与评分逻辑，结合我的十神组合、神煞、宫位、大运流向，进行深度推导，得出我天生的前三强兴趣领域与后三弱领域（必须列出详细推理过程和分数0-100，不能乱猜）
+1. 用真太阳时精准排出我的四柱八字（已提供时区信息，请据此修正真太阳时），必须包含：
+   - 年柱、月柱、日柱、时柱（含地支藏干）
+   - 各柱十神
+   - 神煞（天乙贵人、文昌、华盖、桃花、驿马、羊刃、禄神等）
+   - 空亡位置
+   - 大运起运年龄及大运排列
+
+2. 用传统古法分析：
+   - 日主五行及旺衰状态
+   - 用神、忌神
+   - 格局名称及层级（上/中/下等）
+   - 喜用颜色、忌讳颜色（根据五行喜忌推导）
+
+3. 按照库德尔量表十大领域的官方定义与评分逻辑，结合我的十神组合、神煞、宫位、大运流向，进行深度推导，得出我天生的前三强兴趣领域与后三弱领域。必须列出详细推理过程和分数（0-100分制），不能乱猜。
+
 4. 把八字特征与库德尔十大领域深度映射，建立我的专属"宿命职业称号"，例如：
    - 伤官+华盖+空亡 → 5艺术/7音乐极强 → "红艳伤官·天生艺术家"
    - 七杀+羊刃+禄神 → 0户外/1机械极强 → "羊刃杀印·征服者"
    - 正财+食神+天德 → 8社会服务/9文书极强 → "食神生财·疗愈师"
    给出最贴合我的宿命职业称号
-5. 最后单独输出一份纯文字总结，包含：
-   - 完整八字
-   - 库德尔前三强+后三弱领域（带分数）
-   - 最匹配的3-5个现代职业
-   - 宿命职业称号
-   - 一句话天赋金句（引用古籍原文+现代翻译，如"《穷通宝鉴》云：'xxx'，译：xxx"）
-   方便直接复制发朋友圈
-6. 直接生成完整报告，不需要二次确认
+
+5. 推荐3-5个最匹配我八字和库德尔优势领域的具体现代职业
+
+6. 最后单独输出一份【朋友圈文案】，必须严格按以下格式输出：
+
+---朋友圈文案开始---
+【八字】年柱 月柱 日柱 时柱
+【日主】X行（旺/弱）
+【用神】X行
+【喜用颜色】颜色1、颜色2
+【前三强领域】①XX(分数) ②XX(分数) ③XX(分数)
+【后三弱领域】①XX(分数) ②XX(分数) ③XX(分数)
+【推荐职业】职业1、职业2、职业3
+【宿命职业称号】XXX·XXX
+【天赋金句】「古籍原文」——《书名》，译：现代白话翻译
+---朋友圈文案结束---
+
+7. 直接生成完整报告，不需要二次确认！
 
 请用markdown格式输出完整详细的分析报告。`;
     }

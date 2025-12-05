@@ -68,13 +68,36 @@ module.exports = async (req, res) => {
 
 My birth information: ${birthData.date} ${birthData.time}, ${birthData.gender === '男' ? 'Male' : 'Female'}, ${locationInfo}
 
-Please follow these steps strictly:
+Please follow these 6 steps strictly:
 
-1. Calculate my Four Pillars (BaZi) using True Solar Time correction based on the timezone and location provided. Include: Year/Month/Day/Hour pillars, Ten Gods, Divine Stars, and Dayun (Great Luck) timing
-2. Analyze my Day Master's strength (旺衰), Useful Gods (用神), Taboo Gods (忌神), and destiny pattern classification
-3. Through deep analysis (simulating professional MBTI testing), determine my most accurate MBTI type and cognitive function stack (must include detailed reasoning, not guessing)
+1. Calculate my Four Pillars (BaZi) using True Solar Time correction based on the timezone and location provided. Include:
+   - Year/Month/Day/Hour pillars with Hidden Stems (地支藏干)
+   - Ten Gods (十神) for each pillar
+   - Divine Stars (神煞)
+   - Empty Void positions (空亡)
+   - Dayun (Great Luck) starting age and cycle
+
+2. Analyze using traditional methods:
+   - Day Master's Five Element and strength (旺衰)
+   - Useful Gods (用神) and Taboo Gods (忌神)
+   - Destiny pattern classification and level (格局层级)
+
+3. Through deep analysis (simulating professional MBTI testing), determine my most accurate MBTI type and cognitive function stack order (Ni/Ne/Si/Se/Ti/Te/Fi/Fe). Must include detailed reasoning, not guessing.
+
 4. Map my Day Master element, destiny palace master star, and pattern directly to MBTI 16 types and eight cognitive functions. Create a unique Soul Title (e.g., "Geng Metal Swordmaster·INTJ", "Gui Water Mystic·INFP", "Wu Earth Architect·ISTJ")
-5. Finally, output a pure text summary suitable for copying to social media
+
+5. Output a pure text summary in the EXACT format below for easy social media sharing:
+
+---SOCIAL MEDIA SUMMARY START---
+【BaZi】Year-Pillar Month-Pillar Day-Pillar Hour-Pillar
+【Day Master】X Element (strength)
+【Useful God】X Element
+【MBTI】XXXX (Dominant-Auxiliary-Tertiary-Inferior functions)
+【Soul Title】XXX·XXXX
+【Personality Quote】「Ancient text quote」erta—erta《Book Name》, Translation: modern interpretation
+---SOCIAL MEDIA SUMMARY END---
+
+6. Generate the complete report directly, no confirmation needed!
 
 Please output a complete detailed analysis report in markdown format. **IMPORTANT: Write the entire report in English.**`;
     } else {
@@ -82,18 +105,36 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
 
 我的出生信息：【${birthData.date} ${birthData.time}，${birthData.gender === '男' ? '男性' : '女性'}，${locationInfo}】
 
-请严格按以下步骤执行：
+请严格按以下6步执行：
 
-1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间（已提供时区信息，请据此修正真太阳时）
-2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级
-3. 通过深度问答式推导（模拟最专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理，不能乱猜）
-4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"）
-5. 最后单独输出一份纯文字总结，包含：
-   - 完整八字
-   - MBTI类型与认知功能栈
-   - 专属灵魂称号
-   - 一句话人格金句（引用古籍原文+现代翻译，如"《滴天髓》云：'xxx'，译：xxx"）
-   方便直接复制发朋友圈
+1. 用真太阳时精准排出我的四柱八字（已提供时区信息，请据此修正真太阳时），必须包含：
+   - 年柱、月柱、日柱、时柱（含地支藏干）
+   - 各柱十神
+   - 神煞（天乙贵人、文昌、华盖、桃花、驿马等）
+   - 空亡位置
+   - 大运起运年龄及大运排列
+
+2. 用传统古法分析：
+   - 日主五行及旺衰状态
+   - 用神、忌神
+   - 格局名称及层级（上/中/下等）
+
+3. 通过深度问答式推导（模拟最专业MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（Ni/Ne/Si/Se/Ti/Te/Fi/Fe的排列）。必须有详细推理过程，不能乱猜。
+
+4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）
+
+5. 最后单独输出一份【朋友圈文案】，必须严格按以下格式输出：
+
+---朋友圈文案开始---
+【八字】年柱 月柱 日柱 时柱
+【日主】X行（旺/弱）
+【用神】X行
+【MBTI】XXXX（主导功能-辅助功能-第三功能-劣势功能）
+【灵魂称号】XXX·XXXX
+【人格金句】「古籍原文」——《书名》，译：现代白话翻译
+---朋友圈文案结束---
+
+6. 直接生成完整报告，不需要二次确认！
 
 请用markdown格式输出完整详细的分析报告。`;
     }
