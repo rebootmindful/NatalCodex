@@ -40,34 +40,67 @@ module.exports = async (req, res) => {
   try {
     // Extract key info from report for the image prompt
     const extractedInfo = extractInfoFromReport(rawAnalysis || reportContent, isEnglish);
-    console.log('[GenerateSoulCard] Extracted info:', extractedInfo);
+    console.log('[GenerateSoulCard] Extracted info:', JSON.stringify(extractedInfo, null, 2));
+    console.log('[GenerateSoulCard] Four Pillars:', extractedInfo.fourPillars);
+    console.log('[GenerateSoulCard] Day Master:', extractedInfo.dayMaster);
+    console.log('[GenerateSoulCard] ShiShen:', extractedInfo.shiShen);
+    console.log('[GenerateSoulCard] ShenSha:', extractedInfo.shenSha);
 
-    // Build the image generation prompt - focus on visual description, no style watermarks
+    // Build comprehensive data from extracted info
     const mbtiType = extractedInfo.mbti || 'INFJ';
     const soulTitle = extractedInfo.soulTitle || `${name}之魂`;
-    const baziInfo = extractedInfo.bazi || '命理八字';
+    const fp = extractedInfo.fourPillars;
+    const baziPillars = fp.year && fp.month && fp.day && fp.hour
+      ? `${fp.year} ${fp.month} ${fp.day} ${fp.hour}`
+      : (extractedInfo.bazi || '己卯 戊申 丁未 戊午');
+    const dayMaster = extractedInfo.dayMaster || '丁';
+    const shiShen = extractedInfo.shiShen.length > 0 ? extractedInfo.shiShen.join('、') : '正官、食神、伤官';
+    const yongShen = extractedInfo.yongShen || '木';
+    const shenSha = extractedInfo.shenSha.length > 0 ? extractedInfo.shenSha.join('、') : '天乙贵人、文昌';
+
+    // Map day master to element
+    const dayMasterElements = {
+      '甲': '木', '乙': '木', '丙': '火', '丁': '火', '戊': '土',
+      '己': '土', '庚': '金', '辛': '金', '壬': '水', '癸': '水'
+    };
+    const dayElement = dayMasterElements[dayMaster] || '火';
 
     let imagePrompt;
     if (isEnglish) {
-      imagePrompt = `A mystical vertical tarot-style "Soul Card" design:
-- Dark purple cosmic background with stars and nebula
-- Top center: Elegant gold Chinese calligraphy title "${name}'s Soul Card"
-- Left side: Traditional Chinese ink wash painting style showing BaZi fortune symbols
-- Right side: Futuristic holographic display showing "${mbtiType}" personality type with glowing circuits
-- Center focal point: Large ornate golden seal with text "${soulTitle}"
-- Five Elements (Wood, Fire, Earth, Metal, Water) represented as glowing colored energy streams connecting the elements
-- Style: Blend of ancient Eastern mysticism and modern cyberpunk aesthetics
-- NO watermarks, NO logos, NO English text except MBTI type`;
+      imagePrompt = `Ultra-detailed vertical Soul Card (9:16 ratio), cyberpunk Taoist fusion style:
+
+LAYOUT:
+- TOP: Giant golden seal script title "${name}'s Soul Card" with metallic glow
+- LEFT HALF (Traditional Chinese): Circular BaZi chart wheel showing Four Pillars "${baziPillars}", Day Master ${dayMaster}(${dayElement}), Ten Gods: ${shiShen}, Favorable Element: ${yongShen} in RED, Special Stars: ${shenSha}
+- RIGHT HALF (Cyber-tech): Holographic ${mbtiType} radar diagram with neon circuits, cognitive function bars (Ni/Ne/Si/Se/Ti/Te/Fi/Fe) in Five Element colors
+- CENTER: Massive gilded seal script showing soul title "${soulTitle}" with golden rays
+- MIDDLE: Five Element energy streams (Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black) connecting both sides like destiny gears
+- BOTTOM: Ancient scroll style summary text
+
+STYLE: Black-purple gradient starfield, neon Five Element colors, partial gold foil, holographic laser texture, maximum information density, NO watermarks`;
     } else {
-      imagePrompt = `神秘风格竖版塔罗牌式「灵魂契合卡」设计：
-- 深紫色宇宙星空背景，星云缭绕
-- 顶部居中：金色书法标题「${name}的灵魂契合卡」
-- 左侧区域：中国传统水墨画风格，展示八字命盘符号「${baziInfo}」
-- 右侧区域：未来科技全息投影风格，显示人格类型「${mbtiType}」，配以发光电路纹理
-- 中央焦点：华丽金色印章，刻有「${soulTitle}」
-- 五行元素（木火土金水）以发光彩色能量流形式连接各区域
-- 风格：古老东方神秘主义与现代赛博朋克美学融合
-- 不要添加任何水印或无关文字`;
+      imagePrompt = `超精细竖版「灵魂契合卡」(9:16比例)，赛博道教融合风格：
+
+【布局要求】
+■ 顶部：巨大鎏金篆体标题「${name}的灵魂契合卡」，金属质感发光
+■ 左半区(传统水墨风)：
+  - 八字命盘圆盘图，四柱：${baziPillars}
+  - 日主${dayMaster}(${dayElement})居中
+  - 十神标注：${shiShen}
+  - 用神「${yongShen}」用红色高亮标出
+  - 神煞：${shenSha}
+■ 右半区(赛博紫电风)：
+  - ${mbtiType}人格雷达图，霓虹电路纹理
+  - 认知功能栈进度条(Ni/Ne/Si/Se/Ti/Te/Fi/Fe)
+  - 用五行颜色渐变：木青、火红、土黄、金白、水黑
+■ 正中央最显眼：超大鎏金篆体灵魂称号「${soulTitle}」，金光四射
+■ 中间横贯：五行能量光带连接左右，形成命运齿轮转动感
+■ 底部：古籍卷轴风格命格总评
+
+【风格要求】
+黑紫渐变星空底，霓虹五行色，局部烫金，镭射全息质感，信息密度极高但层次分明
+所有文字中文，标题篆体，正文宋体黑体搭配，关键词荧光描边
+不要水印不要logo`;
     }
 
     console.log('[GenerateSoulCard] Image prompt length:', imagePrompt.length);
@@ -230,13 +263,27 @@ function sleep(ms) {
 }
 
 /**
- * Extract BaZi, MBTI, and Soul Title from report content
+ * Extract comprehensive BaZi, MBTI, and Soul info from report content
  */
 function extractInfoFromReport(content, isEnglish) {
   const result = {
     bazi: null,
     mbti: null,
-    soulTitle: null
+    soulTitle: null,
+    // Enhanced extraction fields
+    fourPillars: {
+      year: null,   // 年柱
+      month: null,  // 月柱
+      day: null,    // 日柱
+      hour: null    // 时柱
+    },
+    dayMaster: null,      // 日主
+    shiShen: [],          // 十神
+    yongShen: null,       // 用神
+    shenSha: [],          // 神煞
+    fiveElements: null,   // 五行强弱
+    cognitiveFunctions: null,  // MBTI认知功能
+    summary: null         // 总评
   };
 
   if (!content) return result;
@@ -250,35 +297,98 @@ function extractInfoFromReport(content, isEnglish) {
   // Extract Soul Title - look for patterns like "庚金剑修·INTJ" or similar
   const soulTitlePatterns = [
     /灵魂称号[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
+    /专属称号[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
     /Soul Title[：:]\s*[「"']?([^「"'\n]+)[」"']?/i,
-    /([甲乙丙丁戊己庚辛壬癸][金木水火土][^\s·]+·[A-Z]{4})/,
-    /专属称号[：:]\s*[「"']?([^「"'\n]+)[」"']?/
+    /([甲乙丙丁戊己庚辛壬癸][金木水火土][^\s·，。]+[·][A-Z]{4})/,
+    /称号[：:]\s*[「"']*([^「"'\n，。]+)[」"']*/
   ];
 
   for (const pattern of soulTitlePatterns) {
     const match = content.match(pattern);
     if (match) {
-      result.soulTitle = match[1].trim();
+      result.soulTitle = match[1].trim().replace(/[*#]/g, '');
       break;
     }
   }
 
-  // Extract BaZi (Four Pillars) - look for year/month/day/hour pillars
-  const baziPatterns = [
-    /四柱[：:]\s*([^\n]+)/,
-    /八字[：:]\s*([^\n]+)/,
-    /Year Pillar[：:]\s*([^\n]+)/i,
-    /([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]\s*){2,4}/
-  ];
+  // Extract Four Pillars (四柱八字) - year/month/day/hour
+  const yearPillarMatch = content.match(/年柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
+  const monthPillarMatch = content.match(/月柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
+  const dayPillarMatch = content.match(/日柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
+  const hourPillarMatch = content.match(/时柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
 
-  for (const pattern of baziPatterns) {
+  if (yearPillarMatch) result.fourPillars.year = yearPillarMatch[1];
+  if (monthPillarMatch) result.fourPillars.month = monthPillarMatch[1];
+  if (dayPillarMatch) result.fourPillars.day = dayPillarMatch[1];
+  if (hourPillarMatch) result.fourPillars.hour = hourPillarMatch[1];
+
+  // Build combined bazi string
+  const pillars = [result.fourPillars.year, result.fourPillars.month, result.fourPillars.day, result.fourPillars.hour].filter(Boolean);
+  if (pillars.length > 0) {
+    result.bazi = pillars.join(' ');
+  }
+
+  // Extract Day Master (日主)
+  const dayMasterMatch = content.match(/日主[：:]\s*([甲乙丙丁戊己庚辛壬癸])/);
+  if (dayMasterMatch) {
+    result.dayMaster = dayMasterMatch[1];
+  }
+
+  // Extract ShiShen (十神)
+  const shiShenPatterns = [
+    /十神[：:][^\n]*?(正官|偏官|正财|偏财|正印|偏印|食神|伤官|比肩|劫财)/g,
+    /(正官|偏官|正财|偏财|正印|偏印|食神|伤官|比肩|劫财)/g
+  ];
+  const shiShenSet = new Set();
+  for (const pattern of shiShenPatterns) {
+    let match;
+    while ((match = pattern.exec(content)) !== null) {
+      shiShenSet.add(match[1]);
+    }
+  }
+  result.shiShen = Array.from(shiShenSet).slice(0, 6);
+
+  // Extract YongShen (用神)
+  const yongShenMatch = content.match(/用神[：:]\s*([金木水火土])/);
+  if (yongShenMatch) {
+    result.yongShen = yongShenMatch[1];
+  }
+
+  // Extract ShenSha (神煞)
+  const shenShaPatterns = [
+    /(太极贵人|天乙贵人|文昌|华盖|桃花|红鸾|天德贵人|月德贵人|驿马|将星|金舆|天厨|学堂|词馆|国印)/g
+  ];
+  const shenShaSet = new Set();
+  for (const pattern of shenShaPatterns) {
+    let match;
+    while ((match = pattern.exec(content)) !== null) {
+      shenShaSet.add(match[1]);
+    }
+  }
+  result.shenSha = Array.from(shenShaSet).slice(0, 5);
+
+  // Extract Five Elements analysis (五行)
+  const fiveElementsMatch = content.match(/五行[：:][^\n]*(木|火|土|金|水)[^\n]*/);
+  if (fiveElementsMatch) {
+    result.fiveElements = fiveElementsMatch[0].substring(0, 60);
+  }
+
+  // Extract MBTI cognitive functions
+  const cognitiveFunctionsMatch = content.match(/(Ni|Ne|Si|Se|Ti|Te|Fi|Fe).*?(主导|辅助|第三|劣势)/g);
+  if (cognitiveFunctionsMatch) {
+    result.cognitiveFunctions = cognitiveFunctionsMatch.slice(0, 4).join(', ');
+  }
+
+  // Extract summary/总评
+  const summaryPatterns = [
+    /总评[：:]\s*([^\n]+)/,
+    /综合分析[：:]\s*([^\n]+)/,
+    /命格特点[：:]\s*([^\n]+)/
+  ];
+  for (const pattern of summaryPatterns) {
     const match = content.match(pattern);
     if (match) {
-      result.bazi = match[1] || match[0];
-      // Limit length
-      if (result.bazi.length > 50) {
-        result.bazi = result.bazi.substring(0, 50) + '...';
-      }
+      result.summary = match[1].substring(0, 80);
       break;
     }
   }
