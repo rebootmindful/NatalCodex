@@ -156,20 +156,29 @@ async function pollTaskResult(taskId) {
     console.log('[GenerateSoulCard] Parsed status:', { status, code, failCode, failMsg, error });
 
     // Try to find image URL in any location (check this first!)
-    const imageUrl = queryData.data?.output?.image_url ||
-                     queryData.data?.output?.url ||
-                     queryData.data?.result?.url ||
-                     queryData.data?.result?.image_url ||
-                     queryData.data?.url ||
-                     queryData.data?.image_url ||
-                     queryData.data?.output?.[0]?.url ||
-                     queryData.data?.output?.[0]?.image_url ||
-                     queryData.data?.images?.[0]?.url ||
-                     queryData.data?.images?.[0] ||
-                     queryData.output?.url ||
-                     queryData.result?.url ||
-                     queryData.url ||
-                     queryData.image_url;
+    // Seedream 4.5 returns: data.result.images[0].url[0] (url is an array!)
+    let imageUrl = queryData.data?.result?.images?.[0]?.url?.[0] ||  // Seedream 4.5 format
+                   queryData.data?.result?.images?.[0]?.url ||        // If url is string
+                   queryData.data?.output?.image_url ||
+                   queryData.data?.output?.url ||
+                   queryData.data?.result?.url ||
+                   queryData.data?.result?.image_url ||
+                   queryData.data?.url ||
+                   queryData.data?.image_url ||
+                   queryData.data?.output?.[0]?.url ||
+                   queryData.data?.output?.[0]?.image_url ||
+                   queryData.data?.images?.[0]?.url?.[0] ||
+                   queryData.data?.images?.[0]?.url ||
+                   queryData.data?.images?.[0] ||
+                   queryData.output?.url ||
+                   queryData.result?.url ||
+                   queryData.url ||
+                   queryData.image_url;
+
+    // Handle case where url might be an array
+    if (Array.isArray(imageUrl)) {
+      imageUrl = imageUrl[0];
+    }
 
     // If we found an image URL, return it immediately
     if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
