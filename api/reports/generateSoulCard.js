@@ -177,25 +177,26 @@ async function pollTaskResult(taskId) {
       return imageUrl;
     }
 
-    // Check for explicit failure
+    // Check for explicit failure FIRST
     if (failCode || failMsg || error || status === 'failed' || status === 'error') {
       const errorMsg = failMsg || error || failCode || 'Task failed';
       console.error('[GenerateSoulCard] Task failed with:', errorMsg);
       throw new Error(`Generation failed: ${typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg}`);
     }
 
-    // Check for success status but no image (might need different path)
-    if (status === 'completed' || status === 'success' || code === 200) {
-      console.error('[GenerateSoulCard] Task completed but no image URL. Checking all data paths...');
-      console.error('[GenerateSoulCard] queryData.data:', JSON.stringify(queryData.data, null, 2));
-      throw new Error('Task completed but image URL not found. Check logs for response structure.');
-    }
-
-    // Check for processing/pending status
+    // Check for processing/pending status BEFORE checking completion
+    // (code: 200 is API response status, NOT task completion status)
     if (status === 'processing' || status === 'pending' || status === 'submitted' || status === 'running') {
       console.log('[GenerateSoulCard] Task still processing, status:', status);
       await sleep(POLL_INTERVAL);
       continue;
+    }
+
+    // Check for success status but no image (task truly completed but missing URL)
+    if (status === 'completed' || status === 'success') {
+      console.error('[GenerateSoulCard] Task completed but no image URL. Checking all data paths...');
+      console.error('[GenerateSoulCard] queryData.data:', JSON.stringify(queryData.data, null, 2));
+      throw new Error('Task completed but image URL not found. Check logs for response structure.');
     }
 
     // Unknown status - log and continue polling
