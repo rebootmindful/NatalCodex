@@ -2,7 +2,7 @@
  * Soul Card Image Generation API
  * Uses APIMart: gemini-3-pro-image-preview for image generation
  *
- * Supported sizes: 1024x1024, 1536x1024, 1024x1536
+ * Supported sizes: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
  * Image links valid for 24 hours
  *
  * API is asynchronous:
@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
       body: JSON.stringify({
         model: config.IMAGE_MODEL,
         prompt: imagePrompt,
-        size: '1024x1536',  // Vertical for Soul Card (Gemini supports: 1024x1024, 1536x1024, 1024x1536)
+        size: '9:16',  // Vertical for Soul Card (supported: 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9)
         n: 1
       })
     });
