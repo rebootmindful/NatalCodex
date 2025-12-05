@@ -259,91 +259,165 @@ function extractKuderInfo(content, isEnglish) {
     shiShen: [],
     yongShen: null,
     shenSha: [],
-    topDomains: [],      // Top 3 Kuder domains
-    bottomDomains: [],   // Bottom 3 Kuder domains
-    careers: [],         // Recommended careers
-    summary: null
+    kongWang: null,       // 空亡
+    topDomains: [],       // Top 3 Kuder domains
+    bottomDomains: [],    // Bottom 3 Kuder domains
+    careers: [],          // Recommended careers
+    summary: null,
+    talentQuote: null     // 天赋金句
   };
 
   if (!content) return result;
 
-  // Extract Career Title - look for patterns
+  console.log('[ExtractKuderInfo] Content length:', content.length);
+  console.log('[ExtractKuderInfo] Content preview:', content.substring(0, 500));
+
+  // Extract Career Title - look for patterns (more flexible matching)
   const careerTitlePatterns = [
-    /宿命职业称号[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
-    /职业称号[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
+    /宿命职业称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
+    /职业称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
+    /专属.*?称号[：:]\s*[「"'【]?([^「"'】\n]+)[」"'】]?/,
     /Destiny Career Title[：:]\s*[「"']?([^「"'\n]+)[」"']?/i,
     /Career Title[：:]\s*[「"']?([^「"'\n]+)[」"']?/i,
-    /称号[：:]\s*[「"']*([^「"'\n，。]+·[^「"'\n，。]+)[」"']*/
+    /["「【]([^"」】]+[·][^"」】]+)["」】]/,  // Match patterns like "XX·YY"
+    /([甲乙丙丁戊己庚辛壬癸][^\s·，。]{1,6}[·][^\s，。]{2,10})/  // Match like "庚金剑修·征服者"
   ];
 
   for (const pattern of careerTitlePatterns) {
     const match = content.match(pattern);
     if (match) {
       result.careerTitle = match[1].trim().replace(/[*#]/g, '');
+      console.log('[ExtractKuderInfo] Found career title:', result.careerTitle);
       break;
     }
   }
 
-  // Extract Four Pillars
-  const yearPillarMatch = content.match(/年柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
-  const monthPillarMatch = content.match(/月柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
-  const dayPillarMatch = content.match(/日柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
-  const hourPillarMatch = content.match(/时柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
+  // Extract Four Pillars - more flexible patterns
+  const pillarPatterns = [
+    { key: 'year', patterns: [/年柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/, /年[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/] },
+    { key: 'month', patterns: [/月柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/, /月[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/] },
+    { key: 'day', patterns: [/日柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/, /日[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/] },
+    { key: 'hour', patterns: [/时柱[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/, /时[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/] }
+  ];
 
-  if (yearPillarMatch) result.fourPillars.year = yearPillarMatch[1];
-  if (monthPillarMatch) result.fourPillars.month = monthPillarMatch[1];
-  if (dayPillarMatch) result.fourPillars.day = dayPillarMatch[1];
-  if (hourPillarMatch) result.fourPillars.hour = hourPillarMatch[1];
+  for (const { key, patterns } of pillarPatterns) {
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (match) {
+        result.fourPillars[key] = match[1];
+        break;
+      }
+    }
+  }
+
+  // Also try to extract all four pillars from a single line like "四柱：甲子 乙丑 丙寅 丁卯"
+  const allPillarsMatch = content.match(/四柱[八字]*[：:]\s*([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])\s+([甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥])/);
+  if (allPillarsMatch) {
+    result.fourPillars.year = allPillarsMatch[1];
+    result.fourPillars.month = allPillarsMatch[2];
+    result.fourPillars.day = allPillarsMatch[3];
+    result.fourPillars.hour = allPillarsMatch[4];
+  }
 
   const pillars = [result.fourPillars.year, result.fourPillars.month, result.fourPillars.day, result.fourPillars.hour].filter(Boolean);
   if (pillars.length > 0) {
     result.bazi = pillars.join(' ');
+    console.log('[ExtractKuderInfo] Found BaZi:', result.bazi);
   }
 
-  // Extract Day Master
-  const dayMasterMatch = content.match(/日主[：:]\s*([甲乙丙丁戊己庚辛壬癸])/);
-  if (dayMasterMatch) {
-    result.dayMaster = dayMasterMatch[1];
+  // Extract Day Master - more patterns
+  const dayMasterPatterns = [
+    /日主[：:]\s*([甲乙丙丁戊己庚辛壬癸])/,
+    /日元[：:]\s*([甲乙丙丁戊己庚辛壬癸])/,
+    /日干[：:]\s*([甲乙丙丁戊己庚辛壬癸])/
+  ];
+  for (const pattern of dayMasterPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      result.dayMaster = match[1];
+      console.log('[ExtractKuderInfo] Found Day Master:', result.dayMaster);
+      break;
+    }
   }
 
-  // Extract ShiShen
+  // If no day master found, try to extract from day pillar
+  if (!result.dayMaster && result.fourPillars.day) {
+    result.dayMaster = result.fourPillars.day[0];
+  }
+
+  // Extract ShiShen (十神)
   const shiShenSet = new Set();
-  const shiShenPattern = /(正官|偏官|正财|偏财|正印|偏印|食神|伤官|比肩|劫财)/g;
+  const shiShenPattern = /(正官|七杀|偏官|正财|偏财|正印|偏印|食神|伤官|比肩|劫财|枭神)/g;
   let match;
   while ((match = shiShenPattern.exec(content)) !== null) {
     shiShenSet.add(match[1]);
   }
   result.shiShen = Array.from(shiShenSet).slice(0, 6);
+  console.log('[ExtractKuderInfo] Found ShiShen:', result.shiShen);
 
-  // Extract YongShen
-  const yongShenMatch = content.match(/用神[：:]\s*([金木水火土])/);
-  if (yongShenMatch) {
-    result.yongShen = yongShenMatch[1];
+  // Extract YongShen (用神)
+  const yongShenPatterns = [
+    /用神[：:]\s*([金木水火土])/,
+    /喜用神[：:]\s*([金木水火土])/,
+    /喜神[：:]\s*([金木水火土])/
+  ];
+  for (const pattern of yongShenPatterns) {
+    const yongMatch = content.match(pattern);
+    if (yongMatch) {
+      result.yongShen = yongMatch[1];
+      break;
+    }
   }
 
-  // Extract ShenSha
+  // Extract ShenSha (神煞)
   const shenShaSet = new Set();
-  const shenShaPattern = /(太极贵人|天乙贵人|文昌|华盖|桃花|红鸾|天德贵人|月德贵人|驿马|将星|金舆|天厨|学堂|词馆|国印|羊刃|禄神)/g;
+  const shenShaPattern = /(太极贵人|天乙贵人|文昌|华盖|桃花|红鸾|天德贵人|月德贵人|驿马|将星|金舆|天厨|学堂|词馆|国印|羊刃|禄神|空亡|孤辰|寡宿|天喜|红艳)/g;
   while ((match = shenShaPattern.exec(content)) !== null) {
     shenShaSet.add(match[1]);
   }
   result.shenSha = Array.from(shenShaSet).slice(0, 5);
 
-  // Extract Kuder domains - Top 3
-  const kuderDomains = ['户外', '机械', '计算', '科学', '说服', '艺术', '文学', '音乐', '社会服务', '文书'];
-  const kuderDomainsEn = ['Outdoor', 'Mechanical', 'Computational', 'Scientific', 'Persuasive', 'Artistic', 'Literary', 'Musical', 'Social Service', 'Clerical'];
+  // Extract 空亡
+  const kongWangMatch = content.match(/空亡[：:]\s*([子丑寅卯辰巳午未申酉戌亥]+)/);
+  if (kongWangMatch) {
+    result.kongWang = kongWangMatch[1];
+  }
 
-  // Try to extract domain scores
-  const domainScorePatterns = [
-    /([户外机械计算科学说服艺术文学音乐社会服务文书]+)[^0-9]*(\d{1,3})分?/g,
-    /(Outdoor|Mechanical|Computational|Scientific|Persuasive|Artistic|Literary|Musical|Social Service|Clerical)[^0-9]*(\d{1,3})/gi
-  ];
+  // Extract Kuder domains with scores - improved patterns
+  const kuderDomainsCN = ['户外', '机械', '计算', '科学', '说服', '艺术', '文学', '音乐', '社会服务', '文书'];
 
+  // Pattern 1: "艺术：92分" or "艺术(92)" or "艺术 92"
   const domainScores = [];
-  for (const pattern of domainScorePatterns) {
-    while ((match = pattern.exec(content)) !== null) {
-      domainScores.push({ name: match[1], score: parseInt(match[2]) });
+  for (const domain of kuderDomainsCN) {
+    const patterns = [
+      new RegExp(`${domain}[：:（(]?\\s*(\\d{1,3})\\s*[分）)]?`, 'g'),
+      new RegExp(`${domain}\\s*[\\(（]\\s*(\\d{1,3})\\s*[\\)）]`, 'g'),
+      new RegExp(`(\\d{1,3})\\s*[分]*\\s*[\\(（]?${domain}`, 'g')
+    ];
+    for (const pattern of patterns) {
+      const matches = content.matchAll(pattern);
+      for (const m of matches) {
+        const score = parseInt(m[1]);
+        if (score >= 0 && score <= 100) {
+          domainScores.push({ name: domain, score });
+          break;
+        }
+      }
+      if (domainScores.find(d => d.name === domain)) break;
     }
+  }
+
+  // Also try patterns like "前三强：艺术、文学、音乐" and "后三弱：机械、户外、计算"
+  const top3Match = content.match(/前三强[领域]*[：:]\s*([^\n]+)/);
+  const bottom3Match = content.match(/后三弱[领域]*[：:]\s*([^\n]+)/);
+
+  if (top3Match && result.topDomains.length === 0) {
+    const domains = top3Match[1].split(/[、,，]/).map(d => d.trim()).filter(d => kuderDomainsCN.includes(d));
+    result.topDomains = domains.slice(0, 3).map((name, i) => ({ name, score: 90 - i * 5 }));
+  }
+  if (bottom3Match && result.bottomDomains.length === 0) {
+    const domains = bottom3Match[1].split(/[、,，]/).map(d => d.trim()).filter(d => kuderDomainsCN.includes(d));
+    result.bottomDomains = domains.slice(0, 3).map((name, i) => ({ name, score: 30 + i * 5 }));
   }
 
   // Sort by score and get top/bottom 3
@@ -353,18 +427,44 @@ function extractKuderInfo(content, isEnglish) {
     result.bottomDomains = domainScores.slice(-3).reverse();
   }
 
-  // Extract recommended careers
+  console.log('[ExtractKuderInfo] Top domains:', result.topDomains);
+  console.log('[ExtractKuderInfo] Bottom domains:', result.bottomDomains);
+
+  // Extract recommended careers - more patterns
   const careerPatterns = [
     /最匹配.*?职业[：:]\s*([^\n]+)/,
     /推荐职业[：:]\s*([^\n]+)/,
+    /适合.*?职业[：:]\s*([^\n]+)/,
+    /现代职业[：:]\s*([^\n]+)/,
+    /职业方向[：:]\s*([^\n]+)/,
     /Best careers?[：:]\s*([^\n]+)/i,
-    /Matching careers?[：:]\s*([^\n]+)/i
+    /Matching careers?[：:]\s*([^\n]+)/i,
+    /Recommended.*?careers?[：:]\s*([^\n]+)/i
   ];
 
   for (const pattern of careerPatterns) {
     const careerMatch = content.match(pattern);
     if (careerMatch) {
-      result.careers = careerMatch[1].split(/[、,，]/).map(c => c.trim()).filter(c => c.length > 0 && c.length < 20).slice(0, 5);
+      result.careers = careerMatch[1]
+        .split(/[、,，\d+\.。]/)
+        .map(c => c.trim())
+        .filter(c => c.length > 1 && c.length < 20 && !c.match(/^[\d\s]+$/))
+        .slice(0, 5);
+      if (result.careers.length > 0) break;
+    }
+  }
+  console.log('[ExtractKuderInfo] Careers:', result.careers);
+
+  // Extract talent quote / 天赋金句
+  const quotePatterns = [
+    /天赋金句[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
+    /一句话.*?[：:]\s*[「"']?([^「"'\n]+)[」"']?/,
+    /金句[：:]\s*[「"']?([^「"'\n]+)[」"']?/
+  ];
+  for (const pattern of quotePatterns) {
+    const quoteMatch = content.match(pattern);
+    if (quoteMatch) {
+      result.talentQuote = quoteMatch[1].trim();
       break;
     }
   }
