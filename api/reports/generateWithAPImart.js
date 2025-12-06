@@ -302,6 +302,7 @@ ${content}
       reportContent,
       imageUrl: null,
       analysis,
+      reportType: 'mbti',  // Add reportType for frontend type matching
       status: 'report_only',
       message: 'Professional BaZi + MBTI analysis completed (full AI-generated report)'
     };

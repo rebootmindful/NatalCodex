@@ -10,11 +10,11 @@
   <meta name="keywords" content="BaZi report, 八字报告, MBTI analysis, soul card, 灵魂契合卡, personality report, 命理分析">
   <meta name="author" content="NatalCodex">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://natalcodex.vercel.app/generate.html">
+  <link rel="canonical" href="https://natalcodex.com/generate.html">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://natalcodex.vercel.app/generate.html">
+  <meta property="og:url" content="https://natalcodex.com/generate.html">
   <meta property="og:title" content="Generate Your Soul Report - NatalCodex">
   <meta property="og:description" content="Create your personalized BaZi + MBTI soul analysis report and Soul Card with AI.">
   <meta property="og:locale" content="zh_CN">
@@ -22,7 +22,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://natalcodex.vercel.app/generate.html">
+  <meta name="twitter:url" content="https://natalcodex.com/generate.html">
   <meta name="twitter:title" content="Generate Your Soul Report - NatalCodex">
   <meta name="twitter:description" content="Create your personalized BaZi + MBTI soul analysis report and Soul Card with AI.">
 
@@ -1270,7 +1270,9 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `BaZi-MBTI-Report_${document.getElementById('name').value}_${new Date().toLocaleDateString()}.txt`;
+      // Use correct filename based on report type
+      const reportTypeLabel = lastAnalysisData?.reportType === 'kuder' ? 'BaZi-KUDER-Report' : 'BaZi-MBTI-Report';
+      a.download = `${reportTypeLabel}_${document.getElementById('name').value}_${new Date().toLocaleDateString()}.txt`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1513,7 +1515,9 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `SoulCard_${document.getElementById('name').value}_${new Date().toLocaleDateString()}.png`;
+        // Use correct filename based on report type
+        const cardTypeLabel = lastAnalysisData?.reportType === 'kuder' ? 'KuderDestinyCard' : 'SoulCard';
+        a.download = `${cardTypeLabel}_${document.getElementById('name').value}_${new Date().toLocaleDateString()}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
