@@ -1335,52 +1335,68 @@
 
         // Create a styled container for PDF generation
         const pdfContainer = document.createElement('div');
+        pdfContainer.id = 'pdfContainer';
         pdfContainer.style.cssText = `
           font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'SimHei', sans-serif;
           color: #000;
           padding: 30px;
           background: #fff;
           line-height: 1.8;
-          position: fixed;
-          left: -9999px;
+          position: absolute;
+          left: 0;
           top: 0;
           width: 800px;
+          z-index: -1;
+          opacity: 0;
+          pointer-events: none;
         `;
 
-        // Clone and clean report content - override all colors to black text on white
-        const cleanContent = reportContent.cloneNode(true);
-        cleanContent.querySelectorAll('*').forEach(el => {
-          el.style.color = '#000';
-          el.style.background = 'transparent';
-          el.style.backgroundColor = 'transparent';
-        });
-        cleanContent.querySelectorAll('h1, h2, h3').forEach(el => {
-          el.style.color = '#1a1f4d';
-          el.style.marginTop = '20px';
-          el.style.marginBottom = '10px';
-        });
+        // Get report text and convert to clean HTML
+        const reportText = window.cleanReportText || reportContent.innerText;
+
+        // Build clean HTML content with proper styling
+        let cleanHtml = reportText
+          .split('\n')
+          .map(line => {
+            line = line.trim();
+            if (!line) return '<br>';
+            if (line.startsWith('# ')) return `<h1 style="color:#1a1f4d;font-size:22px;margin:20px 0 10px;border-bottom:2px solid #00d4aa;padding-bottom:8px">${line.slice(2)}</h1>`;
+            if (line.startsWith('## ')) return `<h2 style="color:#1a1f4d;font-size:18px;margin:18px 0 8px">${line.slice(3)}</h2>`;
+            if (line.startsWith('### ')) return `<h3 style="color:#333;font-size:16px;margin:14px 0 6px">${line.slice(4)}</h3>`;
+            if (line.startsWith('- ')) return `<p style="margin:4px 0 4px 20px;color:#000">• ${line.slice(2)}</p>`;
+            if (line.startsWith('---')) return '<hr style="border:none;border-top:1px solid #ddd;margin:15px 0">';
+            if (line.startsWith('*') && line.endsWith('*')) return `<p style="color:#666;font-size:12px;margin:4px 0;font-style:italic">${line.replace(/\*/g, '')}</p>`;
+            return `<p style="margin:6px 0;color:#000">${line}</p>`;
+          })
+          .join('');
 
         pdfContainer.innerHTML = `
           <h1 style="text-align:center;color:#1a1f4d;margin-bottom:20px;font-size:24px;margin-top:0">${title}</h1>
           <p style="text-align:center;color:#666;margin-bottom:30px;font-size:12px">${currentLang === 'zh' ? '生成时间' : 'Generated'}: ${new Date().toLocaleString()}</p>
           <hr style="border:none;border-top:2px solid #00d4aa;margin-bottom:20px">
-          <div id="pdfReportBody" style="font-size:13px;color:#000"></div>
+          <div style="font-size:13px;color:#000">${cleanHtml}</div>
           <hr style="border:none;border-top:1px solid #ddd;margin-top:30px">
           <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">${footerText}</p>
         `;
 
-        // Append cleaned content
-        pdfContainer.querySelector('#pdfReportBody').appendChild(cleanContent);
-
         // Add to DOM temporarily for proper rendering
         document.body.appendChild(pdfContainer);
+
+        // Wait a moment for DOM to render
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // PDF options
         const opt = {
           margin: [10, 10, 10, 10],
           filename: `${filenamePrefix}_${name}_${new Date().toLocaleDateString()}.pdf`,
-          image: { type: 'jpeg', quality: 0.95 },
-          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false, 
+            backgroundColor: '#ffffff',
+            windowWidth: 800
+          },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
