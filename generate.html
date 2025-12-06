@@ -441,7 +441,6 @@
         <div style="display:flex;gap:12px;flex-wrap:wrap">
           <button class="copy-btn" id="copyBtn">📋 <span data-i18n="btnCopy">复制报告</span></button>
           <button class="copy-btn" id="downloadBtn">💾 <span data-i18n="btnDownload">下载TXT</span></button>
-          <button class="copy-btn" id="downloadPdfBtn">📄 <span data-i18n="btnDownloadPdf">下载PDF</span></button>
         </div>
       </div>
 
@@ -486,7 +485,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <script>
     // ========== Translation System ==========
     const translations = {
@@ -513,7 +512,6 @@
         resultTitle: '您的专属报告',
         btnCopy: '复制报告',
         btnDownload: '下载TXT',
-        btnDownloadPdf: '下载PDF',
         btnCopied: '已复制',
         btnDownloaded: '已下载',
         errorGenerate: '生成失败：',
@@ -562,7 +560,6 @@
         resultTitle: 'Your Personalized Report',
         btnCopy: 'Copy Report',
         btnDownload: 'Download TXT',
-        btnDownloadPdf: 'Download PDF',
         btnCopied: 'Copied',
         btnDownloaded: 'Downloaded',
         errorGenerate: 'Generation failed: ',
@@ -1285,124 +1282,6 @@
         downloadBtn.innerHTML = `💾 <span data-i18n="btnDownload">${translations[currentLang].btnDownload}</span>`;
         downloadBtn.classList.remove('copied');
       }, 2000);
-    });
-
-    // PDF Download button - Client-side generation with Chinese font support
-    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-    downloadPdfBtn.addEventListener('click', async () => {
-      const name = document.getElementById('name').value || 'User';
-
-      // Determine report type for PDF title and filename
-      const reportType = lastAnalysisData?.reportType || window.currentReportType || 'mbti';
-      const isKuder = reportType === 'kuder';
-
-      const title = isKuder
-        ? (currentLang === 'zh' ? `${name}的八字库德尔职业分析报告` : `${name}'s BaZi & Kuder Career Analysis Report`)
-        : (currentLang === 'zh' ? `${name}的八字MBTI分析报告` : `${name}'s BaZi & MBTI Analysis Report`);
-
-      const footerText = isKuder
-        ? 'Powered by NatalCodex - BaZi & Kuder Career Analysis'
-        : 'Powered by NatalCodex - BaZi & MBTI Analysis';
-
-      const filenamePrefix = isKuder ? 'BaZi-Kuder-Report' : 'BaZi-MBTI-Report';
-
-      downloadPdfBtn.innerHTML = `⏳ <span>${currentLang === 'zh' ? '生成中...' : 'Generating...'}</span>`;
-      downloadPdfBtn.disabled = true;
-
-      try {
-        // Check if reportContent has content
-        if (!reportContent.innerHTML || reportContent.innerHTML.trim() === '') {
-          throw new Error(currentLang === 'zh' ? '报告内容为空，请先生成报告' : 'Report content is empty, please generate report first');
-        }
-
-        // Create a styled container for PDF generation
-        const pdfContainer = document.createElement('div');
-        pdfContainer.id = 'pdfContainer';
-        pdfContainer.style.cssText = `
-          font-family: 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', 'SimHei', sans-serif;
-          color: #000;
-          padding: 30px;
-          background: #fff;
-          line-height: 1.8;
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 800px;
-          z-index: -1;
-          opacity: 0;
-          pointer-events: none;
-        `;
-
-        // Get report text and convert to clean HTML
-        const reportText = window.cleanReportText || reportContent.innerText;
-
-        // Build clean HTML content with proper styling
-        let cleanHtml = reportText
-          .split('\n')
-          .map(line => {
-            line = line.trim();
-            if (!line) return '<br>';
-            if (line.startsWith('# ')) return `<h1 style="color:#1a1f4d;font-size:22px;margin:20px 0 10px;border-bottom:2px solid #00d4aa;padding-bottom:8px">${line.slice(2)}</h1>`;
-            if (line.startsWith('## ')) return `<h2 style="color:#1a1f4d;font-size:18px;margin:18px 0 8px">${line.slice(3)}</h2>`;
-            if (line.startsWith('### ')) return `<h3 style="color:#333;font-size:16px;margin:14px 0 6px">${line.slice(4)}</h3>`;
-            if (line.startsWith('- ')) return `<p style="margin:4px 0 4px 20px;color:#000">• ${line.slice(2)}</p>`;
-            if (line.startsWith('---')) return '<hr style="border:none;border-top:1px solid #ddd;margin:15px 0">';
-            if (line.startsWith('*') && line.endsWith('*')) return `<p style="color:#666;font-size:12px;margin:4px 0;font-style:italic">${line.replace(/\*/g, '')}</p>`;
-            return `<p style="margin:6px 0;color:#000">${line}</p>`;
-          })
-          .join('');
-
-        pdfContainer.innerHTML = `
-          <h1 style="text-align:center;color:#1a1f4d;margin-bottom:20px;font-size:24px;margin-top:0">${title}</h1>
-          <p style="text-align:center;color:#666;margin-bottom:30px;font-size:12px">${currentLang === 'zh' ? '生成时间' : 'Generated'}: ${new Date().toLocaleString()}</p>
-          <hr style="border:none;border-top:2px solid #00d4aa;margin-bottom:20px">
-          <div style="font-size:13px;color:#000">${cleanHtml}</div>
-          <hr style="border:none;border-top:1px solid #ddd;margin-top:30px">
-          <p style="text-align:center;color:#999;font-size:10px;margin-top:10px">${footerText}</p>
-        `;
-
-        // Add to DOM temporarily for proper rendering
-        document.body.appendChild(pdfContainer);
-
-        // Wait a moment for DOM to render
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        // PDF options
-        const opt = {
-          margin: [10, 10, 10, 10],
-          filename: `${filenamePrefix}_${name}_${new Date().toLocaleDateString()}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { 
-            scale: 2, 
-            useCORS: true, 
-            logging: false, 
-            backgroundColor: '#ffffff',
-            windowWidth: 800
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        // Generate PDF
-        await html2pdf().set(opt).from(pdfContainer).save();
-
-        // Remove temporary container
-        document.body.removeChild(pdfContainer);
-
-        downloadPdfBtn.innerHTML = `✅ <span data-i18n="btnDownloaded">${translations[currentLang].btnDownloaded}</span>`;
-        downloadPdfBtn.classList.add('copied');
-        setTimeout(() => {
-          downloadPdfBtn.innerHTML = `📄 <span data-i18n="btnDownloadPdf">${translations[currentLang].btnDownloadPdf}</span>`;
-          downloadPdfBtn.classList.remove('copied');
-        }, 2000);
-      } catch (error) {
-        console.error('PDF download failed:', error);
-        downloadPdfBtn.innerHTML = `❌ <span>${currentLang === 'zh' ? '失败' : 'Failed'}</span>`;
-        setTimeout(() => {
-          downloadPdfBtn.innerHTML = `📄 <span data-i18n="btnDownloadPdf">${translations[currentLang].btnDownloadPdf}</span>`;
-        }, 2000);
-      } finally {
-        downloadPdfBtn.disabled = false;
-      }
     });
 
     // Fill demo data button
