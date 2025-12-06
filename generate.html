@@ -442,10 +442,24 @@
           <button class="copy-btn" id="copyBtn">📋 <span data-i18n="btnCopy">复制报告</span></button>
           <button class="copy-btn" id="downloadBtn">💾 <span data-i18n="btnDownload">下载TXT</span></button>
           <button class="copy-btn" id="downloadPdfBtn">📄 <span data-i18n="btnDownloadPdf">下载PDF</span></button>
-          <button class="copy-btn" id="generateCardBtn">🎴 <span data-i18n="btnCard">生成灵魂契合卡</span></button>
         </div>
       </div>
+
+      <!-- Privacy Notice -->
+      <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
+        <span style="font-size:18px">🔒</span>
+        <span style="color:#fbbf24;font-size:13px" data-i18n="privacyNotice">本站不存储您的任何信息，请及时下载保存报告和图片。</span>
+      </div>
+
       <div class="report-content" id="reportContent"></div>
+
+      <!-- Generate Card Button - At bottom of report for better UX -->
+      <div style="margin-top:32px;padding-top:24px;border-top:1px solid rgba(0,255,157,0.2);text-align:center">
+        <button class="btn" id="generateCardBtn" style="max-width:400px;margin:0 auto">
+          🎴 <span data-i18n="btnCard">生成灵魂契合卡</span>
+        </button>
+        <p style="color:#9ca3af;font-size:12px;margin-top:12px" data-i18n="cardHint">点击上方按钮，AI将为您生成专属卡片</p>
+      </div>
 
       <!-- Soul Card Section -->
       <div id="cardSection" style="display:none;margin-top:32px;padding-top:24px;border-top:1px solid rgba(0,255,157,0.2)">
@@ -468,17 +482,6 @@
           <img id="soulCardImg" src="" alt="Soul Card" style="max-width:100%;border-radius:12px;box-shadow:0 8px 32px rgba(0,255,157,0.3)">
         </div>
       </div>
-    </div>
-
-    <!-- Report History Section -->
-    <div class="form-section" id="historySection" style="display:none;margin-top:32px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-        <div style="font-size:20px;font-weight:700;color:#00ff9d">📚 <span data-i18n="historyTitle">历史报告</span></div>
-        <button class="copy-btn" id="clearHistoryBtn" style="background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.5);color:#fca5a5">
-          🗑️ <span data-i18n="btnClearHistory">清空历史</span>
-        </button>
-      </div>
-      <div id="historyList"></div>
     </div>
   </div>
 
@@ -533,13 +536,8 @@
         cardTitleKuder: '您的宿命职业卡',
         cardLoadingKuder: 'AI正在生成您的宿命职业卡...',
         cardProgressTipsKuder: ['正在分析八字信息...', '正在匹配职业领域...', '正在渲染库德尔图表...', '正在生成职业卡...', '即将完成...'],
-        historyTitle: '历史报告',
-        btnClearHistory: '清空历史',
-        historyEmpty: '暂无历史报告',
-        historyView: '查看',
-        historyDelete: '删除',
-        historyConfirmClear: '确定要清空所有历史报告吗？',
-        historyConfirmDelete: '确定要删除这条报告吗？'
+        privacyNotice: '本站不存储您的任何信息，请及时下载保存报告和图片。',
+        cardHint: '点击上方按钮，AI将为您生成专属卡片'
       },
       en: {
         backHome: 'Back Home',
@@ -587,13 +585,8 @@
         cardTitleKuder: 'Your Destiny Career Card',
         cardLoadingKuder: 'AI is generating your Destiny Career Card...',
         cardProgressTipsKuder: ['Analyzing BaZi data...', 'Matching career domains...', 'Rendering Kuder chart...', 'Generating career card...', 'Almost done...'],
-        historyTitle: 'Report History',
-        btnClearHistory: 'Clear History',
-        historyEmpty: 'No history reports',
-        historyView: 'View',
-        historyDelete: 'Delete',
-        historyConfirmClear: 'Are you sure you want to clear all history?',
-        historyConfirmDelete: 'Are you sure you want to delete this report?'
+        privacyNotice: 'This site does not store your information. Please download and save your reports and images promptly.',
+        cardHint: 'Click the button above to generate your exclusive card'
       }
     };
 
@@ -1235,17 +1228,6 @@
         // Render markdown to HTML
         reportContent.innerHTML = marked.parse(cleanReport);
 
-        // Save to history
-        saveToHistory({
-          name: birthData.name,
-          gender: birthData.gender,
-          date: birthData.date,
-          time: birthData.time,
-          location: birthData.location,
-          content: cleanReport,
-          reportType: reportType
-        });
-
         // Show result
         loading.classList.remove('active');
         resultSection.classList.add('active');
@@ -1666,133 +1648,6 @@
         console.error('Download failed:', error);
       }
     });
-
-    // ========== Report History System ==========
-    const HISTORY_KEY = 'nc_report_history';
-    const MAX_HISTORY = 10; // Keep max 10 reports
-
-    function getHistory() {
-      try {
-        return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-      } catch {
-        return [];
-      }
-    }
-
-    function saveToHistory(report) {
-      const history = getHistory();
-      // Add new report at the beginning
-      history.unshift({
-        id: Date.now(),
-        name: report.name,
-        gender: report.gender,
-        date: report.date,
-        time: report.time,
-        location: report.location,
-        content: report.content,
-        createdAt: new Date().toISOString()
-      });
-      // Keep only last MAX_HISTORY reports
-      if (history.length > MAX_HISTORY) {
-        history.pop();
-      }
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      renderHistory();
-    }
-
-    function deleteFromHistory(id) {
-      const history = getHistory().filter(r => r.id !== id);
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-      renderHistory();
-    }
-
-    function clearHistory() {
-      localStorage.removeItem(HISTORY_KEY);
-      renderHistory();
-    }
-
-    function viewReport(id) {
-      const report = getHistory().find(r => r.id === id);
-      if (!report) return;
-
-      // Show result section with this report
-      window.cleanReportText = report.content;
-      reportContent.innerHTML = marked.parse(report.content);
-      resultSection.classList.add('active');
-
-      // Set report type from history
-      const reportType = report.reportType || 'mbti';
-      window.currentReportType = reportType;
-
-      // Update card button text
-      updateCardButtonText(reportType);
-
-      // Set up data for soul card generation
-      lastAnalysisData = {
-        name: report.name,
-        gender: report.gender,
-        reportContent: report.content,
-        rawAnalysis: report.content,
-        reportType: reportType
-      };
-
-      // Don't hide cardSection - keep current card generation state intact
-      // Only hide the card image if it was from a different report
-      // User can still see the card being generated
-
-      // Scroll to result
-      setTimeout(() => {
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-
-    function renderHistory() {
-      const history = getHistory();
-      const historySection = document.getElementById('historySection');
-      const historyList = document.getElementById('historyList');
-
-      if (history.length === 0) {
-        historySection.style.display = 'none';
-        return;
-      }
-
-      historySection.style.display = 'block';
-      historyList.innerHTML = history.map(report => {
-        const date = new Date(report.createdAt);
-        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const reportTypeLabel = report.reportType === 'kuder'
-          ? (currentLang === 'zh' ? 'KUDER' : 'KUDER')
-          : 'MBTI';
-        const reportTypeColor = report.reportType === 'kuder' ? '#fbbf24' : '#00ff9d';
-        return `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:8px;border:1px solid rgba(0,255,157,0.1)">
-            <div style="flex:1">
-              <div style="font-weight:600;color:#e5e7eb">${report.name} <span style="color:#9ca3af;font-weight:400;font-size:13px">(${report.gender})</span> <span style="background:${reportTypeColor};color:#0a0e27;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-left:6px">${reportTypeLabel}</span></div>
-              <div style="font-size:12px;color:#6b7280;margin-top:4px">${report.date} ${report.time} · ${report.location}</div>
-              <div style="font-size:11px;color:#4b5563;margin-top:2px">${dateStr}</div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button onclick="viewReport(${report.id})" class="copy-btn" style="padding:6px 12px;font-size:12px">
-                👁️ ${translations[currentLang].historyView}
-              </button>
-              <button onclick="if(confirm('${translations[currentLang].historyConfirmDelete}')){deleteFromHistory(${report.id})}" class="copy-btn" style="padding:6px 12px;font-size:12px;background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:#fca5a5">
-                🗑️
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // Clear history button
-    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-      if (confirm(translations[currentLang].historyConfirmClear)) {
-        clearHistory();
-      }
-    });
-
-    // Initialize history display
-    renderHistory();
 
   </script>
 </body>
