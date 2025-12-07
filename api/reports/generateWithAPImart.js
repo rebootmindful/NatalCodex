@@ -94,7 +94,18 @@ Please follow these 6 steps strictly:
 【Useful God】X Element
 【MBTI】XXXX (Dominant-Auxiliary-Tertiary-Inferior functions)
 【Soul Title】XXX·XXXX
-【Personality Quote】「Ancient text quote」erta—erta《Book Name》, Translation: modern interpretation
+
+【Personality】Summarize core personality traits based on BaZi and MBTI analysis (2-3 sentences)
+
+【2025 Fortune】Analyze overall fortune trends for 2025, including opportunities and challenges (2-3 sentences)
+
+【Career & Wealth】Career development advice and financial analysis based on BaZi pattern and MBTI career tendencies (2-3 sentences)
+
+【Love & Marriage】Analyze romantic fortune, compatible partner types, and areas needing attention (2-3 sentences)
+
+【Health Tips】Based on Five Elements balance, point out health concerns and wellness advice (1-2 sentences)
+
+【Personality Quote】「Ancient text quote」—《Book Name》, Translation: modern interpretation
 ---SOCIAL MEDIA SUMMARY END---
 
 6. Generate the complete report directly, no confirmation needed!
@@ -131,6 +142,17 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
 【用神】X行
 【MBTI】XXXX（主导功能-辅助功能-第三功能-劣势功能）
 【灵魂称号】XXX·XXXX
+
+【性格特征】根据八字和MBTI分析，用2-3句话总结核心性格特点
+
+【流年运势】分析2025年整体运势走向，包含机遇与挑战（2-3句话）
+
+【事业财运】基于八字格局和MBTI职业倾向，给出事业发展建议和财运分析（2-3句话）
+
+【婚姻感情】分析感情运势、适合的伴侣类型、需要注意的问题（2-3句话）
+
+【健康提示】根据五行旺衰，指出需要注意的健康问题和养生建议（1-2句话）
+
 【人格金句】「古籍原文」——《书名》，译：现代白话翻译
 ---朋友圈文案结束---
 
@@ -159,7 +181,7 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
               { role: 'user', content: prompt }
             ],
             temperature: 0.6,
-            max_tokens: 3000,  // GPT-4o-mini can handle longer outputs reliably
+            max_tokens: 4000,  // Increased for comprehensive BaZi advice including fortune analysis
             stream: false
           })
         });

@@ -93,8 +93,27 @@ Please follow these 7 steps strictly:
 【Favorable Color】Color1, Color2
 【Top 3 Domains】①Domain(score) ②Domain(score) ③Domain(score)
 【Bottom 3 Domains】①Domain(score) ②Domain(score) ③Domain(score)
-【Recommended Careers】Career1, Career2, Career3
 【Destiny Career Title】XXX·XXX
+
+【Modern Career Matches · TOP 5】
+1. Career Name - Brief explanation of why it suits you (1 sentence)
+2. Career Name - Brief explanation of why it suits you (1 sentence)
+3. Career Name - Brief explanation of why it suits you (1 sentence)
+4. Career Name - Brief explanation of why it suits you (1 sentence)
+5. Career Name - Brief explanation of why it suits you (1 sentence)
+
+【Career Development Path】Based on BaZi pattern and Kuder strengths, provide career development advice and advancement direction (2-3 sentences)
+
+【Personality Cultivation】Based on BaZi weaknesses and Kuder weak domains, suggest areas for personal growth (2-3 sentences)
+
+【Lifestyle Suggestions】Based on Five Elements preferences and career characteristics, provide suitable lifestyle and habit recommendations (2-3 sentences)
+
+【Wealth Philosophy】Based on BaZi wealth stars and pattern, analyze suitable financial management and wealth accumulation strategies (2-3 sentences)
+
+【Love & Marriage】Analyze compatible partner types, relationship dynamics, and areas needing attention (2-3 sentences)
+
+【Conclusion · Destiny Awakening】An inspiring summary highlighting your innate mission and life direction (2-3 sentences)
+
 【Talent Quote】「Ancient text quote」—《Book Name》, Translation: modern interpretation
 ---SOCIAL MEDIA SUMMARY END---
 
@@ -140,8 +159,27 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
 【喜用颜色】颜色1、颜色2
 【前三强领域】①XX(分数) ②XX(分数) ③XX(分数)
 【后三弱领域】①XX(分数) ②XX(分数) ③XX(分数)
-【推荐职业】职业1、职业2、职业3
 【宿命职业称号】XXX·XXX
+
+【现代职业匹配·TOP5推荐】
+1. 职业名称 - 简要说明为何适合（1句话）
+2. 职业名称 - 简要说明为何适合（1句话）
+3. 职业名称 - 简要说明为何适合（1句话）
+4. 职业名称 - 简要说明为何适合（1句话）
+5. 职业名称 - 简要说明为何适合（1句话）
+
+【职业发展路径】基于八字格局和库德尔优势领域，给出职业发展建议和晋升方向（2-3句话）
+
+【性格修炼建议】根据八字中的不足和库德尔弱势领域，给出需要修炼的性格方面（2-3句话）
+
+【生活方式建议】基于五行喜忌和职业特点，给出适合的生活方式和习惯建议（2-3句话）
+
+【财富观念】根据八字财星和格局，分析适合的理财方式和财富积累建议（2-3句话）
+
+【感情婚姻】分析适合的伴侣类型、感情相处模式和需要注意的问题（2-3句话）
+
+【结语·宿命觉醒】一段激励性的总结，点明天赋使命和人生方向（2-3句话）
+
 【天赋金句】「古籍原文」——《书名》，译：现代白话翻译
 ---朋友圈文案结束---
 
@@ -169,7 +207,7 @@ Please output a complete detailed analysis report in markdown format. **IMPORTAN
               { role: 'user', content: prompt }
             ],
             temperature: 0.6,
-            max_tokens: 3500,
+            max_tokens: 4500,  // Increased for comprehensive career analysis with TOP5 and lifestyle advice
             stream: false
           })
         });
