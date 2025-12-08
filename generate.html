@@ -381,15 +381,298 @@
         padding:14px 16px !important;
       }
     }
+
+    /* Auth Modal Styles */
+    .auth-overlay {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.8);
+      backdrop-filter:blur(8px);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+    }
+    .auth-overlay.active {
+      display:flex;
+    }
+    .auth-modal {
+      background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 100%);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:20px;
+      padding:40px;
+      max-width:420px;
+      width:90%;
+      position:relative;
+      box-shadow:0 20px 60px rgba(0,255,157,0.2);
+    }
+    .auth-close {
+      position:absolute;
+      top:16px;
+      right:16px;
+      background:none;
+      border:none;
+      color:#9ca3af;
+      font-size:24px;
+      cursor:pointer;
+      transition:color 0.2s;
+    }
+    .auth-close:hover {
+      color:#fff;
+    }
+    .auth-title {
+      font-size:28px;
+      font-weight:700;
+      color:#00ff9d;
+      text-align:center;
+      margin-bottom:8px;
+    }
+    .auth-subtitle {
+      color:#9ca3af;
+      text-align:center;
+      margin-bottom:32px;
+      font-size:14px;
+    }
+    .auth-form {
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+    }
+    .auth-input {
+      padding:14px 16px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:10px;
+      color:#fff;
+      font-size:15px;
+      transition:all 0.3s ease;
+    }
+    .auth-input:focus {
+      outline:none;
+      border-color:#00ff9d;
+      background:rgba(255,255,255,0.12);
+    }
+    .auth-input::placeholder {
+      color:#6b7280;
+    }
+    .auth-btn {
+      padding:16px;
+      background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);
+      color:#0a0e27;
+      font-size:16px;
+      font-weight:700;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      transition:all 0.25s ease;
+      box-shadow:0 6px 22px rgba(0,255,157,0.42);
+    }
+    .auth-btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 10px 30px rgba(0,255,157,0.6);
+    }
+    .auth-btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+    .auth-switch {
+      text-align:center;
+      margin-top:20px;
+      color:#9ca3af;
+      font-size:14px;
+    }
+    .auth-switch a {
+      color:#00ff9d;
+      text-decoration:none;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .auth-switch a:hover {
+      text-decoration:underline;
+    }
+    .auth-error {
+      display:none;
+      padding:12px;
+      background:rgba(239,68,68,0.1);
+      border:1px solid rgba(239,68,68,0.3);
+      border-radius:8px;
+      color:#fca5a5;
+      font-size:14px;
+      text-align:center;
+    }
+    .auth-error.active {
+      display:block;
+    }
+    .auth-divider {
+      display:flex;
+      align-items:center;
+      margin:24px 0;
+      color:#6b7280;
+      font-size:13px;
+    }
+    .auth-divider::before,
+    .auth-divider::after {
+      content:'';
+      flex:1;
+      height:1px;
+      background:rgba(255,255,255,0.1);
+    }
+    .auth-divider span {
+      padding:0 16px;
+    }
+    .google-btn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:12px;
+      padding:14px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:10px;
+      color:#fff;
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+    .google-btn:hover {
+      background:rgba(255,255,255,0.1);
+      border-color:rgba(255,255,255,0.3);
+    }
+    .google-btn:disabled {
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+    .google-icon {
+      width:20px;
+      height:20px;
+    }
+    /* User menu styles */
+    .user-menu {
+      position:relative;
+    }
+    .user-btn {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 16px;
+      background:rgba(0,255,157,0.1);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:8px;
+      color:#00ff9d;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.3s ease;
+    }
+    .user-btn:hover {
+      background:rgba(0,255,157,0.2);
+    }
+    .user-dropdown {
+      display:none;
+      position:absolute;
+      top:100%;
+      right:0;
+      margin-top:8px;
+      background:#0a0e27;
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:8px;
+      padding:8px 0;
+      min-width:160px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.5);
+    }
+    .user-dropdown.active {
+      display:block;
+    }
+    .user-dropdown-item {
+      padding:10px 16px;
+      color:#d4d4d8;
+      font-size:14px;
+      cursor:pointer;
+      transition:background 0.2s;
+    }
+    .user-dropdown-item:hover {
+      background:rgba(0,255,157,0.1);
+      color:#00ff9d;
+    }
   </style>
 </head>
 <body>
+  <!-- Auth Modal -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-modal">
+      <button class="auth-close" id="authClose">&times;</button>
+      
+      <!-- Login Form -->
+      <div id="loginForm">
+        <h2 class="auth-title" data-i18n="authLoginTitle">登录</h2>
+        <p class="auth-subtitle" data-i18n="authLoginSubtitle">登录后即可生成报告和卡片</p>
+        
+        <div class="auth-error" id="loginError"></div>
+        
+        <form class="auth-form" id="loginFormEl">
+          <input type="email" class="auth-input" id="loginEmail" data-i18n-placeholder="authEmail" placeholder="邮箱地址" required>
+          <input type="password" class="auth-input" id="loginPassword" data-i18n-placeholder="authPassword" placeholder="密码" required>
+          <button type="submit" class="auth-btn" id="loginBtn" data-i18n="authLoginBtn">登录</button>
+        </form>
+        
+        <div class="auth-divider"><span data-i18n="authOr">或</span></div>
+        
+        <button class="google-btn" id="googleLoginBtn" disabled title="Coming soon">
+          <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          <span data-i18n="authGoogle">Google 登录 (即将开放)</span>
+        </button>
+        
+        <p class="auth-switch">
+          <span data-i18n="authNoAccount">还没有账号？</span>
+          <a id="showRegister" data-i18n="authRegisterLink">立即注册</a>
+        </p>
+      </div>
+      
+      <!-- Register Form -->
+      <div id="registerForm" style="display:none">
+        <h2 class="auth-title" data-i18n="authRegisterTitle">注册</h2>
+        <p class="auth-subtitle" data-i18n="authRegisterSubtitle">创建账号开始探索你的灵魂密码</p>
+        
+        <div class="auth-error" id="registerError"></div>
+        
+        <form class="auth-form" id="registerFormEl">
+          <input type="email" class="auth-input" id="registerEmail" data-i18n-placeholder="authEmail" placeholder="邮箱地址" required>
+          <input type="password" class="auth-input" id="registerPassword" data-i18n-placeholder="authPassword" placeholder="密码（至少6位）" required minlength="6">
+          <input type="password" class="auth-input" id="registerConfirm" data-i18n-placeholder="authConfirmPassword" placeholder="确认密码" required minlength="6">
+          <button type="submit" class="auth-btn" id="registerBtn" data-i18n="authRegisterBtn">注册</button>
+        </form>
+        
+        <p class="auth-switch">
+          <span data-i18n="authHasAccount">已有账号？</span>
+          <a id="showLogin" data-i18n="authLoginLink">立即登录</a>
+        </p>
+      </div>
+    </div>
+  </div>
   <div class="container">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <a href="index.html" class="back-link">← <span data-i18n="backHome">返回首页</span></a>
-      <button id="langSwitch" class="copy-btn" style="border:1px solid rgba(0,255,157,0.3);background:transparent;cursor:pointer">
-        <span id="langIcon">🌐</span> <span id="langText">EN</span>
-      </button>
+      <div style="display:flex;gap:12px;align-items:center">
+        <!-- User Menu (shown when logged in) -->
+        <div class="user-menu" id="userMenu" style="display:none">
+          <button class="user-btn" id="userBtn">
+            <span>👤</span>
+            <span id="userEmail">user@example.com</span>
+            <span>▼</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-item" id="logoutBtn" data-i18n="authLogout">退出登录</div>
+          </div>
+        </div>
+        <!-- Login Button (shown when not logged in) -->
+        <button id="loginTrigger" class="copy-btn" style="border:1px solid rgba(0,255,157,0.3);background:transparent;cursor:pointer;display:none">
+          <span>🔐</span> <span data-i18n="authLoginBtn">登录</span>
+        </button>
+        <button id="langSwitch" class="copy-btn" style="border:1px solid rgba(0,255,157,0.3);background:transparent;cursor:pointer">
+          <span id="langIcon">🌐</span> <span id="langText">EN</span>
+        </button>
+      </div>
     </div>
 
     <div class="header">
@@ -574,7 +857,28 @@
         cardLoadingKuder: 'AI正在生成您的宿命职业卡...',
         cardProgressTipsKuder: ['正在分析八字信息...', '正在匹配职业领域...', '正在渲染库德尔图表...', '正在生成职业卡...', '即将完成...'],
         privacyNotice: '本站不存储您的任何信息，请及时下载保存报告和图片。',
-        cardHint: '点击上方按钮，AI将为您生成专属卡片'
+        cardHint: '点击上方按钮，AI将为您生成专属卡片',
+        authLoginTitle: '登录',
+        authLoginSubtitle: '登录后即可生成报告和卡片',
+        authRegisterTitle: '注册',
+        authRegisterSubtitle: '创建账号开始探索你的灵魂密码',
+        authEmail: '邮箱地址',
+        authPassword: '密码',
+        authConfirmPassword: '确认密码',
+        authLoginBtn: '登录',
+        authRegisterBtn: '注册',
+        authOr: '或',
+        authGoogle: 'Google 登录 (即将开放)',
+        authNoAccount: '还没有账号？',
+        authRegisterLink: '立即注册',
+        authHasAccount: '已有账号？',
+        authLoginLink: '立即登录',
+        authLogout: '退出登录',
+        authLoginRequired: '请先登录后再生成报告',
+        authLoginRequiredCard: '请先登录后再生成卡片',
+        authPasswordMismatch: '两次输入的密码不一致',
+        authLoggingIn: '登录中...',
+        authRegistering: '注册中...'
       },
       en: {
         backHome: 'Back Home',
@@ -622,7 +926,28 @@
         cardLoadingKuder: 'AI is generating your Destiny Career Card...',
         cardProgressTipsKuder: ['Analyzing BaZi data...', 'Matching career domains...', 'Rendering Kuder chart...', 'Generating career card...', 'Almost done...'],
         privacyNotice: 'This site does not store your information. Please download and save your reports and images promptly.',
-        cardHint: 'Click the button above to generate your exclusive card'
+        cardHint: 'Click the button above to generate your exclusive card',
+        authLoginTitle: 'Login',
+        authLoginSubtitle: 'Login to generate reports and cards',
+        authRegisterTitle: 'Register',
+        authRegisterSubtitle: 'Create an account to explore your soul code',
+        authEmail: 'Email address',
+        authPassword: 'Password',
+        authConfirmPassword: 'Confirm password',
+        authLoginBtn: 'Login',
+        authRegisterBtn: 'Register',
+        authOr: 'or',
+        authGoogle: 'Google Login (Coming soon)',
+        authNoAccount: "Don't have an account?",
+        authRegisterLink: 'Register now',
+        authHasAccount: 'Already have an account?',
+        authLoginLink: 'Login now',
+        authLogout: 'Logout',
+        authLoginRequired: 'Please login to generate reports',
+        authLoginRequiredCard: 'Please login to generate cards',
+        authPasswordMismatch: 'Passwords do not match',
+        authLoggingIn: 'Logging in...',
+        authRegistering: 'Registering...'
       }
     };
 
@@ -1179,6 +1504,12 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      // Check login status first
+      if (!isLoggedIn()) {
+        showAuthModal('report');
+        return;
+      }
+
       // Hide error and result
       errorDiv.classList.remove('active');
       resultSection.classList.remove('active');
@@ -1433,6 +1764,12 @@
     }
 
     generateCardBtn.addEventListener('click', async () => {
+      // Check login status first
+      if (!isLoggedIn()) {
+        showAuthModal('card');
+        return;
+      }
+
       if (!lastAnalysisData) {
         alert(currentLang === 'zh' ? '请先生成报告' : 'Please generate report first');
         return;
@@ -1570,6 +1907,289 @@
         console.error('Download failed:', error);
       }
     });
+
+    // ========== Authentication System ==========
+    const AUTH_TOKEN_KEY = 'nc_auth_token';
+    const AUTH_USER_KEY = 'nc_auth_user';
+
+    // Auth state
+    let currentUser = null;
+    let pendingAction = null; // 'report' or 'card'
+
+    // DOM elements for auth
+    const authOverlay = document.getElementById('authOverlay');
+    const authClose = document.getElementById('authClose');
+    const loginFormDiv = document.getElementById('loginForm');
+    const registerFormDiv = document.getElementById('registerForm');
+    const loginFormEl = document.getElementById('loginFormEl');
+    const registerFormEl = document.getElementById('registerFormEl');
+    const loginError = document.getElementById('loginError');
+    const registerError = document.getElementById('registerError');
+    const showRegisterLink = document.getElementById('showRegister');
+    const showLoginLink = document.getElementById('showLogin');
+    const loginTrigger = document.getElementById('loginTrigger');
+    const userMenu = document.getElementById('userMenu');
+    const userBtn = document.getElementById('userBtn');
+    const userDropdown = document.getElementById('userDropdown');
+    const userEmailSpan = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Check if user is logged in
+    function isLoggedIn() {
+      return !!localStorage.getItem(AUTH_TOKEN_KEY);
+    }
+
+    // Get auth token
+    function getAuthToken() {
+      return localStorage.getItem(AUTH_TOKEN_KEY);
+    }
+
+    // Get stored user
+    function getStoredUser() {
+      const userData = localStorage.getItem(AUTH_USER_KEY);
+      return userData ? JSON.parse(userData) : null;
+    }
+
+    // Save auth data
+    function saveAuthData(token, user) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+      currentUser = user;
+    }
+
+    // Clear auth data
+    function clearAuthData() {
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      localStorage.removeItem(AUTH_USER_KEY);
+      currentUser = null;
+    }
+
+    // Update UI based on auth state
+    function updateAuthUI() {
+      if (isLoggedIn()) {
+        const user = getStoredUser();
+        loginTrigger.style.display = 'none';
+        userMenu.style.display = 'block';
+        if (user && user.email) {
+          // Show truncated email
+          const email = user.email;
+          userEmailSpan.textContent = email.length > 15 ? email.substring(0, 12) + '...' : email;
+        }
+      } else {
+        loginTrigger.style.display = 'flex';
+        userMenu.style.display = 'none';
+      }
+    }
+
+    // Show auth modal
+    function showAuthModal(action = null) {
+      pendingAction = action;
+      authOverlay.classList.add('active');
+      loginFormDiv.style.display = 'block';
+      registerFormDiv.style.display = 'none';
+      loginError.classList.remove('active');
+      registerError.classList.remove('active');
+      // Clear form fields
+      loginFormEl.reset();
+      registerFormEl.reset();
+    }
+
+    // Hide auth modal
+    function hideAuthModal() {
+      authOverlay.classList.remove('active');
+      pendingAction = null;
+    }
+
+    // Switch between login and register forms
+    showRegisterLink.addEventListener('click', () => {
+      loginFormDiv.style.display = 'none';
+      registerFormDiv.style.display = 'block';
+      loginError.classList.remove('active');
+    });
+
+    showLoginLink.addEventListener('click', () => {
+      registerFormDiv.style.display = 'none';
+      loginFormDiv.style.display = 'block';
+      registerError.classList.remove('active');
+    });
+
+    // Close modal
+    authClose.addEventListener('click', hideAuthModal);
+    authOverlay.addEventListener('click', (e) => {
+      if (e.target === authOverlay) hideAuthModal();
+    });
+
+    // Login trigger button
+    loginTrigger.addEventListener('click', () => showAuthModal());
+
+    // User dropdown toggle
+    userBtn.addEventListener('click', () => {
+      userDropdown.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!userMenu.contains(e.target)) {
+        userDropdown.classList.remove('active');
+      }
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click', () => {
+      clearAuthData();
+      updateAuthUI();
+      userDropdown.classList.remove('active');
+    });
+
+    // Login form submit
+    loginFormEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const loginBtn = document.getElementById('loginBtn');
+      
+      loginBtn.disabled = true;
+      loginBtn.textContent = translations[currentLang].authLoggingIn;
+      loginError.classList.remove('active');
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(currentLang === 'zh' ? data.errorZh : data.error);
+        }
+
+        // Save auth data
+        saveAuthData(data.token, data.user);
+        updateAuthUI();
+        hideAuthModal();
+
+        // Execute pending action if any
+        if (pendingAction === 'report') {
+          form.dispatchEvent(new Event('submit'));
+        } else if (pendingAction === 'card') {
+          generateCardBtn.click();
+        }
+
+      } catch (error) {
+        loginError.textContent = error.message;
+        loginError.classList.add('active');
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = translations[currentLang].authLoginBtn;
+      }
+    });
+
+    // Register form submit
+    registerFormEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('registerConfirm').value;
+      const registerBtn = document.getElementById('registerBtn');
+      
+      // Check password match
+      if (password !== confirmPassword) {
+        registerError.textContent = translations[currentLang].authPasswordMismatch;
+        registerError.classList.add('active');
+        return;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = translations[currentLang].authRegistering;
+      registerError.classList.remove('active');
+
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(currentLang === 'zh' ? data.errorZh : data.error);
+        }
+
+        // Save auth data
+        saveAuthData(data.token, data.user);
+        updateAuthUI();
+        hideAuthModal();
+
+        // Execute pending action if any
+        if (pendingAction === 'report') {
+          form.dispatchEvent(new Event('submit'));
+        } else if (pendingAction === 'card') {
+          generateCardBtn.click();
+        }
+
+      } catch (error) {
+        registerError.textContent = error.message;
+        registerError.classList.add('active');
+      } finally {
+        registerBtn.disabled = false;
+        registerBtn.textContent = translations[currentLang].authRegisterBtn;
+      }
+    });
+
+    // Check auth on page load
+    async function checkAuthOnLoad() {
+      const token = getAuthToken();
+      if (!token) {
+        updateAuthUI();
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          currentUser = data.user;
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+        } else {
+          // Token invalid, clear auth data
+          clearAuthData();
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      }
+
+      updateAuthUI();
+    }
+
+    // Require login for report generation
+    function requireLoginForReport() {
+      if (!isLoggedIn()) {
+        showAuthModal('report');
+        return false;
+      }
+      return true;
+    }
+
+    // Require login for card generation
+    function requireLoginForCard() {
+      if (!isLoggedIn()) {
+        showAuthModal('card');
+        return false;
+      }
+      return true;
+    }
+
+    // Initialize auth on page load
+    checkAuthOnLoad();
 
   </script>
 </body>
