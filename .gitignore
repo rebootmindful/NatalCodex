@@ -26,3 +26,6 @@ tmp/
 
 # Deprecated API files
 api/reports/generate.js
+
+# Sensitive credentials
+googleauth.md

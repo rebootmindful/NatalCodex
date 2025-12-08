@@ -1,15 +1,22 @@
 /**
  * Combined Auth API Handler
- * Handles: register, login, me (get current user)
+ * Handles: register, login, me, google, google-callback
  * 
  * Routes:
  * POST /api/auth?action=register
  * POST /api/auth?action=login
  * GET  /api/auth?action=me
+ * GET  /api/auth?action=google (redirect to Google)
+ * GET  /api/auth?action=google-callback (handle OAuth callback)
  */
 
 const db = require('../lib/db');
 const auth = require('../lib/auth');
+
+// Google OAuth config
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://natalcodex.com/api/auth?action=google-callback';
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -31,10 +38,14 @@ module.exports = async (req, res) => {
         return await handleLogin(req, res);
       case 'me':
         return await handleMe(req, res);
+      case 'google':
+        return handleGoogleRedirect(req, res);
+      case 'google-callback':
+        return await handleGoogleCallback(req, res);
       default:
         return res.status(400).json({
           success: false,
-          error: 'Invalid action. Use: register, login, or me',
+          error: 'Invalid action. Use: register, login, me, google, or google-callback',
           errorZh: '无效操作'
         });
     }
@@ -242,4 +253,123 @@ async function handleMe(req, res) {
       createdAt: user.created_at
     }
   });
+}
+
+// ========== Google OAuth Redirect ==========
+function handleGoogleRedirect(req, res) {
+  if (!GOOGLE_CLIENT_ID) {
+    return res.status(500).json({
+      success: false,
+      error: 'Google OAuth not configured',
+      errorZh: 'Google登录未配置'
+    });
+  }
+
+  const scope = encodeURIComponent('openid email profile');
+  const redirectUri = encodeURIComponent(GOOGLE_REDIRECT_URI);
+  const state = Math.random().toString(36).substring(7);
+  
+  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}&access_type=offline&prompt=consent`;
+  
+  res.redirect(302, googleAuthUrl);
+}
+
+// ========== Google OAuth Callback ==========
+async function handleGoogleCallback(req, res) {
+  const { code, error } = req.query;
+
+  // Redirect URL for frontend
+  const frontendUrl = 'https://natalcodex.com/generate.html';
+
+  if (error) {
+    console.error('[Auth] Google OAuth error:', error);
+    return res.redirect(`${frontendUrl}?auth_error=${encodeURIComponent(error)}`);
+  }
+
+  if (!code) {
+    return res.redirect(`${frontendUrl}?auth_error=no_code`);
+  }
+
+  try {
+    // Exchange code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        redirect_uri: GOOGLE_REDIRECT_URI,
+        grant_type: 'authorization_code'
+      })
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok || tokenData.error) {
+      console.error('[Auth] Token exchange failed:', tokenData);
+      return res.redirect(`${frontendUrl}?auth_error=token_exchange_failed`);
+    }
+
+    // Get user info from Google
+    const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { 'Authorization': `Bearer ${tokenData.access_token}` }
+    });
+
+    const googleUser = await userInfoResponse.json();
+
+    if (!googleUser.email) {
+      return res.redirect(`${frontendUrl}?auth_error=no_email`);
+    }
+
+    console.log('[Auth] Google user:', googleUser.email);
+
+    // Check if user exists by google_id or email
+    let result = await db.query(
+      'SELECT id, email, google_id, is_active FROM users WHERE google_id = $1 OR email = $2',
+      [googleUser.id, googleUser.email.toLowerCase()]
+    );
+
+    let user;
+
+    if (result.rows.length > 0) {
+      // Existing user - update google_id if needed
+      user = result.rows[0];
+      
+      if (!user.is_active) {
+        return res.redirect(`${frontendUrl}?auth_error=account_disabled`);
+      }
+
+      // Update user info from Google
+      await db.query(
+        `UPDATE users SET 
+          google_id = $1, 
+          name = COALESCE(name, $2), 
+          avatar_url = COALESCE(avatar_url, $3),
+          last_login_at = NOW()
+        WHERE id = $4`,
+        [googleUser.id, googleUser.name, googleUser.picture, user.id]
+      );
+    } else {
+      // New user - create account
+      const insertResult = await db.query(
+        `INSERT INTO users (email, google_id, name, avatar_url, password_hash) 
+         VALUES ($1, $2, $3, $4, $5) 
+         RETURNING id, email`,
+        [googleUser.email.toLowerCase(), googleUser.id, googleUser.name, googleUser.picture, 'GOOGLE_OAUTH']
+      );
+      user = insertResult.rows[0];
+      console.log('[Auth] New Google user created:', user.email);
+    }
+
+    // Generate JWT token
+    const token = auth.generateToken(user);
+
+    // Redirect to frontend with token
+    res.redirect(`${frontendUrl}?auth_token=${token}&auth_email=${encodeURIComponent(user.email)}`);
+
+  } catch (err) {
+    console.error('[Auth] Google callback error:', err);
+    return res.redirect(`${frontendUrl}?auth_error=server_error`);
+  }
 }
