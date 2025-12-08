@@ -1,0 +1,15 @@
+# NatalCodex robots.txt
+# https://natalcodex.com
+
+User-agent: *
+Allow: /
+
+# Disallow directories
+Disallow: /api/
+Disallow: /backup-*/
+Disallow: /node_modules/
+Disallow: /tests/
+Disallow: /prompts/
+
+# Sitemap
+Sitemap: https://natalcodex.com/sitemap.xml
