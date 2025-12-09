@@ -2001,7 +2001,40 @@
       // Update card button text based on report type
       updateCardButtonText(reportType);
 
+      // Variable to track deducted reportId for potential refund
+      let deductedReportId = null;
+
       try {
+        // Step 1: Deduct credit before generating
+        const token = localStorage.getItem('token');
+        const deductResponse = await fetch('/api/user?action=deduct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ reportType })
+        });
+
+        const deductData = await deductResponse.json();
+
+        if (!deductResponse.ok || !deductData.success) {
+          if (deductData.needPurchase) {
+            showPurchaseModal();
+            return;
+          }
+          throw new Error(deductData.error || 'Failed to deduct credit');
+        }
+
+        // Store reportId for potential refund
+        deductedReportId = deductData.reportId;
+
+        // Update local credit count
+        userCredits = deductData.remainingCredits;
+        updateCreditsDisplay();
+        console.log('[Credits] Deducted, remaining:', userCredits);
+
+        // Step 2: Generate report
         // Choose API endpoint based on report type
         const apiEndpoint = reportType === 'kuder'
           ? '/api/reports/generateKuder'
@@ -2013,7 +2046,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            orderId: 'web-' + Date.now(),
+            orderId: deductedReportId,
             birthData
           })
         });
@@ -2083,6 +2116,30 @@
         errorDiv.textContent = translations[currentLang].errorGenerate + error.message;
         errorDiv.classList.add('active');
         loading.classList.remove('active');
+
+        // Refund credit if report generation failed
+        if (deductedReportId) {
+          try {
+            const token = localStorage.getItem('token');
+            const refundResponse = await fetch('/api/user?action=refund', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ reportId: deductedReportId })
+            });
+
+            const refundData = await refundResponse.json();
+            if (refundData.success) {
+              userCredits = refundData.remainingCredits;
+              updateCreditsDisplay();
+              console.log('[Credits] Refunded due to error, remaining:', userCredits);
+            }
+          } catch (refundError) {
+            console.error('[Credits] Refund failed:', refundError);
+          }
+        }
       } finally {
         submitBtn.disabled = false;
       }
