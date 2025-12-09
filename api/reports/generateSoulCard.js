@@ -58,8 +58,17 @@ module.exports = async (req, res) => {
     const yongShen = extractedInfo.yongShen || '木';
     const shenSha = extractedInfo.shenSha.length > 0 ? extractedInfo.shenSha.join('、') : '天乙贵人、文昌';
 
-    // Personality quote for bottom summary
-    const personalityQuote = extractedInfo.personalityQuote || '命中藏锦绣，待时而发光';
+    // Personality quote for bottom summary - truncate to avoid prompt being too long
+    let personalityQuote = extractedInfo.personalityQuote || '命中藏锦绣，待时而发光';
+    // Keep only the main quote part (before translation if exists)
+    if (personalityQuote.length > 30) {
+      const mainQuote = personalityQuote.match(/「([^」]+)」/);
+      if (mainQuote) {
+        personalityQuote = mainQuote[0]; // Just keep 「...」 part
+      } else {
+        personalityQuote = personalityQuote.substring(0, 30);
+      }
+    }
     const kongWang = extractedInfo.kongWang || '';
     const cognitiveFunctions = extractedInfo.cognitiveFunctions || 'Ni-Fe-Ti-Se';
 

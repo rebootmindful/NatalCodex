@@ -60,8 +60,17 @@ module.exports = async (req, res) => {
       ? extractedInfo.careers.join('、')
       : '设计师、作家、心理咨询师';
 
-    // Talent quote
-    const talentQuote = extractedInfo.talentQuote || '命中注定的天赋，终将照亮前行的路';
+    // Talent quote - truncate to avoid prompt being too long
+    let talentQuote = extractedInfo.talentQuote || '命中注定的天赋，终将照亮前行的路';
+    // Keep only the main quote part (before translation if exists)
+    if (talentQuote.length > 30) {
+      const mainQuote = talentQuote.match(/「([^」]+)」/);
+      if (mainQuote) {
+        talentQuote = mainQuote[0]; // Just keep 「...」 part
+      } else {
+        talentQuote = talentQuote.substring(0, 30);
+      }
+    }
     const kongWang = extractedInfo.kongWang || '';
     const favorableColors = extractedInfo.favorableColors || '';
 
