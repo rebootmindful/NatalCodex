@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>生成OG Image和Apple Touch Icon</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 40px; background: #1a1a2e; color: #fff; }
+    h1 { color: #00ff9d; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .section { margin: 40px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; }
+    canvas { border: 1px solid #00ff9d; border-radius: 8px; max-width: 100%; }
+    button { 
+      padding: 12px 24px; 
+      background: linear-gradient(135deg, #00ff9d, #00d4aa); 
+      border: none; 
+      border-radius: 8px; 
+      color: #0a0e27; 
+      font-weight: bold; 
+      cursor: pointer; 
+      margin: 10px 5px;
+    }
+    button:hover { transform: scale(1.05); }
+    .info { color: #9ca3af; font-size: 14px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎨 NatalCodex 图片资源生成器</h1>
+    <p>点击下方按钮下载PNG图片，然后将文件放入项目根目录。</p>
+    
+    <div class="section">
+      <h2>1. OG Image (1200x630)</h2>
+      <p class="info">用于社交媒体分享时显示的预览图</p>
+      <canvas id="ogCanvas" width="1200" height="630"></canvas>
+      <br>
+      <button onclick="downloadOG()">💾 下载 og-image.png</button>
+    </div>
+    
+    <div class="section">
+      <h2>2. Apple Touch Icon (180x180)</h2>
+      <p class="info">用于iOS设备添加到主屏幕时的图标</p>
+      <canvas id="appleCanvas" width="180" height="180"></canvas>
+      <br>
+      <button onclick="downloadApple()">💾 下载 apple-touch-icon.png</button>
+    </div>
+  </div>
+
+  <script>
+    // Draw OG Image
+    function drawOGImage() {
+      const canvas = document.getElementById('ogCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 630);
+      bgGrad.addColorStop(0, '#0a0e27');
+      bgGrad.addColorStop(0.5, '#1a1f4d');
+      bgGrad.addColorStop(1, '#2d1f4d');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1200, 630);
+      
+      // Decorative circles
+      ctx.strokeStyle = 'rgba(0, 255, 157, 0.1)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(100, 100, 150, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(1100, 530, 200, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = 'rgba(0, 255, 157, 0.15)';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(600, 315, 250, 0, Math.PI * 2); ctx.stroke();
+      
+      // Logo circle
+      ctx.fillStyle = '#0a0e27';
+      ctx.beginPath(); ctx.arc(600, 200, 80, 0, Math.PI * 2); ctx.fill();
+      
+      const accentGrad = ctx.createLinearGradient(520, 120, 680, 280);
+      accentGrad.addColorStop(0, '#00ff9d');
+      accentGrad.addColorStop(1, '#00d4aa');
+      ctx.strokeStyle = accentGrad;
+      ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.arc(600, 200, 80, 0, Math.PI * 2); ctx.stroke();
+      
+      // Letter N
+      ctx.fillStyle = accentGrad;
+      ctx.font = 'bold 80px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('N', 600, 200);
+      
+      // Main title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 56px Arial, sans-serif';
+      ctx.fillText('NatalCodex', 600, 340);
+      
+      // Subtitle
+      ctx.fillStyle = '#00ff9d';
+      ctx.font = '32px Arial, sans-serif';
+      ctx.fillText('AI八字命理 × MBTI人格分析', 600, 410);
+      
+      // Tagline
+      ctx.fillStyle = '#d4d4d8';
+      ctx.font = '24px Arial, sans-serif';
+      ctx.fillText('免费生成专属灵魂卡片 · 3000字深度报告', 600, 470);
+      
+      // Features
+      ctx.fillStyle = '#9ca3af';
+      ctx.font = '20px Arial, sans-serif';
+      ctx.fillText('八字排盘 | MBTI分析 | 库德尔职业测评 | 中英双语', 600, 540);
+      
+      // Bottom accent line
+      ctx.fillStyle = accentGrad;
+      ctx.beginPath();
+      ctx.roundRect(400, 580, 400, 4, 2);
+      ctx.fill();
+    }
+    
+    // Draw Apple Touch Icon
+    function drawAppleIcon() {
+      const canvas = document.getElementById('appleCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Background with rounded corners
+      const bgGrad = ctx.createLinearGradient(0, 0, 180, 180);
+      bgGrad.addColorStop(0, '#0a0e27');
+      bgGrad.addColorStop(1, '#1a1f4d');
+      ctx.fillStyle = bgGrad;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, 180, 180, 40);
+      ctx.fill();
+      
+      // Outer ring
+      const accentGrad = ctx.createLinearGradient(20, 20, 160, 160);
+      accentGrad.addColorStop(0, '#00ff9d');
+      accentGrad.addColorStop(1, '#00d4aa');
+      ctx.strokeStyle = accentGrad;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(90, 90, 70, 0, Math.PI * 2); ctx.stroke();
+      
+      // Inner circle
+      ctx.fillStyle = '#0a0e27';
+      ctx.beginPath(); ctx.arc(90, 90, 55, 0, Math.PI * 2); ctx.fill();
+      
+      // Letter N
+      ctx.fillStyle = accentGrad;
+      ctx.font = 'bold 75px Georgia, serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('N', 90, 90);
+    }
+    
+    function downloadOG() {
+      const canvas = document.getElementById('ogCanvas');
+      const link = document.createElement('a');
+      link.download = 'og-image.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    function downloadApple() {
+      const canvas = document.getElementById('appleCanvas');
+      const link = document.createElement('a');
+      link.download = 'apple-touch-icon.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+    
+    // Draw on load
+    window.onload = function() {
+      drawOGImage();
+      drawAppleIcon();
+    };
+  </script>
+</body>
+</html>

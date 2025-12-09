@@ -595,6 +595,244 @@
       background:rgba(0,255,157,0.1);
       color:#00ff9d;
     }
+
+    /* Credits Display */
+    .credits-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 14px;
+      background:rgba(0,255,157,0.1);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:20px;
+      color:#00ff9d;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .credits-badge:hover {
+      background:rgba(0,255,157,0.2);
+    }
+    .credits-badge .credit-icon {
+      font-size:16px;
+    }
+
+    /* Purchase Modal */
+    .purchase-overlay {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(8px);
+      z-index:1000;
+      align-items:center;
+      justify-content:center;
+    }
+    .purchase-overlay.active {
+      display:flex;
+    }
+    .purchase-modal {
+      background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 100%);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:24px;
+      padding:40px;
+      max-width:520px;
+      width:90%;
+      position:relative;
+      box-shadow:0 20px 60px rgba(0,255,157,0.2);
+    }
+    .purchase-close {
+      position:absolute;
+      top:16px;
+      right:16px;
+      background:none;
+      border:none;
+      color:#9ca3af;
+      font-size:24px;
+      cursor:pointer;
+    }
+    .purchase-close:hover {
+      color:#fff;
+    }
+    .purchase-title {
+      font-size:26px;
+      font-weight:700;
+      color:#00ff9d;
+      text-align:center;
+      margin-bottom:8px;
+    }
+    .purchase-subtitle {
+      color:#9ca3af;
+      text-align:center;
+      margin-bottom:28px;
+      font-size:14px;
+    }
+    .purchase-credits-display {
+      text-align:center;
+      padding:16px;
+      background:rgba(239,68,68,0.1);
+      border:1px solid rgba(239,68,68,0.3);
+      border-radius:12px;
+      margin-bottom:24px;
+    }
+    .purchase-credits-display.has-credits {
+      background:rgba(0,255,157,0.1);
+      border-color:rgba(0,255,157,0.3);
+    }
+    .purchase-credits-display .value {
+      font-size:32px;
+      font-weight:700;
+      color:#fff;
+    }
+    .purchase-credits-display .label {
+      color:#9ca3af;
+      font-size:14px;
+    }
+    .package-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+      margin-bottom:24px;
+    }
+    .package-card {
+      padding:20px;
+      background:rgba(255,255,255,0.03);
+      border:2px solid rgba(255,255,255,0.1);
+      border-radius:16px;
+      cursor:pointer;
+      transition:all 0.2s;
+      text-align:center;
+    }
+    .package-card:hover {
+      border-color:rgba(0,255,157,0.5);
+    }
+    .package-card.selected {
+      border-color:#00ff9d;
+      background:rgba(0,255,157,0.08);
+    }
+    .package-card.recommended {
+      position:relative;
+    }
+    .package-card.recommended::before {
+      content:'推荐';
+      position:absolute;
+      top:-10px;
+      right:-10px;
+      padding:4px 10px;
+      background:#00ff9d;
+      color:#0a0e27;
+      font-size:12px;
+      font-weight:700;
+      border-radius:20px;
+    }
+    .package-credits {
+      font-size:28px;
+      font-weight:700;
+      color:#fff;
+    }
+    .package-credits span {
+      font-size:14px;
+      color:#9ca3af;
+      font-weight:400;
+    }
+    .package-price {
+      font-size:22px;
+      font-weight:700;
+      color:#00ff9d;
+      margin-top:8px;
+    }
+    .package-price.discounted {
+      color:#eab308;
+    }
+    .package-original {
+      font-size:14px;
+      color:#6b7280;
+      text-decoration:line-through;
+    }
+    .package-unit {
+      font-size:12px;
+      color:#6b7280;
+      margin-top:4px;
+    }
+    .promo-section {
+      margin-bottom:24px;
+    }
+    .promo-row {
+      display:flex;
+      gap:12px;
+    }
+    .promo-input {
+      flex:1;
+      padding:12px 16px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:10px;
+      color:#fff;
+      font-size:14px;
+      text-transform:uppercase;
+    }
+    .promo-input:focus {
+      outline:none;
+      border-color:#00ff9d;
+    }
+    .promo-btn {
+      padding:12px 20px;
+      background:rgba(0,255,157,0.2);
+      border:1px solid #00ff9d;
+      border-radius:10px;
+      color:#00ff9d;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .promo-btn:hover {
+      background:#00ff9d;
+      color:#0a0e27;
+    }
+    .promo-result {
+      margin-top:12px;
+      padding:10px 14px;
+      border-radius:8px;
+      font-size:13px;
+    }
+    .promo-result.success {
+      background:rgba(0,255,157,0.1);
+      border:1px solid rgba(0,255,157,0.3);
+      color:#00ff9d;
+    }
+    .promo-result.error {
+      background:rgba(239,68,68,0.1);
+      border:1px solid rgba(239,68,68,0.3);
+      color:#fca5a5;
+    }
+    .purchase-btn {
+      width:100%;
+      padding:16px;
+      background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);
+      color:#0a0e27;
+      font-size:16px;
+      font-weight:700;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      transition:all 0.25s ease;
+      box-shadow:0 6px 22px rgba(0,255,157,0.42);
+    }
+    .purchase-btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 10px 30px rgba(0,255,157,0.6);
+    }
+    .purchase-btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+    .purchase-note {
+      text-align:center;
+      margin-top:16px;
+      color:#6b7280;
+      font-size:12px;
+    }
   </style>
 </head>
 <body>
@@ -650,10 +888,57 @@
       </div>
     </div>
   </div>
+
+  <!-- Purchase Modal -->
+  <div class="purchase-overlay" id="purchaseOverlay">
+    <div class="purchase-modal">
+      <button class="purchase-close" id="purchaseClose">&times;</button>
+      <h2 class="purchase-title" data-i18n="purchaseTitle">购买次数</h2>
+      <p class="purchase-subtitle" data-i18n="purchaseSubtitle">一次可生成一份报告及其配套卡片</p>
+      
+      <div class="purchase-credits-display" id="purchaseCreditsDisplay">
+        <div class="value" id="purchaseCreditsValue">0</div>
+        <div class="label" data-i18n="purchaseCreditsLabel">剩余次数</div>
+      </div>
+
+      <div class="package-grid">
+        <div class="package-card recommended selected" data-package="PACK_6">
+          <div class="package-credits">6<span>次</span></div>
+          <div class="package-price" id="price6">¥29</div>
+          <div class="package-original" id="original6" style="display:none">¥29</div>
+          <div class="package-unit">¥4.83/次</div>
+        </div>
+        <div class="package-card" data-package="PACK_20">
+          <div class="package-credits">20<span>次</span></div>
+          <div class="package-price" id="price20">¥89</div>
+          <div class="package-original" id="original20" style="display:none">¥89</div>
+          <div class="package-unit">¥4.45/次</div>
+        </div>
+      </div>
+
+      <div class="promo-section">
+        <div class="promo-row">
+          <input type="text" class="promo-input" id="promoInput" placeholder="优惠码（可选）" maxlength="6">
+          <button type="button" class="promo-btn" id="promoValidateBtn">验证</button>
+        </div>
+        <div class="promo-result" id="promoResult" style="display:none"></div>
+      </div>
+
+      <button class="purchase-btn" id="purchaseBtn">支付宝支付</button>
+      <p class="purchase-note" data-i18n="purchaseNote">支付完成后次数自动到账</p>
+    </div>
+  </div>
+
   <div class="container">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <a href="index.html" class="back-link">← <span data-i18n="backHome">返回首页</span></a>
       <div style="display:flex;gap:12px;align-items:center">
+        <!-- Credits Badge (shown when logged in) -->
+        <div class="credits-badge" id="creditsBadge" style="display:none" title="点击购买更多次数">
+          <span class="credit-icon">🎫</span>
+          <span id="creditsCount">0</span>
+          <span data-i18n="creditsUnit">次</span>
+        </div>
         <!-- User Menu (shown when logged in) -->
         <div class="user-menu" id="userMenu" style="display:none">
           <button class="user-btn" id="userBtn">
@@ -1510,6 +1795,12 @@
         return;
       }
 
+      // Check credits before generating
+      if (userCredits < 1) {
+        showPurchaseModal();
+        return;
+      }
+
       // Hide error and result
       errorDiv.classList.remove('active');
       resultSection.classList.remove('active');
@@ -1964,21 +2255,106 @@
       currentUser = null;
     }
 
+    // Credits state
+    let userCredits = 0;
+    let selectedPackage = 'PACK_6';
+    let validatedPromo = null;
+
     // Update UI based on auth state
     function updateAuthUI() {
+      const creditsBadge = document.getElementById('creditsBadge');
       if (isLoggedIn()) {
         const user = getStoredUser();
         loginTrigger.style.display = 'none';
         userMenu.style.display = 'block';
+        creditsBadge.style.display = 'flex';
         if (user && user.email) {
           // Show truncated email
           const email = user.email;
           userEmailSpan.textContent = email.length > 15 ? email.substring(0, 12) + '...' : email;
         }
+        // Load user credits
+        loadUserCredits();
       } else {
         loginTrigger.style.display = 'flex';
         userMenu.style.display = 'none';
+        creditsBadge.style.display = 'none';
       }
+    }
+
+    // Load user credits from API
+    async function loadUserCredits() {
+      const token = getAuthToken();
+      if (!token) return;
+      
+      try {
+        const response = await fetch('/api/user?action=credits', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) {
+          userCredits = data.credits;
+          document.getElementById('creditsCount').textContent = userCredits;
+          // Update purchase modal display
+          const displayEl = document.getElementById('purchaseCreditsDisplay');
+          document.getElementById('purchaseCreditsValue').textContent = userCredits;
+          if (userCredits > 0) {
+            displayEl.classList.add('has-credits');
+          } else {
+            displayEl.classList.remove('has-credits');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load credits:', e);
+      }
+    }
+
+    // Check credits before generating
+    async function checkCreditsBeforeGenerate() {
+      if (userCredits < 1) {
+        showPurchaseModal();
+        return false;
+      }
+      return true;
+    }
+
+    // Show purchase modal
+    function showPurchaseModal() {
+      loadUserCredits(); // Refresh credits
+      validatedPromo = null;
+      document.getElementById('promoInput').value = '';
+      document.getElementById('promoResult').style.display = 'none';
+      resetPrices();
+      document.getElementById('purchaseOverlay').classList.add('active');
+    }
+
+    // Hide purchase modal
+    function hidePurchaseModal() {
+      document.getElementById('purchaseOverlay').classList.remove('active');
+    }
+
+    // Reset prices to original
+    function resetPrices() {
+      document.getElementById('price6').textContent = '¥29';
+      document.getElementById('price6').classList.remove('discounted');
+      document.getElementById('original6').style.display = 'none';
+      document.getElementById('price20').textContent = '¥89';
+      document.getElementById('price20').classList.remove('discounted');
+      document.getElementById('original20').style.display = 'none';
+    }
+
+    // Update prices with promo discount
+    function updatePricesWithDiscount(discountPercent) {
+      const prices = { PACK_6: 29, PACK_20: 89 };
+      const multiplier = discountPercent === 50 ? 0.5 : 0.8;
+      
+      document.getElementById('price6').textContent = `¥${(prices.PACK_6 * multiplier).toFixed(1)}`;
+      document.getElementById('price6').classList.add('discounted');
+      document.getElementById('original6').style.display = 'block';
+      
+      document.getElementById('price20').textContent = `¥${(prices.PACK_20 * multiplier).toFixed(1)}`;
+      document.getElementById('price20').classList.add('discounted');
+      document.getElementById('original20').style.display = 'block';
     }
 
     // Show auth modal
@@ -2253,6 +2629,115 @@
 
     // Initialize auth on page load
     checkAuthOnLoad();
+
+    // ==================== PURCHASE MODAL ====================
+    
+    // Credits badge click
+    document.getElementById('creditsBadge').addEventListener('click', showPurchaseModal);
+    
+    // Close purchase modal
+    document.getElementById('purchaseClose').addEventListener('click', hidePurchaseModal);
+    document.getElementById('purchaseOverlay').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('purchaseOverlay')) hidePurchaseModal();
+    });
+
+    // Package selection
+    document.querySelectorAll('.package-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        selectedPackage = card.dataset.package;
+      });
+    });
+
+    // Promo code validation
+    document.getElementById('promoValidateBtn').addEventListener('click', async () => {
+      const code = document.getElementById('promoInput').value.trim().toUpperCase();
+      const resultEl = document.getElementById('promoResult');
+      
+      if (!code) {
+        resultEl.className = 'promo-result error';
+        resultEl.textContent = '请输入优惠码';
+        resultEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/pay?action=validate-promo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+          },
+          body: JSON.stringify({ promoCode: code, packageType: selectedPackage })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          validatedPromo = { code, discountPercent: data.discountPercent };
+          resultEl.className = 'promo-result success';
+          resultEl.textContent = `✓ ${data.discountType === 'HALF' ? '五折' : '八折'}优惠已生效！`;
+          resultEl.style.display = 'block';
+          updatePricesWithDiscount(data.discountPercent);
+        } else {
+          validatedPromo = null;
+          resultEl.className = 'promo-result error';
+          resultEl.textContent = data.error || '优惠码无效';
+          resultEl.style.display = 'block';
+          resetPrices();
+        }
+      } catch (e) {
+        resultEl.className = 'promo-result error';
+        resultEl.textContent = '验证失败，请重试';
+        resultEl.style.display = 'block';
+      }
+    });
+
+    // Purchase button
+    document.getElementById('purchaseBtn').addEventListener('click', async () => {
+      const btn = document.getElementById('purchaseBtn');
+      btn.disabled = true;
+      btn.textContent = '处理中...';
+
+      try {
+        const response = await fetch('/api/pay?action=create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+          },
+          body: JSON.stringify({
+            packageType: selectedPackage,
+            promoCode: validatedPromo?.code || null
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.payUrl) {
+          // Redirect to payment page
+          window.location.href = data.payUrl;
+        } else {
+          alert(data.error || '创建订单失败');
+          btn.disabled = false;
+          btn.textContent = '支付宝支付';
+        }
+      } catch (e) {
+        alert('支付请求失败，请重试');
+        btn.disabled = false;
+        btn.textContent = '支付宝支付';
+      }
+    });
+
+    // Check for payment result on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('payment') === 'success') {
+      loadUserCredits();
+      alert('支付成功！次数已到账');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
 
   </script>
 </body>

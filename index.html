@@ -189,6 +189,19 @@
     .feature-title {font-size:20px;font-weight:700;margin-bottom:12px;color:#fff}
     .feature-desc {color:#9ca3af;font-size:14px;line-height:1.7}
 
+    /* Who Is It For Section */
+    #audience {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    .audience-grid {display:grid;grid-template-columns:1fr 1fr;gap:40px}
+    .audience-card {background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px}
+    .audience-card-header {display:flex;align-items:center;gap:12px;margin-bottom:20px}
+    .audience-card-icon {font-size:32px}
+    .audience-card-title {font-size:22px;font-weight:700;color:#00ff9d}
+    .audience-list {list-style:none}
+    .audience-list li {display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);color:#d4d4d8;font-size:15px;line-height:1.6}
+    .audience-list li:last-child {border-bottom:none}
+    .audience-check {color:#00ff9d;font-size:18px;flex-shrink:0;margin-top:2px}
+    @media (max-width:900px) {.audience-grid {grid-template-columns:1fr}}
+
     /* Pricing Section */
     #pricing {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
     .pricing-card {max-width:480px;margin:0 auto;background:linear-gradient(135deg,rgba(0,255,157,0.1) 0%,rgba(0,212,170,0.05) 100%);border:2px solid #00ff9d;border-radius:24px;padding:48px;text-align:center}
@@ -313,23 +326,82 @@
     </div>
   </section>
 
+  <!-- Who Is It For Section -->
+  <section id="audience" class="section">
+    <h2 class="section-title" data-i18n="audienceTitle">谁需要 NatalCodex？</h2>
+    <p class="section-desc" data-i18n="audienceDesc">无论你是想深入了解自己，还是在职业道路上寻找方向，NatalCodex 都能为你提供独特的洞察。</p>
+    <div class="audience-grid">
+      <!-- MBTI Card -->
+      <div class="audience-card">
+        <div class="audience-card-header">
+          <span class="audience-card-icon">🧠</span>
+          <h3 class="audience-card-title" data-i18n="audienceMbtiTitle">MBTI 人格分析适合</h3>
+        </div>
+        <ul class="audience-list">
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceMbti1">对自己性格的底层逻辑感到困惑的人</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceMbti2">时而觉得自己是 I 人、时而又像 E 人的人</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceMbti3">做 MBTI 问卷每次结果都不一样的人</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceMbti4">想要找到真正稳定的"人格底色"的人</span></li>
+        </ul>
+      </div>
+      <!-- Career Card -->
+      <div class="audience-card">
+        <div class="audience-card-header">
+          <span class="audience-card-icon">💼</span>
+          <h3 class="audience-card-title" data-i18n="audienceCareerTitle">KUDER 职业分析适合</h3>
+        </div>
+        <ul class="audience-list">
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceCareer1">应届毕业生：不知道选什么行业</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceCareer2">职场迷茫者：工作不开心但不知原因</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceCareer3">想转行者：不知道转什么方向</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceCareer4">创业者：想找到最适合的创业领域</span></li>
+          <li><span class="audience-check">✓</span> <span data-i18n="audienceCareer5">家长：为孩子规划教育与职业方向</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <!-- Pricing Section -->
   <section id="pricing" class="section">
     <h2 class="section-title" data-i18n="pricingTitle">价格方案</h2>
-    <p class="section-desc" data-i18n="pricingDesc">目前完全免费，尽情探索你的灵魂密码！</p>
-    <div class="pricing-card">
-      <div class="pricing-badge" data-i18n="pricingBadge">限时免费</div>
-      <div class="pricing-price">$0 <span data-i18n="pricingForever">/ 永久</span></div>
-      <p class="pricing-subtitle" data-i18n="pricingSubtitle">无需注册，无需付款</p>
-      <ul class="pricing-features">
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF1">无限次 MBTI 人格分析</span></li>
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF2">无限次 KUDER 职业推算</span></li>
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF3">AI 生成灵魂契合卡/职业卡</span></li>
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF4">PDF 报告下载</span></li>
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
-        <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6">历史记录本地保存</span></li>
-      </ul>
-      <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCta">立即开始</a>
+    <p class="section-desc" data-i18n="pricingDesc">新用户免费体验1次，之后按次付费</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto">
+      <!-- Free Trial -->
+      <div class="pricing-card" style="padding:32px;max-width:none">
+        <div class="pricing-badge" data-i18n="pricingBadgeFree">新用户</div>
+        <div class="pricing-price">¥0</div>
+        <p class="pricing-subtitle" data-i18n="pricingSubFree">免费体验1次</p>
+        <ul class="pricing-features" style="text-align:left;margin:20px 0">
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF1">MBTI/KUDER 二选一</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF3">AI 生成卡片</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF4">报告下载</span></li>
+        </ul>
+        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCta">立即体验</a>
+      </div>
+      <!-- 6 Pack - Recommended -->
+      <div class="pricing-card" style="padding:32px;max-width:none;border-color:#00ff9d;transform:scale(1.05)">
+        <div class="pricing-badge" style="background:#00ff9d;color:#0a0e27" data-i18n="pricingBadge6">推荐</div>
+        <div class="pricing-price">¥29</div>
+        <p class="pricing-subtitle" data-i18n="pricingSub6">6次套餐 · ¥4.83/次</p>
+        <ul class="pricing-features" style="text-align:left;margin:20px 0">
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6a">6次报告+卡片生成</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6b">适合自己+家人</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
+        </ul>
+        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCtaBuy">立即购买</a>
+      </div>
+      <!-- 20 Pack -->
+      <div class="pricing-card" style="padding:32px;max-width:none">
+        <div class="pricing-badge" data-i18n="pricingBadge20">超值</div>
+        <div class="pricing-price">¥89</div>
+        <p class="pricing-subtitle" data-i18n="pricingSub20">20次套餐 · ¥4.45/次</p>
+        <ul class="pricing-features" style="text-align:left;margin:20px 0">
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20a">20次报告+卡片生成</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20b">适合一家人使用</span></li>
+          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
+        </ul>
+        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCtaBuy">立即购买</a>
+      </div>
     </div>
   </section>
 
@@ -386,18 +458,37 @@
         feature5Desc: '内置全球200+城市数据库，自动识别经纬度和时区，用真太阳时精准排出四柱八字，确保命盘精确度。',
         feature6Title: '隐私优先设计',
         feature6Desc: '遵循GDPR最小化合规原则，所有数据仅存储在浏览器本地（LocalStorage），我们不保存任何个人敏感信息到服务器。',
+        audienceTitle: '谁需要 NatalCodex？',
+        audienceDesc: '无论你是想深入了解自己，还是在职业道路上寻找方向，NatalCodex 都能为你提供独特的洞察。',
+        audienceMbtiTitle: 'MBTI 人格分析适合',
+        audienceMbti1: '对自己性格的底层逻辑感到困惑的人',
+        audienceMbti2: '时而觉得自己是 I 人、时而又像 E 人的人',
+        audienceMbti3: '做 MBTI 问卷每次结果都不一样的人',
+        audienceMbti4: '想要找到真正稳定的"人格底色"的人',
+        audienceCareerTitle: 'KUDER 职业分析适合',
+        audienceCareer1: '应届毕业生：不知道选什么行业',
+        audienceCareer2: '职场迷茫者：工作不开心但不知原因',
+        audienceCareer3: '想转行者：不知道转什么方向',
+        audienceCareer4: '创业者：想找到最适合的创业领域',
+        audienceCareer5: '家长：为孩子规划教育与职业方向',
         pricingTitle: '价格方案',
-        pricingDesc: '目前完全免费开放，尽情探索你的灵魂密码！',
-        pricingBadge: '限时免费',
-        pricingForever: '/ 永久',
-        pricingSubtitle: '无需注册，无需付款',
-        pricingF1: '无限次 MBTI 人格分析',
-        pricingF2: '无限次 KUDER 职业推算',
-        pricingF3: 'AI 生成灵魂契合卡/宿命职业卡',
-        pricingF4: 'PDF/TXT 报告下载',
+        pricingDesc: '新用户免费体验1次，之后按次付费',
+        pricingBadgeFree: '新用户',
+        pricingSubFree: '免费体验1次',
+        pricingF1: 'MBTI/KUDER 二选一',
+        pricingF3: 'AI 生成卡片',
+        pricingF4: '报告下载',
+        pricingCta: '立即体验',
+        pricingBadge6: '推荐',
+        pricingSub6: '6次套餐 · ¥4.83/次',
+        pricingF6a: '6次报告+卡片生成',
+        pricingF6b: '适合自己+家人',
         pricingF5: '中英双语支持',
-        pricingF6: '历史记录本地保存',
-        pricingCta: '立即开始',
+        pricingCtaBuy: '立即购买',
+        pricingBadge20: '超值',
+        pricingSub20: '20次套餐 · ¥4.45/次',
+        pricingF20a: '20次报告+卡片生成',
+        pricingF20b: '适合一家人使用',
         footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
         footerAbout: '关于我们',
         footerBlog: '博客',
@@ -434,18 +525,37 @@
         feature5Desc: 'Built-in database of 200+ cities worldwide, auto-detecting coordinates and timezone, calculating true solar time for precise Four Pillars arrangement.',
         feature6Title: 'Privacy-First Design',
         feature6Desc: 'Following GDPR minimization principles, all data stored only in browser LocalStorage. We never save personal sensitive information to servers.',
+        audienceTitle: 'Who Needs NatalCodex?',
+        audienceDesc: 'Whether you want to understand yourself deeply or find direction in your career path, NatalCodex offers unique insights for you.',
+        audienceMbtiTitle: 'MBTI Analysis Is For',
+        audienceMbti1: 'Those confused about the underlying logic of their personality',
+        audienceMbti2: 'Those who sometimes feel like an Introvert, sometimes an Extrovert',
+        audienceMbti3: 'Those whose MBTI test results change every time',
+        audienceMbti4: 'Those seeking their true, stable "personality foundation"',
+        audienceCareerTitle: 'KUDER Career Analysis Is For',
+        audienceCareer1: 'Fresh Graduates: Unsure which industry to choose',
+        audienceCareer2: 'Lost Professionals: Unhappy at work but don\'t know why',
+        audienceCareer3: 'Career Changers: Don\'t know which direction to pivot',
+        audienceCareer4: 'Entrepreneurs: Looking for the best business field',
+        audienceCareer5: 'Parents: Planning education and career paths for children',
         pricingTitle: 'Pricing',
-        pricingDesc: 'Currently completely free - explore your soul code to the fullest!',
-        pricingBadge: 'Free Access',
-        pricingForever: '/ Forever',
-        pricingSubtitle: 'No registration, no payment required',
-        pricingF1: 'Unlimited MBTI Personality Analysis',
-        pricingF2: 'Unlimited KUDER Career Analysis',
-        pricingF3: 'AI-generated Soul Card / Destiny Card',
-        pricingF4: 'PDF/TXT Report Download',
-        pricingF5: 'Bilingual Support (EN/ZH)',
-        pricingF6: 'History saved locally',
-        pricingCta: 'Get Started',
+        pricingDesc: 'New users get 1 free trial, then pay-per-use',
+        pricingBadgeFree: 'New User',
+        pricingSubFree: '1 Free Trial',
+        pricingF1: 'MBTI or KUDER',
+        pricingF3: 'AI Card Generation',
+        pricingF4: 'Report Download',
+        pricingCta: 'Try Free',
+        pricingBadge6: 'Popular',
+        pricingSub6: '6 Pack · $4/each',
+        pricingF6a: '6 Reports + Cards',
+        pricingF6b: 'Great for family',
+        pricingF5: 'Bilingual Support',
+        pricingCtaBuy: 'Buy Now',
+        pricingBadge20: 'Best Value',
+        pricingSub20: '20 Pack · $3.5/each',
+        pricingF20a: '20 Reports + Cards',
+        pricingF20b: 'For extended family',
         footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
         footerAbout: 'About Us',
         footerBlog: 'Blog',

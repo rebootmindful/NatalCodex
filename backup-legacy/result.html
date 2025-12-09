@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NatalCodex - Result</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 50%,#2d1f4d 100%);color:#fff;min-height:100vh}
+    .wrap{max-width:1000px;margin:0 auto;padding:32px 20px}
+    .logo{font-size:32px;font-weight:600;color:#00ff9d;text-shadow:0 0 14px rgba(0,255,157,.5);letter-spacing:-.2px;margin-bottom:4px}
+    .title{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:12px;color:#e5e7eb}
+    .desc{font-size:14px;color:#cbd5e1;margin-bottom:18px}
+    .grid{display:grid;grid-template-columns:420px 1fr;gap:20px}
+    .card,.panel{background:rgba(10,14,39,.55);backdrop-filter:blur(8px);border:1px solid rgba(0,255,157,.3);border-radius:16px;padding:18px;box-shadow:0 10px 28px rgba(0,255,157,.18)}
+    .img{width:100%;height:720px;background:rgba(2,6,23,.65) url('soulprint-card.webp.png') center/cover no-repeat;border-radius:12px;filter:drop-shadow(0 12px 42px rgba(0,255,157,.28))}
+    .actions{display:flex;gap:12px;margin-top:12px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:12px;border:1px solid rgba(0,255,157,.35);background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);color:#0a0e27;font-weight:700;letter-spacing:.2px;box-shadow:0 10px 26px rgba(0,255,157,.4);cursor:pointer;transition:transform .2s ease}
+    .btn:hover{transform:translateY(-2px)}
+    .ghost{background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)}
+    .pre{white-space:pre-wrap;line-height:1.8;color:#d4d4d8;font-size:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.img{height:520px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">NatalCodex</div>
+    <div class="title">Your Soul Codex</div>
+    <div class="desc">Below is your generated Soul Codex Card and the in-depth report. This demo simulates generation.</div>
+    <div id="summary" class="panel" style="margin-bottom:12px">
+      <div id="summaryText" class="pre"></div>
+      <div class="actions" style="margin-top:8px">
+        <button id="edit" class="btn ghost">Edit Info</button>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div id="card" class="img"></div>
+        <div class="actions">
+          <button id="regenCard" class="btn">Regenerate Card</button>
+          <button id="downloadCard" class="btn ghost">Download</button>
+          <button id="genViaKie" class="btn ghost">Generate via KIE</button>
+        </div>
+        <div class="actions" style="margin-top:8px">
+          <label style="font-size:12px;color:#cbd5e1">Resolution
+            <select id="kieRes" style="margin-left:6px;padding:6px;border-radius:8px;background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)">
+              <option value="4K" selected>4K</option>
+              <option value="2K">2K</option>
+              <option value="1K">1K</option>
+            </select>
+          </label>
+          <label style="font-size:12px;color:#cbd5e1;margin-left:12px">Format
+            <select id="kieFmt" style="margin-left:6px;padding:6px;border-radius:8px;background:rgba(10,14,39,.45);color:#e5e7eb;border:1px solid rgba(0,255,157,.35)">
+              <option value="png" selected>PNG</option>
+              <option value="jpg">JPG</option>
+            </select>
+          </label>
+        </div>
+        <div id="kieStatus" class="pre" style="margin-top:8px"></div>
+      </div>
+      <div class="panel">
+        <div class="actions" style="margin-bottom:8px">
+          <button id="generate" class="btn">Generate Report</button>
+          <button id="copy" class="btn ghost">Copy</button>
+          <button id="dualGenerate" class="btn ghost" title="Ctrl+Shift+G">Dual Generate (Doc+Image)</button>
+        </div>
+        <div id="report" class="pre">Preparing...</div>
+        <div id="reportStatus" class="pre" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    function getParam(k){var u=new URL(window.location.href);return u.searchParams.get(k)}
+    function setCookie(name,value,days){var d=new Date();d.setTime(d.getTime()+days*24*60*60*1000);document.cookie=name+'='+encodeURIComponent(value)+';expires='+d.toUTCString()+';path=/'}
+    function getCookie(name){var v=document.cookie.split('; ').find(function(r){return r.startsWith(name+'=')});return v?decodeURIComponent(v.split('=')[1]):null}
+    var orderId=getParam('order_id')||localStorage.getItem('nc_order_id')||getCookie('nc_order_id');
+    var testMode=(getParam('test')==='1')||(localStorage.getItem('nc_test_mode')==='1');
+    if(!orderId){if(testMode){orderId='test-'+Math.random().toString(36).slice(2)} else {window.location.href='checkout.html'}}
+    var session=localStorage.getItem('natal_user_session');
+    function renderSummary(d){var s=document.getElementById('summaryText');if(!d||!d.date){s.textContent='No birth information found. Please return to input page.';return}var t='Name: '+(d.name||'')+'\nGender: '+(d.gender||'')+'\nBirth: '+(d.date||'')+' '+(d.time||'')+'\nLocation: '+(d.location||'')+'\nLatitude: '+(d.lat||'')+'\nLongitude: '+(d.lon||'')+'\nTimezone: '+(d.timezone||'');s.textContent=t}
+    try{var d=JSON.parse(session||'{}');renderSummary(d)}catch(e){renderSummary(null)}
+    function mockReport(d){return '# Soul Codex Report\n\nOrder: '+orderId+'\n\nBirth: '+(d.date||'')+' '+(d.time||'')+'\nLocation: '+(d.location||'')+' ('+(d.lat||'')+','+(d.lon||'')+') '+(d.timezone||'')+'\n\n## Core Energy\nYour chart blends Eastern metaphysics with modern psychology.\n\n## Career Matrix\nInsights tailored to your dominant elements.\n\n## Love Algorithms\nPatterns derived from cognitive functions and elemental balance.'}
+    async function tryGenerate(d){
+      var status=document.getElementById('reportStatus');
+      status.textContent='Validating parameters...';
+      var body={orderId:orderId,birthData:{name:d.name,gender:d.gender,date:d.date,time:d.time,location:d.location,lat:d.lat,lon:d.lon,timezone:d.timezone}};
+      var attempts=0;var lastErr='';
+      while(attempts<3){
+        attempts++;
+        status.textContent='Generating (attempt '+attempts+'/3)...';
+        try{
+          var controller=new AbortController();
+          var t=setTimeout(function(){controller.abort()},30000);
+          var resp=await fetch('/api/reports/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+          clearTimeout(t);
+          var data=await resp.json().catch(function(){return {}});
+          if(resp.ok && data && data.success && data.reportContent){
+            status.textContent='Report generated';
+            return data.reportContent;
+          }
+          lastErr=(data&&data.error)||('HTTP '+resp.status);
+          status.textContent='Failed: '+lastErr+(data&&data.trace?' — trace:'+JSON.stringify(data.trace):'');
+        }catch(e){
+          lastErr=(e&&e.message)||'unknown';
+          status.textContent='Error: '+lastErr;
+        }
+      }
+      status.textContent='Using fallback after 3 attempts: '+(lastErr||'unknown');
+      return mockReport(d);
+    }
+    function download(node){var a=document.createElement('a');a.href='soulprint-card.webp.png';a.download='natalcodex-card.png';a.click()}
+    document.getElementById('downloadCard').addEventListener('click',function(){download()})
+    document.getElementById('regenCard').addEventListener('click',function(){var c=document.getElementById('card');c.style.opacity='0.6';setTimeout(function(){c.style.opacity='1'},600)})
+    // dual trigger: Ctrl+Shift+G or button click
+    document.addEventListener('keydown',function(e){if(e.ctrlKey&&e.shiftKey&&e.key.toLowerCase()==='g'){dualGenerate()}})
+    document.getElementById('dualGenerate').addEventListener('click',function(){dualGenerate()})
+    async function genCardViaKIE(){
+      var statusEl=document.getElementById('kieStatus');
+      statusEl.textContent='Creating task...';
+      try{
+        var d=JSON.parse(session||'{}');
+        var prompt=buildKiePrompt(d);
+        var resSel=document.getElementById('kieRes');
+        var fmtSel=document.getElementById('kieFmt');
+        var resolution=(resSel&&resSel.value)||localStorage.getItem('nc_kie_res')||'4K';
+        var output_format=(fmtSel&&fmtSel.value)||localStorage.getItem('nc_kie_fmt')||'png';
+        localStorage.setItem('nc_kie_res',resolution); localStorage.setItem('nc_kie_fmt',output_format);
+        var payload={prompt:prompt,aspect_ratio:'9:16',resolution:resolution,output_format:output_format};
+        var epsCreate=['/api/kie/createTask','http://localhost:5502/api/kie/createTask'];
+        var taskId='';
+        for(var i=0;i<epsCreate.length;i++){
+          try{
+            var r=await fetch(epsCreate[i],{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+            var j=await r.json();
+            if(j&&j.success&&j.taskId){taskId=j.taskId;break}
+          }catch(_){}
+        }
+        if(!taskId){statusEl.textContent='KIE error: unable to create task';return}
+        statusEl.textContent='Task '+taskId+' started. Polling...';
+        var ok=await pollKieTask(taskId,statusEl);
+        if(!ok){statusEl.textContent='Polling finished with no result'}
+      }catch(e){statusEl.textContent='Failed: '+(e&&e.message||'unknown')}
+    }
+    function buildKiePrompt(d){
+      var name=(d.name||'');var gender=(d.gender||'');var date=(d.date||'');var time=(d.time||'');var tz=(d.timezone||'');var loc=(d.location||'');var lat=(d.lat||'');var lon=(d.lon||'');
+
+      // SIMPLIFIED PROMPT FOR TESTING - Remove if working
+      if(testMode || !name){
+        return 'A mystical tarot card design with cosmic background, featuring sacred geometry patterns, glowing golden title "Soul Codex" at top, purple and teal gradient, elegant typography, holographic effect, 9:16 portrait orientation';
+      }
+
+      // Original complex prompt (may cause 422 error with nano-banana-pro)
+      return [
+        '你同时精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和荣格MBTI八功能理论，是顶尖命理+心理学双料大师。',
+        '我的出生信息：【'+date+' '+time+'，'+(gender||'')+'，'+loc+'】（坐标 '+lat+','+lon+'；时区 '+tz+'）',
+        '请严格按以下7步执行：',
+        '1. 用真太阳时精准排出我的四柱八字、十神、神煞、大运起运时间',
+        '2. 用传统古法排出我的日主五行旺衰、用神忌神、格局层级',
+        '3. 通过深度问答式推导（模拟最专业的MBTI测试流程），给出我最准确的MBTI四字母与认知功能栈顺序（必须有详细推理，不能乱猜）',
+        '4. 把我的日主五行、命宫主星、格局直接映射到MBTI 16型与八大功能，建立专属灵魂称号（例如"庚金剑修·INTJ""癸水玄女·INFP""戊土建筑师·ISTJ"等）',
+        '5. 用 nanobanana pro 风格生成一张超长竖版「灵魂契合卡」（建议1080×3200及以上，打印级别300dpi），布局要求：',
+        '   - 顶部巨大篆体金色标题：【'+(name||'你的名字')+'】的灵魂契合卡',
+        '   - 左侧传统水墨风：完整八字命盘圆盘（地支藏干、十神标注、空亡、神煞、红字标出用神）',
+        '   - 右侧赛博紫电风：MBTI雷达图+八大认知功能栈进度条（五行配色：木青火红土黄金白水黑）',
+        '   - 中央最显眼位置：超大鎏金篆体写出我的专属灵魂称号',
+        '   - 中间横贯一条五行能量光带，连接命盘与MBTI图谱，形成"命运齿轮"转动感',
+        '   - 下方古籍风横批总结一句最准的命格人格总评（引用古籍原文+现代翻译）',
+        '   - 整体配色：黑紫渐变星空底+霓虹电光五行色+局部烫金，赛博道教风，镭射全息质感，信息密度高但层次分明',
+        '   - 所有文字必须用中文，字体：标题篆体，正文宋体+黑体，关键词荧光描边',
+        '6. 最后单独输出一张纯文字版总结，便于复制分享',
+        '直接生成图片+文字，一次成型。',
+      ].join('\n');
+    }
+    async function dualGenerate(){
+      var status=document.getElementById('reportStatus');
+      var kie=document.getElementById('kieStatus');
+      status.textContent='Dual: preparing...';
+      kie.textContent='Dual: preparing image...';
+      try{
+        var d=JSON.parse(session||'{}');
+        var p1=(async function(){ var content=await tryGenerate(d); // export PDF + DOCX
+          status.textContent='Dual: exporting documents...';
+          await Promise.all([
+            fetch('/api/export/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:orderId,content:content,title:'Soul Codex Report'})}).then(async r=>{if(!r.ok)throw new Error('Export PDF HTTP '+r.status); const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-report.pdf'; a.click(); }),
+            fetch('/api/export/doc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:orderId,content:content,title:'Soul Codex Report'})}).then(async r=>{if(!r.ok)throw new Error('Export DOC HTTP '+r.status); const blob=await r.blob(); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-report.docx'; a.click(); })
+          ]);
+          status.textContent='Dual: documents ready';
+          localStorage.setItem('nc_cache_report',content);
+        })();
+        var p2=(async function(){ await genCardViaKIE(); // when generated, trigger download of bg image
+          kie.textContent='Dual: downloading image...';
+          var bg=document.getElementById('card').style.backgroundImage||'';
+          var m=bg.match(/url\("(.+?)"\)/); var url=m?m[1]:'';
+          if(url){ const resp=await fetch('/api/kie/fetchImage?url='+encodeURIComponent(url)); const blob=await resp.blob(); const fmt=(resp.headers.get('content-type')||'').includes('jpeg')?'jpg':'png'; const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=orderId+'-card.'+fmt; a.click(); localStorage.setItem('nc_cache_card_url',url); kie.textContent='Dual: image ready'; } else { kie.textContent='Dual: image url missing'; }
+        })();
+        await Promise.all([p1,p2]);
+        status.textContent='Dual: all done';
+      }catch(e){ status.textContent='Dual error: '+((e&&e.message)||'unknown'); }
+    }
+    async function pollKieTask(taskId,statusEl){
+      var card=document.getElementById('card');
+      var epsQuery=['/api/kie/queryTask?taskId='+encodeURIComponent(taskId),'http://localhost:5502/api/kie/queryTask?taskId='+encodeURIComponent(taskId)];
+      var deadline=Date.now()+180000;
+      var trace=[];
+      while(Date.now()<deadline){
+        // Prefer callback result stored server-side
+        try{
+          var sr=await fetch('/api/kie/storeResult?taskId='+encodeURIComponent(taskId));
+          if(sr.ok){ var sj=await sr.json(); var sUrl=sj.imageUrl||''; var shortId=sj.shortId||''; var shortUrl=(shortId?('/api/kie/storeResult?shortId='+shortId):''); if(sUrl){ card.style.backgroundImage='url("'+sUrl+'")'; statusEl.textContent='Generated (callback) '+(shortUrl?('share:'+shortUrl):''); return true; } }
+        }catch(_){}
+        var data=null;
+        for(var i=0;i<epsQuery.length;i++){
+          try{
+            var r=await fetch(epsQuery[i]);
+            data=await r.json();
+            break;
+          }catch(_){}
+        }
+        if(data){
+          var state=(data.state)||((data.raw&&data.raw.data&&data.raw.data.state)||'');
+          trace.push('state:'+state);
+          if(state==='success'){
+            var url=data.resultUrl||'';
+            if(!url){
+              try{
+                var raw=(data.raw&&data.raw.data&&data.raw.data.resultJson)||'{}';
+                var p=typeof raw==='string'?JSON.parse(raw):raw;
+                url=(p.resultUrls&&p.resultUrls[0])||(p.imageUrls&&p.imageUrls[0])||(p.urls&&p.urls[0])||(p.outputs&&p.outputs[0]&&p.outputs[0].url)||'';
+              }catch(_){}
+            }
+            if(url){
+              card.style.backgroundImage='url("'+url+'")';
+              try{ var respStore=await fetch('/api/kie/storeResult',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({taskId:taskId,imageUrl:url})}); if(respStore.ok){ var s=await respStore.json(); var shortId=s.shortId||''; if(shortId){ statusEl.textContent='Generated share:/api/kie/storeResult?shortId='+shortId; } else { statusEl.textContent='Generated'; } } else { statusEl.textContent='Generated'; } }catch(_){ statusEl.textContent='Generated'; }
+              return true;
+            }
+            var diag=(data.diagnostics&&data.diagnostics.parseError)||'';
+            var httpStatus=(data.raw&&data.raw.status)||'';
+            var rawMsg=(data.raw&&data.raw.message)||'';
+            statusEl.textContent='Success with empty url'+(diag?(' — '+diag):'')+(httpStatus?(' — http:'+httpStatus):'')+(rawMsg?(' — msg:'+rawMsg):'');
+            return false;
+          }
+          if(state==='fail'){
+            var failCode=(data.raw&&data.raw.data&&data.raw.data.failCode)||'';
+            var failMsg=(data.raw&&data.raw.data&&data.raw.data.failMsg)||'';
+            statusEl.textContent='Task failed: '+failCode+' - '+failMsg;
+            try{localStorage.setItem('nc_kie_last_error',JSON.stringify({taskId:taskId,failCode:failCode,failMsg:failMsg,timestamp:Date.now()}))}catch(_){}
+            return false;
+          }
+          // unknown / pending / running
+          var httpStatus2=(data.raw&&data.raw.status)||'';
+          if(httpStatus2){trace.push('http:'+httpStatus2)}
+          if(state==='unknown' || httpStatus2==="404"){ try{ localStorage.setItem('nc_kie_last_error', JSON.stringify({ taskId: taskId, raw: data.raw||data })); }catch(_){} }
+        }
+        var elapsed=deadline-Date.now();
+        var wait=2000; // first minute 2s
+        var total=180000-elapsed; // elapsed time
+        var passed=180000-total;
+        if(passed>60000 && passed<=120000){wait=3000} else if(passed>120000){wait=5000}
+        await new Promise(function(r){setTimeout(r,wait)});
+      }
+      statusEl.textContent='Timeout — trace:'+trace.join(' > ');
+      return false;
+    }
+    document.getElementById('genViaKie').addEventListener('click',function(){genCardViaKIE()})
+    document.getElementById('edit').addEventListener('click',function(){var next='input.html?order_id='+encodeURIComponent(orderId);if(testMode){next+='&test=1'};window.location.href=next})
+    document.getElementById('generate').addEventListener('click',async function(){try{var d=JSON.parse(session||'{}');var el=document.getElementById('report');el.textContent='Generating...';var r=await tryGenerate(d);el.textContent=r}catch(e){}})
+    document.getElementById('copy').addEventListener('click',function(){var t=document.getElementById('report').textContent||'';navigator.clipboard.writeText(t)})
+    setTimeout(function(){document.getElementById('generate').click()},300)
+  </script>
+</body>
+</html>

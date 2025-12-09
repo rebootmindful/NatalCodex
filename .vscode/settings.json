@@ -1,0 +1,13 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "PowerShell": {
+      "source": "PowerShell",
+      "args": ["-NoExit", "-ExecutionPolicy", "Bypass", "-NoLogo"]
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.env.windows": {
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "files.encoding": "utf8"
+}

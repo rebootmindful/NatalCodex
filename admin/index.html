@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NatalCodex 管理后台</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {font-family:'Inter',sans-serif;background:#0a0e27;color:#e5e7eb;min-height:100vh}
+    
+    .header {background:rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+    .header h1 {font-size:20px;color:#00ff9d}
+    .header-right {display:flex;align-items:center;gap:16px}
+    .admin-email {color:#9ca3af;font-size:14px}
+    .logout-btn {padding:8px 16px;background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:6px;cursor:pointer;font-size:14px}
+    .logout-btn:hover {background:#ef4444;color:#fff}
+    
+    .container {max-width:1400px;margin:0 auto;padding:24px}
+    
+    .tabs {display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:16px}
+    .tab {padding:12px 24px;background:transparent;border:1px solid rgba(255,255,255,0.2);color:#9ca3af;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s}
+    .tab:hover {border-color:#00ff9d;color:#00ff9d}
+    .tab.active {background:#00ff9d;color:#0a0e27;border-color:#00ff9d}
+    
+    .panel {display:none}
+    .panel.active {display:block}
+    
+    .stats-grid {display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card {background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px}
+    .stat-label {color:#9ca3af;font-size:13px;margin-bottom:8px}
+    .stat-value {font-size:28px;font-weight:700;color:#00ff9d}
+    .stat-sub {color:#6b7280;font-size:12px;margin-top:4px}
+    
+    .card {background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:24px;margin-bottom:24px}
+    .card-header {display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .card-title {font-size:18px;font-weight:600;color:#fff}
+    
+    .search-box {display:flex;gap:12px;margin-bottom:16px}
+    .search-input {flex:1;padding:10px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:14px}
+    .search-input::placeholder {color:#6b7280}
+    .search-input:focus {outline:none;border-color:#00ff9d}
+    
+    .btn {padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;border:none;transition:all .2s}
+    .btn-primary {background:#00ff9d;color:#0a0e27}
+    .btn-primary:hover {background:#00d4aa}
+    .btn-secondary {background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2)}
+    .btn-secondary:hover {background:rgba(255,255,255,0.2)}
+    .btn-danger {background:#ef4444;color:#fff}
+    .btn-danger:hover {background:#dc2626}
+    .btn-sm {padding:6px 12px;font-size:12px}
+    
+    table {width:100%;border-collapse:collapse}
+    th,td {padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.1)}
+    th {color:#9ca3af;font-weight:500;font-size:13px}
+    td {color:#e5e7eb;font-size:14px}
+    tr:hover {background:rgba(255,255,255,0.02)}
+    
+    .badge {display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:500}
+    .badge-green {background:rgba(0,255,157,0.2);color:#00ff9d}
+    .badge-red {background:rgba(239,68,68,0.2);color:#ef4444}
+    .badge-yellow {background:rgba(234,179,8,0.2);color:#eab308}
+    .badge-blue {background:rgba(59,130,246,0.2);color:#3b82f6}
+    
+    .modal-overlay {position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100}
+    .modal-overlay.show {display:flex}
+    .modal {background:#1a1f4d;border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px;max-width:500px;width:90%}
+    .modal-title {font-size:20px;font-weight:600;color:#fff;margin-bottom:24px}
+    .form-group {margin-bottom:20px}
+    .form-label {display:block;color:#9ca3af;font-size:14px;margin-bottom:8px}
+    .form-select,.form-input {width:100%;padding:12px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;font-size:14px}
+    .form-select:focus,.form-input:focus {outline:none;border-color:#00ff9d}
+    .modal-actions {display:flex;gap:12px;justify-content:flex-end;margin-top:24px}
+    
+    .pagination {display:flex;justify-content:center;gap:8px;margin-top:16px}
+    .page-btn {padding:8px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:6px;cursor:pointer}
+    .page-btn:hover {border-color:#00ff9d}
+    .page-btn.active {background:#00ff9d;color:#0a0e27;border-color:#00ff9d}
+    
+    .loading {text-align:center;padding:40px;color:#9ca3af}
+    .error {background:rgba(239,68,68,0.1);border:1px solid #ef4444;border-radius:8px;padding:16px;color:#ef4444;margin-bottom:16px}
+    
+    .filter-row {display:flex;gap:12px;margin-bottom:16px}
+    .filter-select {padding:8px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;font-size:13px}
+    
+    @media (max-width:768px) {
+      .stats-grid {grid-template-columns:repeat(2,1fr)}
+      .tabs {flex-wrap:wrap}
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>🔮 NatalCodex 管理后台</h1>
+    <div class="header-right">
+      <span class="admin-email" id="adminEmail">-</span>
+      <button class="logout-btn" onclick="logout()">退出</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Error Display -->
+    <div id="errorBox" class="error" style="display:none"></div>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">📊 统计概览</button>
+      <button class="tab" data-tab="users">👥 用户管理</button>
+      <button class="tab" data-tab="promo">🎫 优惠码管理</button>
+    </div>
+
+    <!-- Stats Panel -->
+    <div class="panel active" id="panel-stats">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">总用户数</div>
+          <div class="stat-value" id="stat-users">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">总收入</div>
+          <div class="stat-value" id="stat-revenue">-</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">总使用次数</div>
+          <div class="stat-value" id="stat-usage">-</div>
+          <div class="stat-sub" id="stat-usage-detail">MBTI: - / KUDER: -</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">优惠码</div>
+          <div class="stat-value" id="stat-promo">-</div>
+          <div class="stat-sub" id="stat-promo-detail">已用: - / 有效: -</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Panel -->
+    <div class="panel" id="panel-users">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">用户列表</h3>
+        </div>
+        <div class="search-box">
+          <input type="text" class="search-input" id="userSearch" placeholder="搜索邮箱...">
+          <button class="btn btn-primary" onclick="searchUsers()">搜索</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>邮箱</th>
+              <th>剩余次数</th>
+              <th>已购次数</th>
+              <th>注册时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="usersTable">
+            <tr><td colspan="6" class="loading">加载中...</td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" id="usersPagination"></div>
+      </div>
+    </div>
+
+    <!-- Promo Panel -->
+    <div class="panel" id="panel-promo">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">优惠码管理</h3>
+          <button class="btn btn-primary" onclick="showGeneratePromoModal()">+ 生成优惠码</button>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select" id="promoFilter" onchange="loadPromoCodes()">
+            <option value="">全部</option>
+            <option value="active">有效</option>
+            <option value="used">已使用</option>
+            <option value="expired">已过期</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>优惠码</th>
+              <th>类型</th>
+              <th>折扣</th>
+              <th>状态</th>
+              <th>使用者</th>
+              <th>过期时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="promoTable">
+            <tr><td colspan="7" class="loading">加载中...</td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" id="promoPagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="editCreditsModal">
+    <div class="modal">
+      <h3 class="modal-title">修改用户次数</h3>
+      <div class="form-group">
+        <label class="form-label">用户</label>
+        <input type="text" class="form-input" id="editUserEmail" readonly>
+        <input type="hidden" id="editUserId">
+      </div>
+      <div class="form-group">
+        <label class="form-label">当前次数</label>
+        <input type="text" class="form-input" id="editCurrentCredits" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">操作</label>
+        <select class="form-select" id="editCreditAction">
+          <option value="set">直接设置为</option>
+          <option value="add">增加</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">次数</label>
+        <input type="number" class="form-input" id="editCreditsValue" min="0" value="0">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('editCreditsModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitEditCredits()">确认</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="generatePromoModal">
+    <div class="modal">
+      <h3 class="modal-title">生成优惠码</h3>
+      <div class="form-group">
+        <label class="form-label">折扣类型</label>
+        <select class="form-select" id="promoType">
+          <option value="HALF">五折 (H开头)</option>
+          <option value="TWENTY">八折 (E开头)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">生成数量</label>
+        <input type="number" class="form-input" id="promoCount" min="1" max="100" value="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">有效天数</label>
+        <input type="number" class="form-input" id="promoDays" min="1" max="365" value="30">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal('generatePromoModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitGeneratePromo()">生成</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="promoResultModal">
+    <div class="modal">
+      <h3 class="modal-title">生成成功</h3>
+      <div class="form-group">
+        <label class="form-label">生成的优惠码 (点击复制)</label>
+        <textarea class="form-input" id="promoResultCodes" rows="10" readonly style="font-family:monospace"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="copyPromoCodes()">复制全部</button>
+        <button class="btn btn-secondary" onclick="closeModal('promoResultModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+    let token = localStorage.getItem('nc_token');
+    let currentPage = { users: 1, promo: 1 };
+
+    // Check login
+    async function checkAuth() {
+      if (!token) {
+        window.location.href = '/generate.html?redirect=admin';
+        return false;
+      }
+      
+      try {
+        const res = await fetch(`${API_BASE}/auth?action=me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+          throw new Error('Auth failed');
+        }
+        
+        document.getElementById('adminEmail').textContent = data.user.email;
+        return true;
+      } catch (e) {
+        localStorage.removeItem('nc_token');
+        window.location.href = '/generate.html?redirect=admin';
+        return false;
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('nc_token');
+      window.location.href = '/';
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('errorBox');
+      box.textContent = msg;
+      box.style.display = 'block';
+      setTimeout(() => box.style.display = 'none', 5000);
+    }
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`panel-${tab.dataset.tab}`).classList.add('active');
+      });
+    });
+
+    // API Helpers
+    async function apiGet(action, params = {}) {
+      const url = new URL(`${API_BASE}/admin`, window.location.origin);
+      url.searchParams.set('action', action);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      return res.json();
+    }
+
+    async function apiPost(action, body) {
+      const res = await fetch(`${API_BASE}/admin?action=${action}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      return res.json();
+    }
+
+    async function apiPut(action, body) {
+      const res = await fetch(`${API_BASE}/admin?action=${action}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      return res.json();
+    }
+
+    async function apiDelete(action, params) {
+      const url = new URL(`${API_BASE}/admin`, window.location.origin);
+      url.searchParams.set('action', action);
+      Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+      
+      const res = await fetch(url, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      return res.json();
+    }
+
+    // Load Stats
+    async function loadStats() {
+      try {
+        const data = await apiGet('stats');
+        if (data.success) {
+          const s = data.stats;
+          document.getElementById('stat-users').textContent = s.users.total_users || 0;
+          document.getElementById('stat-revenue').textContent = `¥${parseFloat(s.orders.total_revenue || 0).toFixed(2)}`;
+          document.getElementById('stat-usage').textContent = s.usage.total_usage || 0;
+          document.getElementById('stat-usage-detail').textContent = `MBTI: ${s.usage.mbti_count || 0} / KUDER: ${s.usage.kuder_count || 0}`;
+          document.getElementById('stat-promo').textContent = s.promoCodes.total_codes || 0;
+          document.getElementById('stat-promo-detail').textContent = `已用: ${s.promoCodes.used_codes || 0} / 有效: ${s.promoCodes.active_codes || 0}`;
+        }
+      } catch (e) {
+        console.error('Load stats error:', e);
+      }
+    }
+
+    // Load Users
+    async function loadUsers(page = 1, search = '') {
+      currentPage.users = page;
+      const tbody = document.getElementById('usersTable');
+      tbody.innerHTML = '<tr><td colspan="6" class="loading">加载中...</td></tr>';
+      
+      try {
+        const data = await apiGet('users', { page, search, limit: 20 });
+        if (data.success) {
+          if (data.users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">无数据</td></tr>';
+            return;
+          }
+          
+          tbody.innerHTML = data.users.map(u => `
+            <tr>
+              <td>${u.id}</td>
+              <td>${u.email}${u.is_admin ? ' <span class="badge badge-green">管理员</span>' : ''}</td>
+              <td><span class="badge ${u.remaining_credits > 0 ? 'badge-green' : 'badge-red'}">${u.remaining_credits}</span></td>
+              <td>${u.total_purchased}</td>
+              <td>${new Date(u.created_at).toLocaleString('zh-CN')}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="showEditCreditsModal(${u.id}, '${u.email}', ${u.remaining_credits})">修改次数</button>
+              </td>
+            </tr>
+          `).join('');
+          
+          renderPagination('usersPagination', data.pagination, (p) => loadUsers(p, search));
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" class="error">加载失败</td></tr>';
+      }
+    }
+
+    function searchUsers() {
+      const search = document.getElementById('userSearch').value;
+      loadUsers(1, search);
+    }
+
+    // Load Promo Codes
+    async function loadPromoCodes(page = 1) {
+      currentPage.promo = page;
+      const status = document.getElementById('promoFilter').value;
+      const tbody = document.getElementById('promoTable');
+      tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
+      
+      try {
+        const data = await apiGet('promo-list', { page, status, limit: 50 });
+        if (data.success) {
+          if (data.promoCodes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">无数据</td></tr>';
+            return;
+          }
+          
+          tbody.innerHTML = data.promoCodes.map(p => {
+            const isExpired = new Date(p.expires_at) < new Date();
+            let statusBadge;
+            if (p.is_used) {
+              statusBadge = '<span class="badge badge-blue">已使用</span>';
+            } else if (isExpired) {
+              statusBadge = '<span class="badge badge-red">已过期</span>';
+            } else {
+              statusBadge = '<span class="badge badge-green">有效</span>';
+            }
+            
+            return `
+              <tr>
+                <td><code>${p.code}</code></td>
+                <td>${p.discount_type === 'HALF' ? '五折' : '八折'}</td>
+                <td>${p.discount_percent}% off</td>
+                <td>${statusBadge}</td>
+                <td>${p.used_by_email || '-'}</td>
+                <td>${new Date(p.expires_at).toLocaleDateString('zh-CN')}</td>
+                <td>
+                  ${!p.is_used ? `<button class="btn btn-danger btn-sm" onclick="deletePromo(${p.id}, '${p.code}')">作废</button>` : ''}
+                </td>
+              </tr>
+            `;
+          }).join('');
+          
+          renderPagination('promoPagination', data.pagination, loadPromoCodes);
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7" class="error">加载失败</td></tr>';
+      }
+    }
+
+    function renderPagination(containerId, pagination, callback) {
+      const container = document.getElementById(containerId);
+      if (pagination.totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      let html = '';
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        html += `<button class="page-btn ${i === pagination.page ? 'active' : ''}" onclick="(${callback.toString()})(${i})">${i}</button>`;
+      }
+      container.innerHTML = html;
+    }
+
+    // Modals
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function showEditCreditsModal(userId, email, credits) {
+      document.getElementById('editUserId').value = userId;
+      document.getElementById('editUserEmail').value = email;
+      document.getElementById('editCurrentCredits').value = credits;
+      document.getElementById('editCreditsValue').value = 0;
+      document.getElementById('editCreditsModal').classList.add('show');
+    }
+
+    async function submitEditCredits() {
+      const userId = document.getElementById('editUserId').value;
+      const action = document.getElementById('editCreditAction').value;
+      const credits = parseInt(document.getElementById('editCreditsValue').value);
+      
+      try {
+        const data = await apiPut('update-credits', { userId, credits, action });
+        if (data.success) {
+          closeModal('editCreditsModal');
+          loadUsers(currentPage.users);
+          alert(`次数已更新为: ${data.newCredits}`);
+        } else {
+          showError(data.error || '操作失败');
+        }
+      } catch (e) {
+        showError('操作失败: ' + e.message);
+      }
+    }
+
+    function showGeneratePromoModal() {
+      document.getElementById('promoType').value = 'HALF';
+      document.getElementById('promoCount').value = 5;
+      document.getElementById('promoDays').value = 30;
+      document.getElementById('generatePromoModal').classList.add('show');
+    }
+
+    async function submitGeneratePromo() {
+      const discountType = document.getElementById('promoType').value;
+      const count = parseInt(document.getElementById('promoCount').value);
+      const expiresInDays = parseInt(document.getElementById('promoDays').value);
+      
+      try {
+        const data = await apiPost('generate-promo', { discountType, count, expiresInDays });
+        if (data.success) {
+          closeModal('generatePromoModal');
+          document.getElementById('promoResultCodes').value = data.codes.join('\n');
+          document.getElementById('promoResultModal').classList.add('show');
+          loadPromoCodes();
+        } else {
+          showError(data.error || '生成失败');
+        }
+      } catch (e) {
+        showError('生成失败: ' + e.message);
+      }
+    }
+
+    function copyPromoCodes() {
+      const textarea = document.getElementById('promoResultCodes');
+      textarea.select();
+      document.execCommand('copy');
+      alert('已复制到剪贴板');
+    }
+
+    async function deletePromo(id, code) {
+      if (!confirm(`确定要作废优惠码 ${code} 吗？`)) return;
+      
+      try {
+        const data = await apiDelete('delete-promo', { id });
+        if (data.success) {
+          loadPromoCodes(currentPage.promo);
+        } else {
+          showError(data.error || '删除失败');
+        }
+      } catch (e) {
+        showError('删除失败: ' + e.message);
+      }
+    }
+
+    // Init
+    async function init() {
+      if (await checkAuth()) {
+        loadStats();
+        loadUsers();
+        loadPromoCodes();
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
