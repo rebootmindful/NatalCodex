@@ -12,22 +12,51 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = async (req, res) => {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   const action = req.query.action || req.body?.action;
+
+  // 检查必需的环境变量
+  if (!process.env.JWT_SECRET) {
+    console.error('[User] FATAL: JWT_SECRET not set');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
+    });
+  }
+
+  if (!process.env.DATABASE_URL) {
+    console.error('[User] FATAL: DATABASE_URL not set');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'DATABASE_URL not set' : undefined
+    });
+  }
 
   // 验证 JWT
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
   }
 
   const token = authHeader.substring(7);
   let userId;
-  
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     userId = decoded.id;  // lib/auth.js uses 'id' not 'userId'
   } catch (e) {
-    return res.status(401).json({ error: 'Invalid token' });
+    console.error('[User] JWT verification failed:', e.message);
+    return res.status(401).json({ success: false, error: 'Invalid token' });
   }
 
   try {
@@ -41,11 +70,19 @@ module.exports = async (req, res) => {
       case 'check-image':
         return await handleCheckImage(req, res, userId);
       default:
-        return res.status(400).json({ error: 'Invalid action', validActions: ['credits', 'deduct', 'refund', 'check-image'] });
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid action',
+          validActions: ['credits', 'deduct', 'refund', 'check-image']
+        });
     }
   } catch (error) {
     console.error('[User] Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message,
+      stack: process.env.NODE_ENV !== 'production' ? error.stack : undefined
+    });
   }
 };
 

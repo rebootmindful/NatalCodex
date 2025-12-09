@@ -2457,27 +2457,43 @@
     // Load user credits from API
     async function loadUserCredits() {
       const token = getAuthToken();
-      if (!token) return;
-      
+      if (!token) {
+        console.warn('[Credits] No auth token found');
+        return;
+      }
+
       try {
         const response = await fetch('/api/user?action=credits', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
-        if (data.success) {
+
+        console.log('[Credits] API response:', data);
+
+        if (data.success && typeof data.credits === 'number') {
           userCredits = data.credits;
           document.getElementById('creditsCount').textContent = userCredits;
           // Update purchase modal display
           const displayEl = document.getElementById('purchaseCreditsDisplay');
-          document.getElementById('purchaseCreditsValue').textContent = userCredits;
-          if (userCredits > 0) {
-            displayEl.classList.add('has-credits');
-          } else {
-            displayEl.classList.remove('has-credits');
+          if (displayEl) {
+            document.getElementById('purchaseCreditsValue').textContent = userCredits;
+            if (userCredits > 0) {
+              displayEl.classList.add('has-credits');
+            } else {
+              displayEl.classList.remove('has-credits');
+            }
+          }
+          console.log('[Credits] Loaded successfully:', userCredits);
+        } else {
+          console.error('[Credits] API error:', data.error || 'Invalid response');
+          // 如果是 401 错误，清除 token 并重新登录
+          if (response.status === 401) {
+            console.warn('[Credits] Token invalid, logging out');
+            logout();
           }
         }
       } catch (e) {
-        console.error('Failed to load credits:', e);
+        console.error('[Credits] Failed to load credits:', e);
       }
     }
 
