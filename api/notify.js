@@ -2,26 +2,28 @@
  * 虎皮椒支付回调专用端点
  * 独立文件，避免路由问题
  * URL: /api/notify
+ *
+ * 虎皮椒文档: https://www.xunhupay.com/doc/api/pay.html
+ * 回调方式: POST, form表单类型
+ * 返回要求: 返回纯文本 "success" 表示收到
  */
 
 const { query } = require('../lib/db');
 const xunhupay = require('../lib/xunhupay');
 
 module.exports = async (req, res) => {
-  // 设置响应头
+  // 立即设置响应头，确保返回纯文本
   res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).send('ok');
-  }
-
-  // 支持 GET 和 POST
-  const params = req.method === 'GET' ? req.query : req.body;
+  res.setHeader('Cache-Control', 'no-cache, no-store');
 
   console.log('[Notify] ====== PAYMENT CALLBACK ======');
   console.log('[Notify] Method:', req.method);
+  console.log('[Notify] URL:', req.url);
+
+  // 虎皮椒使用 POST + form表单
+  // req.body 在 Vercel 中会自动解析 form 数据
+  const params = req.body || req.query || {};
+
   console.log('[Notify] Params:', JSON.stringify(params));
 
   // 检查必要参数
