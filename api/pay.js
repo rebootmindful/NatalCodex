@@ -396,14 +396,21 @@ async function handleStatus(req, res) {
  * 虎皮椒支付回调
  */
 async function handleNotify(req, res) {
+  // 设置响应头，确保返回纯文本
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+
   // 支持 GET 和 POST (虎皮椒可能用任一方式)
   const body = req.method === 'GET' ? req.query : req.body;
 
   console.log('[Pay/Notify] ====== CALLBACK RECEIVED ======');
   console.log('[Pay/Notify] Method:', req.method);
-  console.log('[Pay/Notify] Headers:', JSON.stringify(req.headers));
-  console.log('[Pay/Notify] Body:', JSON.stringify(body));
-  console.log('[Pay/Notify] Query:', JSON.stringify(req.query));
+  console.log('[Pay/Notify] Body/Query:', JSON.stringify(body));
+
+  // 检查是否有必要参数
+  if (!body || !body.trade_order_id) {
+    console.error('[Pay/Notify] Missing required params');
+    return res.status(200).send('fail');
+  }
 
   // 处理回调
   const result = xunhupay.handleNotify(body);
@@ -411,8 +418,9 @@ async function handleNotify(req, res) {
   if (!result.success) {
     console.error('[Pay/Notify] Validation failed:', result.error);
     console.error('[Pay/Notify] Received hash:', body.hash);
-    console.error('[Pay/Notify] AppSecret configured:', !!process.env.XUNHUPAY_APPSECRET);
-    return res.status(400).send('fail');
+    console.error('[Pay/Notify] Config appSecret length:', xunhupay.config.appSecret?.length);
+    // 虎皮椒要求返回 200 状态码
+    return res.status(200).send('fail');
   }
 
   const { orderNo, tradeNo, amount, paidAt } = result;
@@ -425,7 +433,7 @@ async function handleNotify(req, res) {
 
   if (orderResult.rows.length === 0) {
     console.error('[Pay/Notify] Order not found:', orderNo);
-    return res.status(400).send('fail');
+    return res.status(200).send('fail');
   }
 
   const order = orderResult.rows[0];
@@ -433,13 +441,13 @@ async function handleNotify(req, res) {
   // 检查是否已处理
   if (order.status === 'paid') {
     console.log('[Pay/Notify] Order already paid:', orderNo);
-    return res.send('success');
+    return res.status(200).send('success');
   }
 
   // 验证金额
   if (Math.abs(parseFloat(order.final_price) - amount) > 0.01) {
     console.error('[Pay/Notify] Amount mismatch:', order.final_price, amount);
-    return res.status(400).send('fail');
+    return res.status(200).send('fail');
   }
 
   // 更新订单状态
@@ -467,7 +475,7 @@ async function handleNotify(req, res) {
 
   console.log('[Pay/Notify] Payment success:', orderNo, 'credits added:', order.credits);
 
-  return res.send('success');
+  return res.status(200).send('success');
 }
 
 /**
