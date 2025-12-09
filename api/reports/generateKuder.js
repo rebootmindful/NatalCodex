@@ -289,7 +289,40 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
       throw new Error('Failed to get response from Chat API after retries');
     }
 
-    const chatData = await chatResponse.json();
+    // Handle both JSON and SSE stream responses
+    const responseText = await chatResponse.text();
+    let chatData;
+
+    if (responseText.startsWith('data:')) {
+      // APImart returned SSE stream format, parse it
+      console.log('[GenerateKuder] Received SSE stream response, parsing...');
+      let content = '';
+      const lines = responseText.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') continue;
+          try {
+            const json = JSON.parse(data);
+            const delta = json.choices?.[0]?.delta?.content || '';
+            content += delta;
+          } catch (e) {
+            // Ignore parse errors for individual chunks
+          }
+        }
+      }
+      // Convert to standard format
+      chatData = {
+        choices: [{
+          message: { content },
+          finish_reason: 'stop'
+        }]
+      };
+    } else {
+      // Standard JSON response
+      chatData = JSON.parse(responseText);
+    }
+
     console.log('[GenerateKuder] API Response received');
 
     const finishReason = chatData.choices?.[0]?.finish_reason;
