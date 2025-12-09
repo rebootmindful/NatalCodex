@@ -59,142 +59,169 @@ module.exports = async (req, res) => {
     let userMessage;
     
     if (isEnglish) {
-      systemMessage = `You are a professional career counselor and Chinese metaphysics consultant. Your expertise includes:
-1. Traditional Chinese BaZi (Four Pillars) destiny analysis
-2. Kuder Career Interest Inventory assessment methodology
-3. Integrating Eastern wisdom with Western career psychology
+      systemMessage = `You are a senior destiny analyst and career psychologist, expert in Chinese BaZi astrology from "Yuan Hai Zi Ping", "Di Tian Sui", "San Ming Tong Hui", "Qiong Tong Bao Jian", "Shen Feng Tong Kao", and Kuder Preference Record career interest theory.
 
-Your role is to provide educational and entertainment-focused career guidance reports. This is for personal development and self-discovery purposes only.`;
+Your role is to provide educational and entertainment-focused career guidance reports for personal development and self-discovery purposes.`;
 
-      userMessage = `Please create a career analysis report for a client with the following birth information:
-- Date: ${birthData.date}
-- Time: ${birthData.time}
+      userMessage = `User Information:
+- Birth Date: ${birthData.date}
+- Birth Time: ${birthData.time}
 - Gender: ${birthData.gender === '男' ? 'Male' : 'Female'}
-- Location: ${locationInfo}
+- Birth Place: ${locationInfo}
 
-Generate a comprehensive report following this structure:
+Generate a career talent analysis report (approximately 4000-5000 words, focus on career analysis):
 
-## Part 1: BaZi Analysis
-Calculate the Four Pillars using True Solar Time. Include:
-- Year/Month/Day/Hour pillars with hidden stems
-- Ten Gods for each pillar
-- Notable stars and empty void positions
-- Major luck cycles
+### I. Chart Overview (Concise, ~200 words)
+Present core information in a table:
+| Item | Content |
+|------|---------|
+| Four Pillars | Year Month Day Hour |
+| Day Master | X (Element), Strong/Weak |
+| Pattern | XX Pattern |
+| Favorable God | X (Element) |
+| Unfavorable God | X (Element) |
+| Key Divine Stars | 3-5 most important |
+| Void | XX |
 
-## Part 2: Five Elements Analysis
-- Day Master element and strength
-- Favorable and unfavorable elements
-- Pattern classification
-- Lucky colors based on elements
+### II. Kuder Ten Domains Analysis (Core, ~1200 words)
 
-## Part 3: Kuder Career Domains Mapping
-Map the BaZi characteristics to Kuder's 10 career interest domains:
-(Outdoor, Mechanical, Computational, Scientific, Persuasive, Artistic, Literary, Musical, Social Service, Clerical)
+**Ten Domains & Ten Gods Mapping:**
+- Output Stars (Eating God/Hurting Officer) → 5-Artistic, 6-Literary, 7-Musical
+- Wealth Stars → 4-Persuasive, 2-Computational
+- Authority Stars → 8-Social Service, 3-Scientific
+- Resource Stars → 3-Scientific, 6-Literary
+- Peer Stars → 0-Outdoor, 1-Mechanical
 
-Identify TOP 3 strongest domains and BOTTOM 3 weakest domains with reasoning and scores (0-100).
+**Output Format:**
+🥇 **Top 3 Strongest Domains** (detailed, ~150 words each):
+- Domain name + Score (0-100)
+- Chart evidence (Ten Gods/Divine Stars/Elements)
+- Specific talent manifestation
 
-## Part 4: Career Title & Recommendations
-Create a unique career title combining BaZi characteristics with career strengths.
-Recommend 5 specific modern careers that align with the analysis.
+⚠️ **Bottom 3 Weakest Domains** (~80 words each):
+- Domain name + Score
+- Weakness reason
+- Avoidance advice
 
-## Part 5: Life Guidance Summary
-Format this section exactly as shown:
+📊 **Middle 4 Domains** (brief, one sentence each)
 
----SUMMARY START---
-【BaZi】Year Month Day Hour pillars
-【Day Master】Element (strength)
-【Useful Element】X
-【Lucky Colors】Color1, Color2
-【Top 3 Domains】①Name(score) ②Name(score) ③Name(score)
-【Bottom 3 Domains】①Name(score) ②Name(score) ③Name(score)
-【Career Title】Title
+### III. Destiny Career Title (Required)
+Format: "{Divine Stars/Ten Gods Feature} · {Career Imagery}"
+Create unique and fitting title based on chart core characteristics
+Examples: "Canopy Warrior · Dark Poet" "Blade Authority · Conqueror" "Output Wealth · Healer"
 
-【TOP 5 Career Matches】
-1. Career - Why it suits (1 sentence)
-2. Career - Why it suits (1 sentence)
-3. Career - Why it suits (1 sentence)
-4. Career - Why it suits (1 sentence)
-5. Career - Why it suits (1 sentence)
+### IV. Modern Career Match TOP5 (~1000 words)
+Each career includes:
+- Match rate (percentage)
+- Recommendation reasons (2-3 points)
+- Specific directions (sub-positions)
+- Caution (1 personality weakness note)
 
-【Career Path】Development advice (2-3 sentences)
-【Personal Growth】Areas to develop (2-3 sentences)
-【Lifestyle】Recommendations (2-3 sentences)
-【Wealth】Financial approach (2-3 sentences)
-【Relationships】Compatible types and advice (2-3 sentences)
-【Conclusion】Inspiring summary of life direction (2-3 sentences)
-【Wisdom Quote】A relevant classical quote with translation
----SUMMARY END---
+### V. Life Development Advice (~600 words)
+1. Career development path (by life phases, focus on first 3 stages)
+2. Personality cultivation advice
+3. Lifestyle suggestions (colors/directions/social)
 
-Output the complete report in markdown format in English.`;
+### VI. Talent Golden Quote (Required)
+Quote from classical text with modern interpretation, summarizing career talent essence.
+Format: "Classical quote" — Book Name, Translation: Modern interpretation
+
+---REPORT SUMMARY START---
+(Structured summary for image generation, must output completely)
+【BaZi】Year Month Day Hour
+【Day Master】X Element (Strong/Weak)
+【Favorable】X Element
+【Destiny Career Title】XXXXX · XXXX
+【Kuder Top 3】1.XX(XX) 2.XX(XX) 3.XX(XX)
+【Kuder Bottom 3】8.XX(XX) 9.XX(XX) 10.XX(XX)
+【TOP5 Careers】Career1, Career2, Career3, Career4, Career5
+【Talent Quote】"Quote" — Book, Translation: interpretation
+---REPORT SUMMARY END---
+
+Output format: Markdown, clear hierarchy, career-analysis-focused.
+Tone: Professional + encouraging, emphasize "talents can be discovered, careers can be chosen".`;
     } else {
-      systemMessage = `你是一位专业的职业规划顾问和中国传统命理咨询师。你的专长包括：
-1. 中国传统八字命理分析
-2. 库德尔职业兴趣量表评估方法
-3. 将东方智慧与西方职业心理学相结合
+      systemMessage = `你是资深命理师×职业心理学专家，精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》《神峰通考》，以及库德尔职业兴趣量表(Kuder Preference Record)理论。
 
-你的职责是提供教育性和娱乐性的职业指导报告。这仅用于个人发展和自我探索目的。`;
+你的职责是提供教育性和娱乐性的职业指导报告，用于个人发展和自我探索目的。`;
 
-      userMessage = `请为以下客户生成职业分析报告：
-- 出生日期：${birthData.date}
-- 出生时间：${birthData.time}
-- 性别：${birthData.gender === '男' ? '男性' : '女性'}
-- 出生地点：${locationInfo}
+      userMessage = `用户信息:
+- 出生日期: ${birthData.date}
+- 出生时间: ${birthData.time}
+- 性别: ${birthData.gender === '男' ? '男性' : '女性'}
+- 出生地: ${locationInfo}
 
-请按以下结构生成完整报告：
+请按以下结构生成职业天赋分析报告(约5000-6000字,重点在职业分析而非排盘):
 
-## 第一部分：八字排盘
-根据时区计算真太阳时，精准排出四柱八字：
-- 年柱、月柱、日柱、时柱（含地支藏干）
-- 各柱十神
-- 神煞（天乙贵人、文昌、华盖等）
-- 空亡位置
-- 大运起运年龄及排列
+### 一、命盘速览(精简,约300字)
+用表格呈现核心信息:
+| 项目 | 内容 |
+|------|------|
+| 四柱 | 年柱 月柱 日柱 时柱 |
+| 日主 | X(五行)，身强/身弱 |
+| 格局 | XX格 |
+| 用神 | X(五行) |
+| 忌神 | X(五行) |
+| 重要神煞 | 3-5个最重要的(如华盖、魁罡、驿马等) |
+| 空亡 | XX |
 
-## 第二部分：五行分析
-- 日主五行及旺衰状态
-- 用神、忌神
-- 格局名称及层级
-- 喜用颜色、忌讳颜色
+### 二、库德尔十大领域推演(核心,约1500字)
 
-## 第三部分：库德尔职业领域映射
-将八字特征映射到库德尔十大职业兴趣领域：
-（户外、机械、计算、科学、说服、艺术、文学、音乐、社会服务、文书）
+**十大领域与十神对应:**
+- 食神/伤官 → 5艺术、6文学、7音乐(泄秀表达)
+- 正财/偏财 → 4说服、2计算(理财求财)
+- 正官/七杀 → 8社会服务、3科学(管理分析)
+- 正印/偏印 → 3科学、6文学(学习研究)
+- 比肩/劫财 → 0户外、1机械(体力协作)
 
-分析前三强领域和后三弱领域，给出推理过程和分数（0-100分）。
+**输出格式:**
+🥇 **前三强领域**(详细论述,每个约200字):
+- 领域名称+分数(0-100)
+- 命理依据(十神/神煞/五行)
+- 具体天赋表现
 
-## 第四部分：职业称号与推荐
-创建独特的职业称号，结合八字特征与职业优势。
-推荐5个具体的现代职业。
+⚠️ **后三弱领域**(明确指出,每个约100字):
+- 领域名称+分数
+- 弱势原因
+- 规避建议
 
-## 第五部分：人生指导总结
-请严格按以下格式输出：
+📊 **中间四域**(简要说明,一句话带过)
 
----朋友圈文案开始---
+### 三、宿命职业称号(必须输出)
+格式: "{神煞/十神特征}·{职业意象}"
+要求: 结合命局核心特征,创造独特且贴切的称号
+示例: "华盖魁罡·暗黑诗人" "羊刃杀印·征服者" "食神生财·疗愈师"
+
+### 四、现代职业匹配TOP5(约1200字)
+每个职业包含:
+- 匹配度(百分比)
+- 推荐理由(2-3条,简明扼要)
+- 具体方向(细分岗位)
+- 注意事项(1条性格短板提示)
+
+### 五、人生发展建议(约800字)
+1. 职业发展路径(按大运阶段,重点分析前3步)
+2. 性格修炼建议(扬长避短)
+3. 生活方式建议(颜色/方位/社交)
+
+### 六、天赋金句(必须输出)
+引用一句古籍原文,配现代翻译,高度概括此命的职业天赋。
+格式: 「古文原句」——《书名》，译：现代白话
+
+---报告总结开始---
+(以下为结构化摘要,供图片生成提取,务必完整输出)
 【八字】年柱 月柱 日柱 时柱
 【日主】X行（旺/弱）
 【用神】X行
-【喜用颜色】颜色1、颜色2
-【前三强领域】①XX(分数) ②XX(分数) ③XX(分数)
-【后三弱领域】①XX(分数) ②XX(分数) ③XX(分数)
-【宿命职业称号】XXX·XXX
+【宿命职业称号】XXXXX·XXXX
+【库德尔前三强】1.XX领域(XX分) 2.XX领域(XX分) 3.XX领域(XX分)
+【库德尔后三弱】8.XX领域(XX分) 9.XX领域(XX分) 10.XX领域(XX分)
+【TOP5职业】职业1、职业2、职业3、职业4、职业5
+【天赋金句】「古文」——《书名》，译：翻译
+---报告总结结束---
 
-【现代职业匹配·TOP5推荐】
-1. 职业名称 - 简要说明为何适合（1句话）
-2. 职业名称 - 简要说明为何适合（1句话）
-3. 职业名称 - 简要说明为何适合（1句话）
-4. 职业名称 - 简要说明为何适合（1句话）
-5. 职业名称 - 简要说明为何适合（1句话）
-
-【职业发展路径】职业发展建议和晋升方向（2-3句话）
-【性格修炼建议】需要修炼的性格方面（2-3句话）
-【生活方式建议】适合的生活方式和习惯（2-3句话）
-【财富观念】理财方式和财富积累建议（2-3句话）
-【感情婚姻】适合的伴侣类型和相处建议（2-3句话）
-【结语·宿命觉醒】激励性总结，点明人生方向（2-3句话）
-【天赋金句】「古籍原文」——《书名》，译：现代白话翻译
----朋友圈文案结束---
-
-请用markdown格式输出完整详细的分析报告。`;
+输出格式: Markdown,层次清晰,重分析轻排盘。
+语气: 专业+激励,强调"天赋可发掘,职业可选择"。`;
     }
 
     // Call APIMart Chat API with retry logic

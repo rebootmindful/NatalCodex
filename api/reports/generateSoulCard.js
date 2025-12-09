@@ -70,54 +70,104 @@ module.exports = async (req, res) => {
     };
     const dayElement = dayMasterElements[dayMaster] || '火';
 
+    // Build image prompt based on language selection
     let imagePrompt;
     if (isEnglish) {
-      imagePrompt = `Ultra-detailed vertical Soul Card (9:16 ratio), cyberpunk Taoist fusion style:
+      // English version - all text in English
+      imagePrompt = `Create a vertical Soul Destiny Card (9:16 aspect ratio) with cyberpunk-Taoist fusion aesthetic.
 
-LAYOUT:
-- TOP: Giant golden seal script title "${name}'s Soul Card" with metallic glow
-- LEFT HALF (Traditional Chinese ink style):
-  - Circular BaZi chart wheel showing Four Pillars: ${baziPillars}
-  - Day Master ${dayMaster}(${dayElement}) in center
-  - Hidden Stems (地支藏干) marked on each branch
-  - Ten Gods labeled: ${shiShen}
-  - Favorable Element "${yongShen}" highlighted in RED
-  - Divine Stars: ${shenSha}
-  ${kongWang ? `- Empty Void (空亡): ${kongWang} marked` : ''}
-- RIGHT HALF (Cyber-tech style):
-  - Holographic ${mbtiType} radar diagram with neon circuits
-  - Cognitive function stack progress bars: ${cognitiveFunctions}
-  - Five Element color gradient: Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black
-- CENTER: Massive gilded seal script showing soul title "${soulTitle}" with golden rays
-- MIDDLE: Five Element energy streams connecting both sides like "destiny gears" in motion
-- BOTTOM: Ancient scroll style horizontal banner with personality summary: "${personalityQuote}"
+VISUAL COMPOSITION:
+- Background: Deep purple-black gradient with subtle starfield and cosmic dust
+- Overall style: Neon mysticism meets ancient Chinese divination, holographic textures
 
-STYLE: Black-purple gradient starfield background, neon Five Element colors, partial gold foil effects, holographic laser texture, maximum information density yet well-layered, NO watermarks NO logos`;
+TOP SECTION (15%):
+- Golden metallic title text: "${name}'s Soul Destiny Card"
+- Elegant serif font with golden glow effect
+- Decorative mystical patterns flanking the title
+
+LEFT PANEL (35%):
+- Traditional circular BaZi chart with modern styling
+- Four Pillars displayed: ${baziPillars}
+- Day Master "${dayMaster}" (${dayElement} Element) highlighted in center
+- Favorable Element "${yongShen}" marked in RED
+- English labels: Year/Month/Day/Hour Pillar
+- Ink brush texture with mystical aesthetic
+
+RIGHT PANEL (35%):
+- Futuristic holographic ${mbtiType} personality diagram
+- Radar chart with neon circuit patterns
+- Cognitive function stack: ${cognitiveFunctions}
+- Five Element color scheme: Wood=cyan, Fire=crimson, Earth=amber, Metal=silver, Water=indigo
+- Glowing neon lines and digital particles
+
+CENTER FOCAL POINT (25%):
+- LARGEST element on card
+- Soul Title: "${soulTitle}" in elegant golden typography
+- Rose gold metallic finish with holographic rainbow shimmer
+- Radiating golden light rays
+
+BOTTOM BANNER (15%):
+- Ancient scroll style horizontal banner
+- Quote text in English: "${personalityQuote}"
+- Aged paper texture with golden border
+
+STYLE REQUIREMENTS:
+- Color palette: Black, deep purple, gold, neon accents
+- Textures: Holographic foil, metallic gold, ink wash, cosmic nebula
+- ALL TEXT IN ENGLISH
+- High information density but clear visual hierarchy
+- Mystical ceremonial atmosphere
+- NO watermarks, NO logos, NO signatures
+
+Quality: Ultra-detailed, sharp focus, professional card design`;
     } else {
-      imagePrompt = `超精细竖版「灵魂契合卡」(9:16比例)，赛博道教融合风格：
+      // Chinese version - all text in Chinese
+      imagePrompt = `Create a vertical Soul Destiny Card (9:16 aspect ratio) with cyberpunk-Taoist fusion aesthetic.
 
-【布局要求】
-■ 顶部：巨大鎏金篆体标题「${name}的灵魂契合卡」，金属质感发光
-■ 左半区(传统水墨风)：
-  - 八字命盘圆盘图，四柱：${baziPillars}
-  - 日主${dayMaster}(${dayElement})居中
-  - 各地支藏干标注（子藏癸、丑藏己癸辛等）
-  - 十神标注：${shiShen}
-  - 用神「${yongShen}」用红色高亮标出
-  ${kongWang ? `- 空亡位置：${kongWang}（用虚线或灰色标注）` : ''}
-  - 神煞：${shenSha}
-■ 右半区(赛博紫电风)：
-  - ${mbtiType}人格雷达图，霓虹电路纹理
-  - 认知功能栈进度条：${cognitiveFunctions}
-  - 用五行颜色渐变：木青、火红、土黄、金白、水黑
-■ 正中央最显眼：超大鎏金篆体灵魂称号「${soulTitle}」，金光四射
-■ 中间横贯：五行能量光带连接左右，形成"命运齿轮"转动感
-■ 底部：古籍卷轴风格横批，一句话人格总评「${personalityQuote}」
+VISUAL COMPOSITION:
+- Background: Deep purple-black gradient with subtle starfield and cosmic dust
+- Overall style: Neon mysticism meets ancient Chinese divination, holographic textures
 
-【风格要求】
-黑紫渐变星空底，霓虹五行色，局部烫金，镭射全息质感，信息密度极高但层次分明
-所有文字中文，标题篆体，正文宋体黑体搭配，关键词荧光描边
-不要水印不要logo`;
+TOP SECTION (15%):
+- Golden metallic title text: "${name}的灵魂契合卡"
+- Seal script (篆书) style font with golden glow effect
+- Decorative Chinese cloud patterns flanking the title
+
+LEFT PANEL (35%):
+- Traditional ink-wash style circular BaZi chart
+- Four Pillars displayed in Chinese: ${baziPillars}
+- Day Master "${dayMaster}" highlighted in center with element color
+- Favorable God "${yongShen}" marked in RED
+- Chinese labels for Ten Gods: ${shiShen}
+- Ink brush texture, traditional Chinese aesthetic
+
+RIGHT PANEL (35%):
+- Futuristic holographic ${mbtiType} personality diagram
+- Radar chart with neon circuit patterns
+- Cognitive function bars: ${cognitiveFunctions}
+- Five Element color scheme: Wood=cyan, Fire=crimson, Earth=amber, Metal=silver, Water=indigo
+- Glowing neon lines and digital particles
+
+CENTER FOCAL POINT (25%):
+- LARGEST element on card
+- Soul Title: "${soulTitle}" in ornate golden seal script (Chinese)
+- Rose gold metallic finish with holographic rainbow shimmer
+- Radiating golden light rays
+
+BOTTOM BANNER (15%):
+- Ancient scroll style horizontal banner
+- Quote text in Chinese: "${personalityQuote}"
+- Aged paper texture with golden border
+
+STYLE REQUIREMENTS:
+- Color palette: Black, deep purple, gold, neon accents
+- Textures: Holographic foil, metallic gold, ink wash, cosmic nebula
+- ALL TEXT IN CHINESE CHARACTERS (简体中文)
+- High information density but clear visual hierarchy
+- Mystical ceremonial atmosphere
+- NO watermarks, NO logos, NO signatures
+
+Quality: Ultra-detailed, sharp focus, professional card design`;
     }
 
     console.log('[GenerateSoulCard] Image prompt length:', imagePrompt.length);
@@ -311,9 +361,9 @@ function extractInfoFromReport(content, isEnglish) {
 
   console.log('[ExtractInfo] Content length:', content.length);
 
-  // PRIORITY 1: Try to extract from structured "朋友圈文案" section first
-  const summarySection = content.match(/---朋友圈文案开始---([^]*?)---朋友圈文案结束---/) ||
-                         content.match(/---SOCIAL MEDIA SUMMARY START---([^]*?)---SOCIAL MEDIA SUMMARY END---/);
+  // PRIORITY 1: Try to extract from structured "报告总结" section first
+  const summarySection = content.match(/---报告总结开始---([^]*?)---报告总结结束---/) ||
+                         content.match(/---REPORT SUMMARY START---([^]*?)---REPORT SUMMARY END---/);
 
   if (summarySection) {
     const summary = summarySection[1];
@@ -342,7 +392,7 @@ function extractInfoFromReport(content, isEnglish) {
 
     // Extract useful god: 【用神】X行
     const yongShenMatch = summary.match(/【用神】\s*([金木水火土])/) ||
-                          summary.match(/【Useful God】\s*(\w+)/i);
+                          summary.match(/【Favorable】\s*(\w+)/i);
     if (yongShenMatch) {
       result.yongShen = yongShenMatch[1];
     }
@@ -365,7 +415,7 @@ function extractInfoFromReport(content, isEnglish) {
 
     // Extract personality quote: 【人格金句】「古籍原文」——《书名》，译：现代翻译
     const quoteMatch = summary.match(/【人格金句】\s*([^\n【]+)/) ||
-                       summary.match(/【Personality Quote】\s*([^\n【]+)/i);
+                       summary.match(/【Golden Quote】\s*([^\n【]+)/i);
     if (quoteMatch) {
       result.personalityQuote = quoteMatch[1].trim().replace(/[*#]/g, '');
       console.log('[ExtractInfo] Found personality quote from structured format:', result.personalityQuote);

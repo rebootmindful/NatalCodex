@@ -72,62 +72,106 @@ module.exports = async (req, res) => {
     };
     const dayElement = dayMasterElements[dayMaster] || '火';
 
+    // Build image prompt based on language selection
     let imagePrompt;
     if (isEnglish) {
-      imagePrompt = `Ultra-detailed vertical Kuder Destiny Career Card (9:16 ratio), steampunk retro fusion style:
+      // English version - all text in English
+      imagePrompt = `Create a vertical Kuder Destiny Career Card (9:16 aspect ratio) with steampunk-vaporwave fusion aesthetic.
 
-LAYOUT:
-- BACKGROUND: Deep space navy blue + golden star orbits + vintage mechanical gears
-- TOP: Giant golden foil title "${name}'s Kuder Destiny Career Card" with metallic glow
-- LEFT HALF (Traditional Chinese ink style):
-  - Circular BaZi chart wheel showing Four Pillars: ${baziPillars}
-  - Day Master ${dayMaster}(${dayElement}) in center
-  - Hidden Stems (地支藏干) marked on each branch
-  - Ten Gods labeled: ${shiShen}
-  - Favorable Element "${yongShen}" highlighted in RED
-  ${kongWang ? `- Empty Void (空亡): ${kongWang} marked` : ''}
-  - Divine Stars: ${shenSha}
-  ${favorableColors ? `- Favorable Colors: ${favorableColors}` : ''}
-- RIGHT HALF (Retro-tech style):
-  - Classic Kuder decagonal radar diagram with 10 career interest domains
-  - Filled with Five Element colors: Wood=cyan, Fire=red, Earth=yellow, Metal=white, Water=black
-  - TOP 3 domains glowing bright: ${top3Domains}
-  - BOTTOM 3 domains dimmed: ${bottom3Domains}
-- CENTER: Massive gilded seal script showing destiny title "${careerTitle}" with golden rays
-- MIDDLE: Five Element energy streams connecting both sides like a "destiny balance scale" in motion
-- BOTTOM: Vintage scroll style horizontal banner with talent summary: "${talentQuote}"
+VISUAL COMPOSITION:
+- Background: Deep space indigo with golden star trails and vintage mechanical gears
+- Overall style: Retro-futurism meets Chinese divination, holographic textures with industrial elements
 
-STYLE: Cyberpunk retro + vaporwave + laser gold foil + particle texture, maximum PUNCH, extreme information density yet well-layered, NO watermarks NO logos`;
+TOP SECTION (15%):
+- Golden metallic title text: "${name}'s Kuder Destiny Career Card"
+- Elegant serif font with golden glow effect
+- Decorative mechanical gear patterns flanking the title
+
+LEFT PANEL (35%):
+- Traditional circular BaZi chart with modern styling
+- Four Pillars displayed: ${baziPillars}
+- Day Master "${dayMaster}" (${dayElement} Element) highlighted in center
+- Favorable Element "${yongShen}" marked in RED
+- English labels: Year/Month/Day/Hour Pillar
+- Ink brush texture with mystical aesthetic
+
+RIGHT PANEL (35%):
+- Futuristic DECAGON radar chart (10-sided polygon)
+- 10 vertices with English labels: Outdoor, Mechanical, Computational, Scientific, Persuasive, Artistic, Literary, Musical, Social Service, Clerical
+- Top 3 strengths glowing brightly: ${top3Domains}
+- Bottom 3 weaknesses dimmed: ${bottom3Domains}
+- Neon circuit patterns with Five Element colors
+- Color scheme: Wood=cyan, Fire=crimson, Earth=amber, Metal=silver, Water=indigo
+
+CENTER FOCAL POINT (25%):
+- LARGEST element on card
+- Destiny Title: "${careerTitle}" in elegant golden typography
+- Rose gold metallic finish with holographic shimmer
+- Radiating golden light rays with gear motifs
+
+BOTTOM BANNER (15%):
+- Vintage scroll style horizontal banner
+- Quote text in English: "${talentQuote}"
+- Aged parchment texture with golden border
+
+STYLE REQUIREMENTS:
+- Color palette: Deep indigo, vaporwave purple, electric blue, neon pink, gold accents
+- Textures: Holographic foil, metallic gold, mechanical gears, cosmic nebula
+- ALL TEXT IN ENGLISH
+- High information density but clear visual hierarchy
+- Steampunk ceremonial atmosphere with futuristic elements
+- NO watermarks, NO logos, NO signatures
+
+Quality: Ultra-detailed, sharp focus, professional card design`;
     } else {
-      imagePrompt = `超精细竖版「库德尔宿命职业卡」(9:16比例)，蒸汽波复古融合风格：
+      // Chinese version - all text in Chinese
+      imagePrompt = `Create a vertical Kuder Destiny Career Card (9:16 aspect ratio) with steampunk-vaporwave fusion aesthetic.
 
-【布局要求】
-■ 背景：深空墨蓝 + 金色星轨 + 复古机械齿轮纹理
-■ 顶部：巨大烫金标题「${name}的库德尔宿命职业卡」，金属质感发光
-■ 左半区(传统水墨风)：
-  - 八字命盘圆盘图，四柱：${baziPillars}
-  - 日主${dayMaster}(${dayElement})居中
-  - 各地支藏干标注（子藏癸、丑藏己癸辛等）
-  - 十神标注：${shiShen}
-  - 用神「${yongShen}」用红色高亮标出
-  ${kongWang ? `- 空亡位置：${kongWang}（用虚线或灰色标注）` : ''}
-  - 神煞：${shenSha}
-  ${favorableColors ? `- 喜用颜色：${favorableColors}` : ''}
-■ 右半区(复古科技风)：
-  - 库德尔经典十边形雷达图，十大职业兴趣领域
-  - 用五行颜色填充：木青、火红、土黄、金白、水黑
-  - 前三强领域爆表发光：${top3Domains}
-  - 后三弱领域暗淡：${bottom3Domains}
-■ 正中央最显眼：超大鎏金篆体宿命称号「${careerTitle}」，金光四射
-■ 中间横贯：五行能量光带连接左右，形成"命运天平"转动感
-■ 底部：复古卷轴横批，一句话天赋总结「${talentQuote}」
+VISUAL COMPOSITION:
+- Background: Deep space indigo with golden star trails and vintage mechanical gears
+- Overall style: Retro-futurism meets Chinese divination, holographic textures with industrial elements
 
-【风格要求】
-赛博复古 + 蒸汽波 + 镭射烫金 + 微粒感，极致PUNCH
-深空墨蓝底色 + 金色星轨点缀 + 霓虹五行色
-信息密度爆炸但层次分明
-所有文字中文，标题篆体+衬线体，正文宋体黑体搭配，关键词荧光描边
-不要水印不要logo`;
+TOP SECTION (15%):
+- Golden metallic title text: "${name}的库德尔宿命职业卡"
+- Seal script (篆书) style font with golden glow effect
+- Decorative mechanical gear patterns flanking the title
+
+LEFT PANEL (35%):
+- Traditional ink-wash style circular BaZi chart
+- Four Pillars displayed in Chinese: ${baziPillars}
+- Day Master "${dayMaster}" highlighted in center
+- Favorable God "${yongShen}" marked in RED
+- Chinese labels for Ten Gods
+- Ink brush texture with subtle smoke effects
+
+RIGHT PANEL (35%):
+- Futuristic DECAGON radar chart (10-sided polygon)
+- 10 vertices with Chinese labels for Kuder's 10 career interest areas
+- Top 3 strengths glowing brightly: ${top3Domains}
+- Bottom 3 weaknesses dimmed: ${bottom3Domains}
+- Neon circuit patterns with Five Element colors
+- Color scheme: Wood=cyan, Fire=crimson, Earth=amber, Metal=silver, Water=indigo
+
+CENTER FOCAL POINT (25%):
+- LARGEST element on card
+- Destiny Title: "${careerTitle}" in ornate golden seal script (Chinese)
+- Rose gold metallic finish with holographic shimmer
+- Radiating golden light rays with gear motifs
+
+BOTTOM BANNER (15%):
+- Vintage scroll style horizontal banner
+- Quote text in Chinese: "${talentQuote}"
+- Aged parchment texture with golden border
+
+STYLE REQUIREMENTS:
+- Color palette: Deep indigo, vaporwave purple, electric blue, neon pink, gold accents
+- Textures: Holographic foil, metallic gold, mechanical gears, cosmic nebula
+- ALL TEXT IN CHINESE CHARACTERS (简体中文)
+- High information density but clear visual hierarchy
+- Steampunk ceremonial atmosphere with futuristic elements
+- NO watermarks, NO logos, NO signatures
+
+Quality: Ultra-detailed, sharp focus, professional card design`;
     }
 
     console.log('[GenerateKuderCard] Image prompt length:', imagePrompt.length);
@@ -295,9 +339,9 @@ function extractKuderInfo(content, isEnglish) {
 
   console.log('[ExtractKuderInfo] Content length:', content.length);
 
-  // PRIORITY 1: Try to extract from structured "朋友圈文案" section first
-  const summarySection = content.match(/---朋友圈文案开始---([^]*?)---朋友圈文案结束---/) ||
-                         content.match(/---SOCIAL MEDIA SUMMARY START---([^]*?)---SOCIAL MEDIA SUMMARY END---/);
+  // PRIORITY 1: Try to extract from structured "报告总结" section first
+  const summarySection = content.match(/---报告总结开始---([^]*?)---报告总结结束---/) ||
+                         content.match(/---REPORT SUMMARY START---([^]*?)---REPORT SUMMARY END---/);
 
   if (summarySection) {
     const summary = summarySection[1];
@@ -326,45 +370,38 @@ function extractKuderInfo(content, isEnglish) {
 
     // Extract useful god: 【用神】X行
     const yongShenMatch = summary.match(/【用神】\s*([金木水火土])/) ||
-                          summary.match(/【Useful God】\s*(\w+)/i);
+                          summary.match(/【Favorable】\s*(\w+)/i);
     if (yongShenMatch) {
       result.yongShen = yongShenMatch[1];
     }
 
-    // Extract favorable colors: 【喜用颜色】颜色1、颜色2
-    const colorMatch = summary.match(/【喜用颜色】\s*([^\n【]+)/) ||
-                       summary.match(/【Favorable Color】\s*([^\n【]+)/i);
-    if (colorMatch) {
-      result.favorableColors = colorMatch[1].trim();
-    }
-
-    // Extract top 3 domains: 【前三强领域】①XX(分数) ②XX(分数) ③XX(分数)
-    const topDomainsMatch = summary.match(/【前三强领域】\s*([^\n【]+)/) ||
-                            summary.match(/【Top 3 Domains】\s*([^\n【]+)/i);
+    // Extract top 3 domains: 【库德尔前三强】1.XX领域(XX分) 2.XX领域(XX分) 3.XX领域(XX分)
+    const topDomainsMatch = summary.match(/【库德尔前三强】\s*([^\n【]+)/) ||
+                            summary.match(/【Kuder Top 3】\s*([^\n【]+)/i);
     if (topDomainsMatch) {
       const domainStr = topDomainsMatch[1];
-      const domainPattern = /([①②③\d]+)?[\.、]?\s*([^\s（(①②③\d]+)[（(](\d+)[）)]/g;
+      const domainPattern = /([①②③\d]+)?[\.、]?\s*([^\s（(①②③\d]+)[领域]*[（(](\d+)[分）)]/g;
       let match;
       while ((match = domainPattern.exec(domainStr)) !== null) {
-        result.topDomains.push({ name: match[2], score: parseInt(match[3]) });
+        result.topDomains.push({ name: match[2].replace(/领域$/, ''), score: parseInt(match[3]) });
       }
     }
 
-    // Extract bottom 3 domains: 【后三弱领域】①XX(分数) ②XX(分数) ③XX(分数)
-    const bottomDomainsMatch = summary.match(/【后三弱领域】\s*([^\n【]+)/) ||
-                               summary.match(/【Bottom 3 Domains】\s*([^\n【]+)/i);
+    // Extract bottom 3 domains: 【库德尔后三弱】8.XX领域(XX分) 9.XX领域(XX分) 10.XX领域(XX分)
+    const bottomDomainsMatch = summary.match(/【库德尔后三弱】\s*([^\n【]+)/) ||
+                               summary.match(/【Kuder Bottom 3】\s*([^\n【]+)/i);
     if (bottomDomainsMatch) {
       const domainStr = bottomDomainsMatch[1];
-      const domainPattern = /([①②③\d]+)?[\.、]?\s*([^\s（(①②③\d]+)[（(](\d+)[）)]/g;
+      const domainPattern = /([①②③\d]+)?[\.、]?\s*([^\s（(①②③\d]+)[领域]*[（(](\d+)[分）)]/g;
       let match;
       while ((match = domainPattern.exec(domainStr)) !== null) {
-        result.bottomDomains.push({ name: match[2], score: parseInt(match[3]) });
+        result.bottomDomains.push({ name: match[2].replace(/领域$/, ''), score: parseInt(match[3]) });
       }
     }
 
-    // Extract recommended careers: 【推荐职业】职业1、职业2、职业3
-    const careersMatch = summary.match(/【推荐职业】\s*([^\n【]+)/) ||
-                         summary.match(/【Recommended Careers】\s*([^\n【]+)/i);
+    // Extract recommended careers: 【TOP5职业】职业1、职业2、职业3、职业4、职业5
+    const careersMatch = summary.match(/【TOP5职业】\s*([^\n【]+)/) ||
+                         summary.match(/【TOP5 Careers】\s*([^\n【]+)/i);
     if (careersMatch) {
       result.careers = careersMatch[1].split(/[、,，]/).map(c => c.trim()).filter(c => c.length > 1).slice(0, 5);
     }
@@ -378,7 +415,8 @@ function extractKuderInfo(content, isEnglish) {
 
     // Extract talent quote: 【天赋金句】「古籍原文」——《书名》，译：现代翻译
     const quoteMatch = summary.match(/【天赋金句】\s*([^\n【]+)/) ||
-                       summary.match(/【Talent Quote】\s*([^\n【]+)/i);
+                       summary.match(/【Talent Quote】\s*([^\n【]+)/i) ||
+                       summary.match(/【Golden Quote】\s*([^\n【]+)/i);
     if (quoteMatch) {
       result.talentQuote = quoteMatch[1].trim().replace(/[*#]/g, '');
       console.log('[ExtractKuderInfo] Found talent quote from structured format:', result.talentQuote);
