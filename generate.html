@@ -2466,8 +2466,25 @@
         const response = await fetch('/api/user?action=credits', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
 
+        console.log('[Credits] Response status:', response.status);
+        console.log('[Credits] Response headers:', response.headers.get('content-type'));
+
+        // 检查是否是 JSON 响应
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('[Credits] ❌ Non-JSON response received!');
+          console.error('[Credits] Response body:', text.substring(0, 500));
+          console.error('[Credits] 🔧 SOLUTION: Please check Vercel environment variables:');
+          console.error('[Credits]    1. Go to https://vercel.com/dashboard');
+          console.error('[Credits]    2. Select your project → Settings → Environment Variables');
+          console.error('[Credits]    3. Ensure JWT_SECRET and DATABASE_URL are set');
+          console.error('[Credits]    4. Redeploy the application');
+          return;
+        }
+
+        const data = await response.json();
         console.log('[Credits] API response:', data);
 
         if (data.success && typeof data.credits === 'number') {
@@ -2483,17 +2500,26 @@
               displayEl.classList.remove('has-credits');
             }
           }
-          console.log('[Credits] Loaded successfully:', userCredits);
+          console.log('[Credits] ✅ Loaded successfully:', userCredits);
         } else {
-          console.error('[Credits] API error:', data.error || 'Invalid response');
+          console.error('[Credits] ❌ API error:', data.error || 'Invalid response');
+          if (data.details) {
+            console.error('[Credits] Details:', data.details);
+            console.error('[Credits] 🔧 This means:', data.details);
+          }
           // 如果是 401 错误，清除 token 并重新登录
           if (response.status === 401) {
             console.warn('[Credits] Token invalid, logging out');
             logout();
+          } else if (response.status === 500 && data.details) {
+            console.error('[Credits] 🔧 Configuration error detected!');
+            console.error('[Credits] Please fix:', data.details);
           }
         }
       } catch (e) {
-        console.error('[Credits] Failed to load credits:', e);
+        console.error('[Credits] ❌ Failed to load credits:', e);
+        console.error('[Credits] Error type:', e.name);
+        console.error('[Credits] Error message:', e.message);
       }
     }
 
