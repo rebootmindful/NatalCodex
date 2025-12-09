@@ -132,14 +132,19 @@ Examples: "Fire Sage · INTJ" "Water Mystic · INFP" "Metal Warrior · ENTJ"
 Quote from classical text with modern interpretation, summarizing life essence.
 Format: "Classical quote" — Book Name, Translation: Modern interpretation
 
+---
+
 ---REPORT SUMMARY START---
+
 (Structured summary for image generation, must output completely)
+
 【BaZi】Year Month Day Hour
 【Day Master】X Element (Strong/Weak)
 【Favorable】X Element
 【MBTI】XXXX (Dominant-Auxiliary-Tertiary-Inferior)
 【Soul Title】XXXXX · XXXX
 【Golden Quote】"Quote" — Book, Translation: interpretation
+
 ---REPORT SUMMARY END---
 
 Output format: Markdown, clear hierarchy, analysis-focused.
@@ -213,14 +218,19 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 引用一句古籍原文(如《滴天髓》《穷通宝鉴》等),配现代翻译,高度概括此命精髓。
 格式: 「古文原句」——《书名》，译：现代白话
 
+---
+
 ---报告总结开始---
+
 (以下为结构化摘要,供图片生成提取,务必完整输出)
+
 【八字】年柱 月柱 日柱 时柱
 【日主】X行（旺/弱）
 【用神】X行
 【MBTI】XXXX（主导功能-辅助功能-第三功能-劣势功能）
 【灵魂称号】XXXXX·XXXX
 【人格金句】「古文」——《书名》，译：翻译
+
 ---报告总结结束---
 
 输出格式: Markdown,层次清晰,重分析轻排盘。

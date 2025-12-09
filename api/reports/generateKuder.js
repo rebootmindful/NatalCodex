@@ -126,8 +126,12 @@ Each career includes:
 Quote from classical text with modern interpretation, summarizing career talent essence.
 Format: "Classical quote" — Book Name, Translation: Modern interpretation
 
+---
+
 ---REPORT SUMMARY START---
+
 (Structured summary for image generation, must output completely)
+
 【BaZi】Year Month Day Hour
 【Day Master】X Element (Strong/Weak)
 【Favorable】X Element
@@ -136,6 +140,7 @@ Format: "Classical quote" — Book Name, Translation: Modern interpretation
 【Kuder Bottom 3】8.XX(XX) 9.XX(XX) 10.XX(XX)
 【TOP5 Careers】Career1, Career2, Career3, Career4, Career5
 【Talent Quote】"Quote" — Book, Translation: interpretation
+
 ---REPORT SUMMARY END---
 
 Output format: Markdown, clear hierarchy, career-analysis-focused.
@@ -208,8 +213,12 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 引用一句古籍原文,配现代翻译,高度概括此命的职业天赋。
 格式: 「古文原句」——《书名》，译：现代白话
 
+---
+
 ---报告总结开始---
+
 (以下为结构化摘要,供图片生成提取,务必完整输出)
+
 【八字】年柱 月柱 日柱 时柱
 【日主】X行（旺/弱）
 【用神】X行
@@ -218,6 +227,7 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 【库德尔后三弱】8.XX领域(XX分) 9.XX领域(XX分) 10.XX领域(XX分)
 【TOP5职业】职业1、职业2、职业3、职业4、职业5
 【天赋金句】「古文」——《书名》，译：翻译
+
 ---报告总结结束---
 
 输出格式: Markdown,层次清晰,重分析轻排盘。
