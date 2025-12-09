@@ -21,6 +21,8 @@ module.exports = async (req, res) => {
     switch (action) {
       case 'create':
         return await handleCreate(req, res);
+      case 'retry':
+        return await handleRetry(req, res);
       case 'status':
         return await handleStatus(req, res);
       case 'notify':
@@ -28,7 +30,7 @@ module.exports = async (req, res) => {
       case 'validate-promo':
         return await handleValidatePromo(req, res);
       default:
-        return res.status(400).json({ error: 'Invalid action', validActions: ['create', 'status', 'notify', 'validate-promo'] });
+        return res.status(400).json({ error: 'Invalid action', validActions: ['create', 'retry', 'status', 'notify', 'validate-promo'] });
     }
   } catch (error) {
     console.error('[Pay] Error:', error);
@@ -126,6 +128,122 @@ async function handleCreate(req, res) {
     return res.status(500).json({
       success: false,
       error: paymentError.message || '支付接口调用失败'
+    });
+  }
+}
+
+/**
+ * 重试支付 - 为 pending/expired 订单重新生成二维码
+ * 策略:
+ * 1. pending 订单 (30分钟内): 复用原订单，重新调用支付接口
+ * 2. expired 订单: 创建新订单，金额/套餐继承原订单
+ */
+async function handleRetry(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { orderNo } = req.body;
+
+  if (!orderNo) {
+    return res.status(400).json({ error: 'Missing orderNo' });
+  }
+
+  // 获取用户信息
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const token = authHeader.substring(7);
+  const jwt = require('jsonwebtoken');
+
+  let userId;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    userId = decoded.id;
+  } catch (e) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
+  // 查询原订单
+  const orderResult = await query(
+    `SELECT * FROM orders WHERE order_no = $1`,
+    [orderNo]
+  );
+
+  if (orderResult.rows.length === 0) {
+    return res.status(404).json({ error: 'Order not found' });
+  }
+
+  const order = orderResult.rows[0];
+
+  // 验证订单所有者
+  if (order.user_id !== userId) {
+    return res.status(403).json({ error: 'Not your order' });
+  }
+
+  // 已支付订单不能重试
+  if (order.status === 'paid') {
+    return res.status(400).json({ error: 'Order already paid' });
+  }
+
+  // 检查订单是否在 30 分钟内 (可复用)
+  const createdAt = new Date(order.created_at);
+  const now = new Date();
+  const diffMinutes = (now - createdAt) / (1000 * 60);
+  const canReuseOrder = diffMinutes <= 30 && order.status === 'pending';
+
+  try {
+    let newOrderNo = orderNo;
+    let amount = parseFloat(order.final_price);
+
+    if (!canReuseOrder) {
+      // 订单过期或已失败，创建新订单
+      newOrderNo = xunhupay.generateOrderNo();
+
+      await query(
+        `INSERT INTO orders (order_no, user_id, package_type, credits, original_price, promo_code, discount_percent, discount_amount, final_price, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')`,
+        [
+          newOrderNo,
+          userId,
+          order.package_type,
+          order.credits,
+          order.original_price,
+          order.promo_code,
+          order.discount_percent,
+          order.discount_amount,
+          order.final_price
+        ]
+      );
+
+      console.log('[Pay/Retry] Created new order from expired:', orderNo, '->', newOrderNo);
+    } else {
+      console.log('[Pay/Retry] Reusing pending order:', orderNo);
+    }
+
+    // 重新调用支付接口获取新二维码
+    const packageNames = { PACK_6: '6次套餐', PACK_20: '20次套餐' };
+    const payment = await xunhupay.createPayment({
+      orderNo: newOrderNo,
+      amount: amount,
+      title: `NatalCodex ${packageNames[order.package_type] || order.package_type}`
+    });
+
+    return res.json({
+      success: true,
+      orderNo: newOrderNo,
+      qrCodeUrl: payment.qrCodeUrl,
+      mobileUrl: payment.mobileUrl,
+      isNewOrder: newOrderNo !== orderNo
+    });
+
+  } catch (paymentError) {
+    console.error('[Pay/Retry] Payment API error:', paymentError);
+    return res.status(500).json({
+      success: false,
+      error: paymentError.message || '支付接口调用失败，请稍后重试'
     });
   }
 }

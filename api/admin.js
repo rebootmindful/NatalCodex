@@ -75,11 +75,11 @@ async function verifyAdmin(req) {
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // 查询用户是否为管理员
+
+    // 查询用户是否为管理员 (token 使用 'id' 而非 'userId')
     const result = await query(
       `SELECT email, is_admin FROM users WHERE id = $1`,
-      [decoded.userId]
+      [decoded.id]
     );
 
     if (result.rows.length === 0) {
@@ -87,13 +87,13 @@ async function verifyAdmin(req) {
     }
 
     const user = result.rows[0];
-    
+
     // 检查是否为指定管理员或has is_admin flag
     if (user.email !== ADMIN_EMAIL && !user.is_admin) {
       return { success: false, status: 403, error: 'Admin access required' };
     }
 
-    return { success: true, userId: decoded.userId, email: user.email };
+    return { success: true, userId: decoded.id, email: user.email };
 
   } catch (e) {
     return { success: false, status: 401, error: 'Invalid token' };

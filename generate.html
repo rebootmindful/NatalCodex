@@ -936,6 +936,46 @@
       color:#6b7280;
       font-size:12px;
     }
+    .qrcode-error {
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      gap:16px;
+      padding:20px;
+    }
+    .qrcode-error.active {
+      display:flex;
+    }
+    .qrcode-error-icon {
+      font-size:48px;
+    }
+    .qrcode-error-msg {
+      color:#f87171;
+      font-size:14px;
+      text-align:center;
+    }
+    .qrcode-retry-btn {
+      padding:12px 32px;
+      background:linear-gradient(135deg,#00ff9d 0%,#00d4aa 100%);
+      color:#0a0e27;
+      font-size:14px;
+      font-weight:600;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      transition:all 0.2s ease;
+    }
+    .qrcode-retry-btn:hover:not(:disabled) {
+      transform:translateY(-2px);
+      box-shadow:0 8px 20px rgba(0,255,157,0.4);
+    }
+    .qrcode-retry-btn:disabled {
+      opacity:0.6;
+      cursor:not-allowed;
+    }
+    .qrcode-content {
+      /* Container for normal QR code display */
+    }
   </style>
 </head>
 <body>
@@ -1036,18 +1076,28 @@
   <div class="qrcode-overlay" id="qrcodeOverlay">
     <div class="qrcode-modal">
       <button class="qrcode-close" id="qrcodeClose">&times;</button>
-      <h3 class="qrcode-title">支付宝扫码支付</h3>
-      <p class="qrcode-subtitle">请使用支付宝扫描下方二维码</p>
-      <div class="qrcode-image-container">
-        <img id="qrcodeImage" src="" alt="支付二维码">
+      <!-- 正常支付状态 -->
+      <div class="qrcode-content" id="qrcodeContent">
+        <h3 class="qrcode-title">支付宝扫码支付</h3>
+        <p class="qrcode-subtitle">请使用支付宝扫描下方二维码</p>
+        <div class="qrcode-image-container">
+          <img id="qrcodeImage" src="" alt="支付二维码">
+        </div>
+        <div class="qrcode-amount" id="qrcodeAmount">¥0</div>
+        <div class="qrcode-package" id="qrcodePackage">套餐名称</div>
+        <div class="qrcode-status" id="qrcodeStatus">
+          <div class="spinner-small"></div>
+          <span>等待支付中...</span>
+        </div>
+        <div class="qrcode-timer" id="qrcodeTimer">剩余支付时间：5:00</div>
       </div>
-      <div class="qrcode-amount" id="qrcodeAmount">¥0</div>
-      <div class="qrcode-package" id="qrcodePackage">套餐名称</div>
-      <div class="qrcode-status" id="qrcodeStatus">
-        <div class="spinner-small"></div>
-        <span>等待支付中...</span>
+      <!-- 超时/错误状态 -->
+      <div class="qrcode-error" id="qrcodeError">
+        <div class="qrcode-error-icon" id="qrcodeErrorIcon">⏰</div>
+        <div class="qrcode-error-msg" id="qrcodeErrorMsg">支付超时，二维码已失效</div>
+        <button class="qrcode-retry-btn" id="qrcodeRetryBtn">刷新二维码</button>
+        <p style="color:#6b7280;font-size:12px;margin-top:8px">原订单金额保持不变</p>
       </div>
-      <div class="qrcode-timer" id="qrcodeTimer">剩余支付时间：5:00</div>
     </div>
   </div>
 
@@ -2820,6 +2870,8 @@
 
     // QR Code modal state
     let currentOrderNo = null;
+    let currentOrderAmount = null;
+    let currentOrderPackage = null;
     let pollingTimer = null;
     let countdownTimer = null;
     let paymentTimeoutTimer = null;
@@ -2829,14 +2881,33 @@
       return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
     }
 
+    // Show normal QR code content, hide error
+    function showQrCodeContent() {
+      document.getElementById('qrcodeContent').style.display = 'block';
+      document.getElementById('qrcodeError').classList.remove('active');
+    }
+
+    // Show error state with retry button
+    function showQrCodeError(icon, message) {
+      document.getElementById('qrcodeContent').style.display = 'none';
+      document.getElementById('qrcodeErrorIcon').textContent = icon;
+      document.getElementById('qrcodeErrorMsg').textContent = message;
+      document.getElementById('qrcodeError').classList.add('active');
+    }
+
     // Show QR code modal
     function showQrCodeModal(qrCodeUrl, orderNo, amount, packageName) {
       currentOrderNo = orderNo;
+      currentOrderAmount = amount;
+      currentOrderPackage = packageName;
+
       document.getElementById('qrcodeImage').src = qrCodeUrl;
       document.getElementById('qrcodeAmount').textContent = `¥${amount}`;
       document.getElementById('qrcodePackage').textContent = packageName;
       document.getElementById('qrcodeStatus').innerHTML = '<div class="spinner-small"></div><span>等待支付中...</span>';
       document.getElementById('qrcodeStatus').classList.remove('success');
+
+      showQrCodeContent();
       document.getElementById('qrcodeOverlay').classList.add('active');
 
       // Start countdown (5 minutes)
@@ -2852,6 +2923,8 @@
       stopPaymentPolling();
       stopCountdown();
       currentOrderNo = null;
+      currentOrderAmount = null;
+      currentOrderPackage = null;
     }
 
     // Start countdown timer
@@ -2865,16 +2938,17 @@
 
         if (remaining <= 0) {
           stopCountdown();
-          hideQrCodeModal();
-          alert(currentLang === 'zh' ? '支付超时，请重新下单' : 'Payment timeout, please try again');
+          stopPaymentPolling();
+          // Show error state with retry option instead of closing
+          showQrCodeError('⏰', currentLang === 'zh' ? '支付超时，二维码已失效' : 'Payment timeout, QR code expired');
         }
       }, 1000);
 
       // Also set a hard timeout
       paymentTimeoutTimer = setTimeout(() => {
         stopPaymentPolling();
-        hideQrCodeModal();
-        alert(currentLang === 'zh' ? '支付超时，请重新下单' : 'Payment timeout, please try again');
+        stopCountdown();
+        showQrCodeError('⏰', currentLang === 'zh' ? '支付超时，二维码已失效' : 'Payment timeout, QR code expired');
       }, seconds * 1000);
     }
 
@@ -2926,6 +3000,11 @@
               loadUserCredits();
               alert(currentLang === 'zh' ? '🎉 支付成功！次数已到账' : '🎉 Payment successful! Credits added');
             }, 1500);
+          } else if (data.order && data.order.status === 'expired') {
+            // Order expired
+            stopPaymentPolling();
+            stopCountdown();
+            showQrCodeError('⏰', currentLang === 'zh' ? '订单已过期，请重新生成二维码' : 'Order expired, please refresh QR code');
           }
         } catch (e) {
           console.error('Polling error:', e);
@@ -2941,12 +3020,57 @@
       }
     }
 
+    // Retry payment - request new QR code for the same order
+    async function retryPayment() {
+      const retryBtn = document.getElementById('qrcodeRetryBtn');
+      retryBtn.disabled = true;
+      retryBtn.textContent = currentLang === 'zh' ? '刷新中...' : 'Refreshing...';
+
+      try {
+        const response = await fetch('/api/pay?action=retry', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+          },
+          body: JSON.stringify({ orderNo: currentOrderNo })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Update QR code and restart
+          document.getElementById('qrcodeImage').src = data.qrCodeUrl;
+          showQrCodeContent();
+          startCountdown(5 * 60);
+          startPaymentPolling(data.orderNo);
+
+          // Update order number if new order was created
+          if (data.orderNo !== currentOrderNo) {
+            currentOrderNo = data.orderNo;
+          }
+        } else {
+          // Retry failed, show error
+          showQrCodeError('❌', data.error || (currentLang === 'zh' ? '刷新失败，请重新下单' : 'Refresh failed, please create new order'));
+        }
+      } catch (e) {
+        console.error('Retry error:', e);
+        showQrCodeError('❌', currentLang === 'zh' ? '网络错误，请重试' : 'Network error, please try again');
+      } finally {
+        retryBtn.disabled = false;
+        retryBtn.textContent = currentLang === 'zh' ? '刷新二维码' : 'Refresh QR Code';
+      }
+    }
+
     // Close QR code modal
     document.getElementById('qrcodeClose').addEventListener('click', () => {
       if (confirm(currentLang === 'zh' ? '确定要关闭吗？如已支付请等待系统确认' : 'Are you sure? If paid, please wait for confirmation')) {
         hideQrCodeModal();
       }
     });
+
+    // Retry button click
+    document.getElementById('qrcodeRetryBtn').addEventListener('click', retryPayment);
 
     // Purchase button - Updated for QR code flow
     document.getElementById('purchaseBtn').addEventListener('click', async () => {
