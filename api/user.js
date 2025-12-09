@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
   
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    userId = decoded.userId;
+    userId = decoded.id;  // lib/auth.js uses 'id' not 'userId'
   } catch (e) {
     return res.status(401).json({ error: 'Invalid token' });
   }

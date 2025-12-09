@@ -108,6 +108,7 @@
       <button class="tab active" data-tab="stats">📊 统计概览</button>
       <button class="tab" data-tab="users">👥 用户管理</button>
       <button class="tab" data-tab="promo">🎫 优惠码管理</button>
+      <button class="tab" data-tab="settings">📢 推广设置</button>
     </div>
 
     <!-- Stats Panel -->
@@ -195,6 +196,38 @@
           </tbody>
         </table>
         <div class="pagination" id="promoPagination"></div>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="panel" id="panel-settings">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">推广期免费次数设置</h3>
+        </div>
+        <div style="margin-bottom:24px">
+          <div id="promoStatus" style="padding:16px;border-radius:12px;margin-bottom:20px;text-align:center">
+            <span id="promoStatusIcon" style="font-size:24px">⏳</span>
+            <span id="promoStatusText" style="font-size:16px;margin-left:8px">加载中...</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">新用户免费次数</label>
+            <input type="number" class="form-input" id="settingFreeCredits" min="1" max="100" value="1" style="max-width:200px">
+            <div style="color:#6b7280;font-size:12px;margin-top:4px">推广期内注册的用户将获得此次数（1-100）</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">推广开始时间</label>
+            <input type="datetime-local" class="form-input" id="settingStartAt" style="max-width:300px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">推广结束时间</label>
+            <input type="datetime-local" class="form-input" id="settingEndAt" style="max-width:300px">
+          </div>
+          <div style="display:flex;gap:12px;margin-top:24px">
+            <button class="btn btn-primary" onclick="savePromoConfig()">保存设置</button>
+            <button class="btn btn-danger" onclick="clearPromoConfig()">停止推广（恢复1次）</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -570,12 +603,128 @@
       }
     }
 
+    // ==================== Promo Config ====================
+    
+    async function loadPromoConfig() {
+      try {
+        const data = await apiGet('promo-config');
+        if (data.success) {
+          const config = data.config;
+          document.getElementById('settingFreeCredits').value = config.freeCredits || 1;
+          
+          // Format datetime for input
+          if (config.startAt) {
+            document.getElementById('settingStartAt').value = formatDatetimeLocal(config.startAt);
+          }
+          if (config.endAt) {
+            document.getElementById('settingEndAt').value = formatDatetimeLocal(config.endAt);
+          }
+          
+          // Update status display
+          const statusEl = document.getElementById('promoStatus');
+          const iconEl = document.getElementById('promoStatusIcon');
+          const textEl = document.getElementById('promoStatusText');
+          
+          if (config.isActive) {
+            statusEl.style.background = 'rgba(0,255,157,0.1)';
+            statusEl.style.border = '1px solid rgba(0,255,157,0.3)';
+            iconEl.textContent = '✅';
+            textEl.textContent = `推广进行中：新用户注册获得 ${config.freeCredits} 次免费`;
+            textEl.style.color = '#00ff9d';
+          } else if (config.startAt && config.endAt) {
+            const now = new Date();
+            const endAt = new Date(config.endAt);
+            if (now > endAt) {
+              statusEl.style.background = 'rgba(239,68,68,0.1)';
+              statusEl.style.border = '1px solid rgba(239,68,68,0.3)';
+              iconEl.textContent = '⏰';
+              textEl.textContent = '推广已结束，新用户获得 1 次免费';
+              textEl.style.color = '#fca5a5';
+            } else {
+              statusEl.style.background = 'rgba(234,179,8,0.1)';
+              statusEl.style.border = '1px solid rgba(234,179,8,0.3)';
+              iconEl.textContent = '⏳';
+              textEl.textContent = '推广未开始，等待开始时间';
+              textEl.style.color = '#eab308';
+            }
+          } else {
+            statusEl.style.background = 'rgba(107,114,128,0.1)';
+            statusEl.style.border = '1px solid rgba(107,114,128,0.3)';
+            iconEl.textContent = '❌';
+            textEl.textContent = '未设置推广期，新用户获得 1 次免费';
+            textEl.style.color = '#9ca3af';
+          }
+        }
+      } catch (e) {
+        console.error('Load promo config error:', e);
+      }
+    }
+
+    function formatDatetimeLocal(isoString) {
+      if (!isoString) return '';
+      const date = new Date(isoString);
+      return date.toISOString().slice(0, 16);
+    }
+
+    async function savePromoConfig() {
+      const freeCredits = document.getElementById('settingFreeCredits').value;
+      const startAt = document.getElementById('settingStartAt').value;
+      const endAt = document.getElementById('settingEndAt').value;
+
+      if (!startAt || !endAt) {
+        showError('请设置开始和结束时间');
+        return;
+      }
+
+      try {
+        const data = await apiPut('update-promo-config', {
+          freeCredits: parseInt(freeCredits),
+          startAt: new Date(startAt).toISOString(),
+          endAt: new Date(endAt).toISOString()
+        });
+
+        if (data.success) {
+          alert('推广设置已保存！');
+          loadPromoConfig();
+        } else {
+          showError(data.error || '保存失败');
+        }
+      } catch (e) {
+        showError('保存失败: ' + e.message);
+      }
+    }
+
+    async function clearPromoConfig() {
+      if (!confirm('确定要停止推广吗？新用户将恢复为 1 次免费。')) return;
+
+      try {
+        const data = await apiPut('update-promo-config', {
+          freeCredits: 1,
+          startAt: null,
+          endAt: null
+        });
+
+        if (data.success) {
+          document.getElementById('settingFreeCredits').value = 1;
+          document.getElementById('settingStartAt').value = '';
+          document.getElementById('settingEndAt').value = '';
+          alert('推广已停止，新用户恢复为 1 次免费');
+          loadPromoConfig();
+        } else {
+          showError(data.error || '操作失败');
+        }
+      } catch (e) {
+        showError('操作失败: ' + e.message);
+      }
+    }
+
     // Init
     async function init() {
       if (await checkAuth()) {
         loadStats();
         loadUsers();
         loadPromoCodes();
+        loadPromoConfig();
       }
     }
 

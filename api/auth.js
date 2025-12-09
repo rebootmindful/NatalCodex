@@ -106,17 +106,20 @@ async function handleRegister(req, res) {
 
   const passwordHash = await auth.hashPassword(password);
 
+  // 获取推广期免费次数
+  const freeCredits = await getPromoFreeCredits();
+
   const result = await db.query(
-    `INSERT INTO users (email, password_hash) 
-     VALUES ($1, $2) 
-     RETURNING id, email, created_at`,
-    [email.toLowerCase(), passwordHash]
+    `INSERT INTO users (email, password_hash, remaining_credits) 
+     VALUES ($1, $2, $3) 
+     RETURNING id, email, created_at, remaining_credits`,
+    [email.toLowerCase(), passwordHash, freeCredits]
   );
 
   const user = result.rows[0];
   const token = auth.generateToken(user);
 
-  console.log('[Auth] New user registered:', user.email);
+  console.log('[Auth] New user registered:', user.email, 'free credits:', freeCredits);
 
   return res.status(201).json({
     success: true,
@@ -352,14 +355,15 @@ async function handleGoogleCallback(req, res) {
       );
     } else {
       // New user - create account
+      const freeCredits = await getPromoFreeCredits();
       const insertResult = await db.query(
-        `INSERT INTO users (email, google_id, name, avatar_url, password_hash) 
-         VALUES ($1, $2, $3, $4, $5) 
+        `INSERT INTO users (email, google_id, name, avatar_url, password_hash, remaining_credits) 
+         VALUES ($1, $2, $3, $4, $5, $6) 
          RETURNING id, email`,
-        [googleUser.email.toLowerCase(), googleUser.id, googleUser.name, googleUser.picture, 'GOOGLE_OAUTH']
+        [googleUser.email.toLowerCase(), googleUser.id, googleUser.name, googleUser.picture, 'GOOGLE_OAUTH', freeCredits]
       );
       user = insertResult.rows[0];
-      console.log('[Auth] New Google user created:', user.email);
+      console.log('[Auth] New Google user created:', user.email, 'free credits:', freeCredits);
     }
 
     // Generate JWT token
@@ -371,5 +375,39 @@ async function handleGoogleCallback(req, res) {
   } catch (err) {
     console.error('[Auth] Google callback error:', err);
     return res.redirect(`${frontendUrl}?auth_error=server_error`);
+  }
+}
+
+// ========== Get Promo Free Credits ==========
+async function getPromoFreeCredits() {
+  try {
+    const result = await db.query(`
+      SELECT config_key, config_value FROM system_config 
+      WHERE config_key IN ('promo_free_credits', 'promo_start_at', 'promo_end_at')
+    `);
+
+    const config = {};
+    result.rows.forEach(row => {
+      config[row.config_key] = row.config_value;
+    });
+
+    const now = new Date();
+    
+    // 检查是否在推广期内
+    if (config.promo_start_at && config.promo_end_at) {
+      const startAt = new Date(config.promo_start_at);
+      const endAt = new Date(config.promo_end_at);
+      if (now >= startAt && now <= endAt) {
+        const credits = parseInt(config.promo_free_credits);
+        if (!isNaN(credits) && credits > 0) {
+          return credits;
+        }
+      }
+    }
+    
+    return 1; // 默认1次
+  } catch (e) {
+    console.error('[Auth] Get promo free credits error:', e);
+    return 1;
   }
 }

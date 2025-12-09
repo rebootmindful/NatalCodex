@@ -9,6 +9,8 @@
  * GET  /api/admin?action=promo-list         - 优惠码列表
  * DELETE /api/admin?action=delete-promo     - 作废优惠码
  * GET  /api/admin?action=stats              - 统计数据
+ * GET  /api/admin?action=promo-config       - 获取推广期配置
+ * PUT  /api/admin?action=update-promo-config - 更新推广期配置
  */
 
 const { query } = require('../lib/db');
@@ -42,10 +44,14 @@ module.exports = async (req, res) => {
         return await handleDeletePromo(req, res);
       case 'stats':
         return await handleStats(req, res);
+      case 'promo-config':
+        return await handlePromoConfig(req, res);
+      case 'update-promo-config':
+        return await handleUpdatePromoConfig(req, res);
       default:
         return res.status(400).json({ 
           error: 'Invalid action', 
-          validActions: ['users', 'user', 'update-credits', 'generate-promo', 'promo-list', 'delete-promo', 'stats'] 
+          validActions: ['users', 'user', 'update-credits', 'generate-promo', 'promo-list', 'delete-promo', 'stats', 'promo-config', 'update-promo-config'] 
         });
     }
   } catch (error) {
@@ -407,6 +413,93 @@ async function handleStats(req, res) {
       orders: ordersStats.rows[0],
       usage: usageStats.rows[0],
       promoCodes: promoStats.rows[0]
+    }
+  });
+}
+
+/**
+ * 获取推广期配置
+ */
+async function handlePromoConfig(req, res) {
+  const result = await query(`
+    SELECT config_key, config_value FROM system_config 
+    WHERE config_key IN ('promo_free_credits', 'promo_start_at', 'promo_end_at')
+  `);
+
+  const config = {};
+  result.rows.forEach(row => {
+    config[row.config_key] = row.config_value;
+  });
+
+  // 判断是否在推广期内
+  const now = new Date();
+  let isActive = false;
+  if (config.promo_start_at && config.promo_end_at) {
+    const startAt = new Date(config.promo_start_at);
+    const endAt = new Date(config.promo_end_at);
+    isActive = now >= startAt && now <= endAt;
+  }
+
+  return res.json({
+    success: true,
+    config: {
+      freeCredits: parseInt(config.promo_free_credits) || 1,
+      startAt: config.promo_start_at || null,
+      endAt: config.promo_end_at || null,
+      isActive
+    }
+  });
+}
+
+/**
+ * 更新推广期配置
+ */
+async function handleUpdatePromoConfig(req, res) {
+  if (req.method !== 'PUT') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { freeCredits, startAt, endAt } = req.body;
+
+  // 验证免费次数
+  const credits = parseInt(freeCredits);
+  if (isNaN(credits) || credits < 1 || credits > 100) {
+    return res.status(400).json({ error: 'freeCredits must be between 1 and 100' });
+  }
+
+  // 验证时间
+  if (startAt && endAt) {
+    const start = new Date(startAt);
+    const end = new Date(endAt);
+    if (end <= start) {
+      return res.status(400).json({ error: 'endAt must be after startAt' });
+    }
+  }
+
+  // 更新配置
+  await query(
+    `UPDATE system_config SET config_value = $1, updated_at = NOW(), updated_by = $2 WHERE config_key = 'promo_free_credits'`,
+    [credits.toString(), ADMIN_EMAIL]
+  );
+
+  await query(
+    `UPDATE system_config SET config_value = $1, updated_at = NOW(), updated_by = $2 WHERE config_key = 'promo_start_at'`,
+    [startAt || null, ADMIN_EMAIL]
+  );
+
+  await query(
+    `UPDATE system_config SET config_value = $1, updated_at = NOW(), updated_by = $2 WHERE config_key = 'promo_end_at'`,
+    [endAt || null, ADMIN_EMAIL]
+  );
+
+  console.log('[Admin] Promo config updated:', { freeCredits: credits, startAt, endAt });
+
+  return res.json({
+    success: true,
+    config: {
+      freeCredits: credits,
+      startAt: startAt || null,
+      endAt: endAt || null
     }
   });
 }

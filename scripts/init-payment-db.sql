@@ -147,5 +147,24 @@ CREATE TRIGGER update_usage_logs_updated_at
 --   ('ETEST1', 'TWENTY', 20, NOW() + INTERVAL '30 days', 'system');
 
 -- ============================================================
+-- 9. 系统配置表 (system_config)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS system_config (
+  id SERIAL PRIMARY KEY,
+  config_key VARCHAR(50) UNIQUE NOT NULL,
+  config_value TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_by VARCHAR(255)
+);
+
+-- 初始化推广配置
+INSERT INTO system_config (config_key, config_value) VALUES 
+  ('promo_free_credits', '1'),
+  ('promo_start_at', NULL),
+  ('promo_end_at', NULL)
+ON CONFLICT (config_key) DO NOTHING;
+
+-- ============================================================
 -- Migration Complete
 -- ============================================================
