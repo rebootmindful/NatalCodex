@@ -2048,7 +2048,7 @@
 
       try {
         // Step 1: Deduct credit before generating
-        const token = localStorage.getItem('token');
+        const token = getAuthToken();
         const deductResponse = await fetch('/api/user?action=deduct', {
           method: 'POST',
           headers: {
@@ -2162,12 +2162,12 @@
         // Refund credit if report generation failed
         if (deductedReportId) {
           try {
-            const token = localStorage.getItem('token');
+            const refundToken = getAuthToken();
             const refundResponse = await fetch('/api/user?action=refund', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${refundToken}`
               },
               body: JSON.stringify({ reportId: deductedReportId })
             });
