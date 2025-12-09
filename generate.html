@@ -551,22 +551,25 @@
     .user-menu {
       position:relative;
     }
-    .user-btn {
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 16px;
-      background:rgba(0,255,157,0.1);
-      border:1px solid rgba(0,255,157,0.3);
-      border-radius:8px;
-      color:#00ff9d;
-      font-size:14px;
-      font-weight:600;
+    .user-avatar-btn {
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background:linear-gradient(135deg, #00ff9d 0%, #00d4aa 100%);
+      border:2px solid rgba(0,255,157,0.5);
+      color:#0a0e27;
+      font-size:16px;
+      font-weight:700;
       cursor:pointer;
       transition:all 0.3s ease;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-transform:uppercase;
     }
-    .user-btn:hover {
-      background:rgba(0,255,157,0.2);
+    .user-avatar-btn:hover {
+      transform:scale(1.1);
+      box-shadow:0 0 15px rgba(0,255,157,0.5);
     }
     .user-dropdown {
       display:none;
@@ -578,11 +581,24 @@
       border:1px solid rgba(0,255,157,0.3);
       border-radius:8px;
       padding:8px 0;
-      min-width:160px;
+      min-width:200px;
       box-shadow:0 10px 30px rgba(0,0,0,0.5);
+      z-index:1000;
     }
     .user-dropdown.active {
       display:block;
+    }
+    .user-dropdown-email {
+      padding:10px 16px;
+      color:#00ff9d;
+      font-size:13px;
+      border-bottom:none;
+      word-break:break-all;
+    }
+    .user-dropdown-divider {
+      height:1px;
+      background:rgba(0,255,157,0.2);
+      margin:4px 12px;
     }
     .user-dropdown-item {
       padding:10px 16px;
@@ -597,6 +613,11 @@
     }
 
     /* Credits Display */
+    .credits-section {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
     .credits-badge {
       display:inline-flex;
       align-items:center;
@@ -608,14 +629,25 @@
       color:#00ff9d;
       font-size:14px;
       font-weight:600;
-      cursor:pointer;
       transition:all 0.2s;
-    }
-    .credits-badge:hover {
-      background:rgba(0,255,157,0.2);
     }
     .credits-badge .credit-icon {
       font-size:16px;
+    }
+    .credits-buy-btn {
+      padding:6px 14px;
+      background:linear-gradient(135deg, #00ff9d, #00d4ff);
+      border:none;
+      border-radius:20px;
+      color:#0a0a0a;
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      transition:all 0.2s;
+    }
+    .credits-buy-btn:hover {
+      transform:scale(1.05);
+      box-shadow:0 0 15px rgba(0,255,157,0.4);
     }
 
     /* Purchase Modal */
@@ -1106,19 +1138,23 @@
       <a href="index.html" class="back-link">← <span data-i18n="backHome">返回首页</span></a>
       <div style="display:flex;gap:12px;align-items:center">
         <!-- Credits Badge (shown when logged in) -->
-        <div class="credits-badge" id="creditsBadge" style="display:none" title="点击购买更多次数">
-          <span class="credit-icon">🎫</span>
-          <span id="creditsCount">0</span>
-          <span data-i18n="creditsUnit">次</span>
+        <div class="credits-section" id="creditsBadge" style="display:none">
+          <div class="credits-badge">
+            <span class="credit-icon">🎫</span>
+            <span data-i18n="creditsRemaining">剩余次数</span>:
+            <span id="creditsCount">0</span>
+            <span data-i18n="creditsUnit">次</span>
+          </div>
+          <button class="credits-buy-btn" id="creditsBuyBtn" data-i18n="creditsBuy">购买</button>
         </div>
         <!-- User Menu (shown when logged in) -->
         <div class="user-menu" id="userMenu" style="display:none">
-          <button class="user-btn" id="userBtn">
-            <span>👤</span>
-            <span id="userEmail">user@example.com</span>
-            <span>▼</span>
+          <button class="user-avatar-btn" id="userBtn" title="">
+            <span id="userInitial">U</span>
           </button>
           <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-email" id="userEmail">user@example.com</div>
+            <div class="user-dropdown-divider"></div>
             <div class="user-dropdown-item" id="logoutBtn" data-i18n="authLogout">退出登录</div>
           </div>
         </div>
@@ -1134,7 +1170,7 @@
 
     <div class="header">
       <div class="logo">NatalCodex</div>
-      <div class="subtitle" data-i18n="subtitle">生成您的八字命理与MBTI人格分析报告</div>
+      <div class="subtitle" data-i18n="subtitle">填写出生信息 → 点击生成报告 → 在报告下方生成图片</div>
     </div>
 
     <div class="form-section">
@@ -1270,7 +1306,7 @@
     const translations = {
       zh: {
         backHome: '返回首页',
-        subtitle: '生成您的八字命理与MBTI人格分析报告',
+        subtitle: '填写出生信息 → 点击生成报告 → 在报告下方生成图片',
         labelName: '姓名',
         placeholderName: '请输入您的姓名',
         labelGender: '性别',
@@ -1335,11 +1371,14 @@
         authLoginRequiredCard: '请先登录后再生成卡片',
         authPasswordMismatch: '两次输入的密码不一致',
         authLoggingIn: '登录中...',
-        authRegistering: '注册中...'
+        authRegistering: '注册中...',
+        creditsRemaining: '剩余次数',
+        creditsUnit: '次',
+        creditsBuy: '购买'
       },
       en: {
         backHome: 'Back Home',
-        subtitle: 'Generate Your BaZi & MBTI Personality Analysis Report',
+        subtitle: 'Fill in birth info → Generate report → Create card below report',
         labelName: 'Name',
         placeholderName: 'Enter your name',
         labelGender: 'Gender',
@@ -1404,7 +1443,10 @@
         authLoginRequiredCard: 'Please login to generate cards',
         authPasswordMismatch: 'Passwords do not match',
         authLoggingIn: 'Logging in...',
-        authRegistering: 'Registering...'
+        authRegistering: 'Registering...',
+        creditsRemaining: 'Remaining',
+        creditsUnit: 'credits',
+        creditsBuy: 'Buy'
       }
     };
 
@@ -2463,6 +2505,7 @@
     const userBtn = document.getElementById('userBtn');
     const userDropdown = document.getElementById('userDropdown');
     const userEmailSpan = document.getElementById('userEmail');
+    const userInitialSpan = document.getElementById('userInitial');
     const logoutBtn = document.getElementById('logoutBtn');
 
     // Check if user is logged in
@@ -2509,9 +2552,13 @@
         userMenu.style.display = 'block';
         creditsBadge.style.display = 'flex';
         if (user && user.email) {
-          // Show truncated email
           const email = user.email;
-          userEmailSpan.textContent = email.length > 15 ? email.substring(0, 12) + '...' : email;
+          // Show first letter as avatar initial
+          userInitialSpan.textContent = email.charAt(0).toUpperCase();
+          // Show full email in dropdown
+          userEmailSpan.textContent = email;
+          // Set tooltip with full email
+          userBtn.title = email;
         }
         // Load user credits
         loadUserCredits();
@@ -2519,6 +2566,21 @@
         loginTrigger.style.display = 'flex';
         userMenu.style.display = 'none';
         creditsBadge.style.display = 'none';
+      }
+    }
+
+    // Update credits display
+    function updateCreditsDisplay() {
+      document.getElementById('creditsCount').textContent = userCredits;
+      // Update purchase modal display
+      const displayEl = document.getElementById('purchaseCreditsDisplay');
+      if (displayEl) {
+        document.getElementById('purchaseCreditsValue').textContent = userCredits;
+        if (userCredits > 0) {
+          displayEl.classList.add('has-credits');
+        } else {
+          displayEl.classList.remove('has-credits');
+        }
       }
     }
 
@@ -2913,9 +2975,9 @@
     checkAuthOnLoad();
 
     // ==================== PURCHASE MODAL ====================
-    
-    // Credits badge click
-    document.getElementById('creditsBadge').addEventListener('click', showPurchaseModal);
+
+    // Credits buy button click
+    document.getElementById('creditsBuyBtn').addEventListener('click', showPurchaseModal);
     
     // Close purchase modal
     document.getElementById('purchaseClose').addEventListener('click', hidePurchaseModal);

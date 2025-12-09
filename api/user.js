@@ -10,6 +10,7 @@
 const { query } = require('../lib/db');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
+const { JWT_SECRET } = require('../lib/auth');
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -24,15 +25,6 @@ module.exports = async (req, res) => {
   const action = req.query.action || req.body?.action;
 
   // 检查必需的环境变量
-  if (!process.env.JWT_SECRET) {
-    console.error('[User] FATAL: JWT_SECRET not set');
-    return res.status(500).json({
-      success: false,
-      error: 'Server configuration error',
-      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
-    });
-  }
-
   if (!process.env.DATABASE_URL) {
     console.error('[User] FATAL: DATABASE_URL not set');
     return res.status(500).json({
@@ -52,7 +44,7 @@ module.exports = async (req, res) => {
   let userId;
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.id;  // lib/auth.js uses 'id' not 'userId'
   } catch (e) {
     console.error('[User] JWT verification failed:', e.message);

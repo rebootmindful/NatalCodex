@@ -16,6 +16,7 @@
 const { query } = require('../lib/db');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { JWT_SECRET } = require('../lib/auth');
 
 const ADMIN_EMAIL = 'rebootmindful@gmail.com';
 
@@ -74,7 +75,7 @@ async function verifyAdmin(req) {
   const token = authHeader.substring(7);
   
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
 
     // 查询用户是否为管理员 (token 使用 'id' 而非 'userId')
     const result = await query(

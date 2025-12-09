@@ -9,6 +9,7 @@
 
 const { query } = require('../lib/db');
 const xunhupay = require('../lib/xunhupay');
+const { JWT_SECRET } = require('../lib/auth');
 
 // 优惠码验证失败限制
 const MAX_PROMO_ATTEMPTS = 5;
@@ -59,7 +60,7 @@ async function handleCreate(req, res) {
   
   let userId;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.id;  // lib/auth.js uses 'id' not 'userId'
   } catch (e) {
     return res.status(401).json({ error: 'Invalid token' });
@@ -160,7 +161,7 @@ async function handleRetry(req, res) {
 
   let userId;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.id;
   } catch (e) {
     return res.status(401).json({ error: 'Invalid token' });
@@ -306,7 +307,7 @@ async function handleStatus(req, res) {
     const token = authHeader.substring(7);
     const jwt = require('jsonwebtoken');
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET);
       userId = decoded.id;
     } catch (e) {
       // token 无效，继续但限制返回信息
