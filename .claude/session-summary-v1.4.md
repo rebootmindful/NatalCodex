@@ -1,9 +1,9 @@
-# NatalCodex v1.3 Session Summary
+# NatalCodex v1.4 Session Summary
 
 ## 版本信息
-- **版本号**: v1.3
+- **版本号**: v1.4
 - **发布日期**: 2025-12-09
-- **Git Commit**: 9f623d5
+- **Git Commit**: 4f9c990
 
 ## 核心功能：支付系统
 
@@ -156,4 +156,31 @@ is_admin BOOLEAN DEFAULT false    -- 管理员标识
 - v1.0: 基础功能（八字+MBTI分析）
 - v1.1: 提示词优化，标准化模板
 - v1.2: 报告格式优化，引用句截断
-- **v1.3**: 支付系统、用户管理、优惠码、管理后台
+- v1.3: 支付系统、用户管理、优惠码、管理后台
+- **v1.4**: 推广期免费次数设置、JWT解析修复
+
+## v1.4 新增功能
+
+### 推广期免费次数设置
+- 管理后台新增"推广设置"Tab
+- 可设置推广期内新用户免费次数（1-100）
+- 可设置推广开始/结束时间
+- 推广期结束后自动恢复为默认1次
+- 状态实时显示（进行中/未开始/已结束）
+
+### 数据库变更
+新增 `system_config` 表：
+```sql
+CREATE TABLE IF NOT EXISTS system_config (
+  id SERIAL PRIMARY KEY,
+  config_key VARCHAR(50) UNIQUE NOT NULL,
+  config_value TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_by VARCHAR(255)
+);
+```
+
+### Bug修复
+- 修复支付时 `user_id` 为 null 的错误
+- 原因：JWT 解析使用 `decoded.userId` 但实际字段是 `decoded.id`
+- 影响文件：`api/pay.js`, `api/user.js`
