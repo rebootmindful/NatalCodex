@@ -18,6 +18,15 @@ const LOCKOUT_MINUTES = 10;
 module.exports = async (req, res) => {
   const action = req.query.action || req.body?.action;
 
+  // 允许 CORS 和多种方法
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
     switch (action) {
       case 'create':
@@ -30,6 +39,18 @@ module.exports = async (req, res) => {
         return await handleNotify(req, res);
       case 'validate-promo':
         return await handleValidatePromo(req, res);
+      case 'test-notify':
+        // 测试端点，验证回调URL是否可达
+        console.log('[Pay/TestNotify] Test callback received');
+        return res.json({ success: true, message: 'Notify endpoint is reachable', timestamp: new Date().toISOString() });
+      case 'check-config':
+        // 检查配置（仅开发环境）
+        return res.json({
+          notifyUrl: xunhupay.config.notifyUrl,
+          appIdSet: !!process.env.XUNHUPAY_APPID,
+          appSecretSet: !!process.env.XUNHUPAY_APPSECRET,
+          appSecretLength: process.env.XUNHUPAY_APPSECRET?.length || 0
+        });
       default:
         return res.status(400).json({ error: 'Invalid action', validActions: ['create', 'retry', 'status', 'notify', 'validate-promo'] });
     }
@@ -375,17 +396,22 @@ async function handleStatus(req, res) {
  * 虎皮椒支付回调
  */
 async function handleNotify(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  // 支持 GET 和 POST (虎皮椒可能用任一方式)
+  const body = req.method === 'GET' ? req.query : req.body;
 
-  console.log('[Pay/Notify] Received:', JSON.stringify(req.body));
+  console.log('[Pay/Notify] ====== CALLBACK RECEIVED ======');
+  console.log('[Pay/Notify] Method:', req.method);
+  console.log('[Pay/Notify] Headers:', JSON.stringify(req.headers));
+  console.log('[Pay/Notify] Body:', JSON.stringify(body));
+  console.log('[Pay/Notify] Query:', JSON.stringify(req.query));
 
   // 处理回调
-  const result = xunhupay.handleNotify(req.body);
-  
+  const result = xunhupay.handleNotify(body);
+
   if (!result.success) {
     console.error('[Pay/Notify] Validation failed:', result.error);
+    console.error('[Pay/Notify] Received hash:', body.hash);
+    console.error('[Pay/Notify] AppSecret configured:', !!process.env.XUNHUPAY_APPSECRET);
     return res.status(400).send('fail');
   }
 
