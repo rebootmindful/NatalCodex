@@ -342,7 +342,7 @@
 
   <script>
     const API_BASE = '/api';
-    let token = localStorage.getItem('nc_token');
+    let token = localStorage.getItem('nc_auth_token');  // 与 generate.html 保持一致
     let currentPage = { users: 1, orders: 1, promo: 1 };
 
     // Check login
@@ -365,14 +365,16 @@
         document.getElementById('adminEmail').textContent = data.user.email;
         return true;
       } catch (e) {
-        localStorage.removeItem('nc_token');
+        localStorage.removeItem('nc_auth_token');
+        localStorage.removeItem('nc_auth_user');
         window.location.href = '/generate.html?redirect=admin';
         return false;
       }
     }
 
     function logout() {
-      localStorage.removeItem('nc_token');
+      localStorage.removeItem('nc_auth_token');
+      localStorage.removeItem('nc_auth_user');
       window.location.href = '/';
     }
 
