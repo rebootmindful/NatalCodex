@@ -833,6 +833,109 @@
       color:#6b7280;
       font-size:12px;
     }
+
+    /* QR Code Payment Modal */
+    .qrcode-overlay {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(8px);
+      z-index:1100;
+      align-items:center;
+      justify-content:center;
+    }
+    .qrcode-overlay.active {
+      display:flex;
+    }
+    .qrcode-modal {
+      background:linear-gradient(135deg,#0a0e27 0%,#1a1f4d 100%);
+      border:1px solid rgba(0,255,157,0.3);
+      border-radius:24px;
+      padding:40px;
+      max-width:400px;
+      width:90%;
+      position:relative;
+      box-shadow:0 20px 60px rgba(0,255,157,0.2);
+      text-align:center;
+    }
+    .qrcode-close {
+      position:absolute;
+      top:16px;
+      right:16px;
+      background:none;
+      border:none;
+      color:#9ca3af;
+      font-size:24px;
+      cursor:pointer;
+    }
+    .qrcode-close:hover {
+      color:#fff;
+    }
+    .qrcode-title {
+      font-size:22px;
+      font-weight:700;
+      color:#00ff9d;
+      margin-bottom:8px;
+    }
+    .qrcode-subtitle {
+      color:#9ca3af;
+      font-size:14px;
+      margin-bottom:24px;
+    }
+    .qrcode-image-container {
+      background:#fff;
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:20px;
+      display:inline-block;
+    }
+    .qrcode-image-container img {
+      width:200px;
+      height:200px;
+      display:block;
+    }
+    .qrcode-amount {
+      font-size:28px;
+      font-weight:700;
+      color:#00ff9d;
+      margin-bottom:8px;
+    }
+    .qrcode-package {
+      color:#d4d4d8;
+      font-size:14px;
+      margin-bottom:16px;
+    }
+    .qrcode-status {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:12px;
+      background:rgba(251,191,36,0.1);
+      border:1px solid rgba(251,191,36,0.3);
+      border-radius:10px;
+      color:#fbbf24;
+      font-size:14px;
+    }
+    .qrcode-status.success {
+      background:rgba(0,255,157,0.1);
+      border-color:rgba(0,255,157,0.3);
+      color:#00ff9d;
+    }
+    .qrcode-status .spinner-small {
+      width:16px;
+      height:16px;
+      border:2px solid rgba(251,191,36,0.3);
+      border-top-color:#fbbf24;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    .qrcode-timer {
+      margin-top:12px;
+      color:#6b7280;
+      font-size:12px;
+    }
   </style>
 </head>
 <body>
@@ -926,6 +1029,25 @@
 
       <button class="purchase-btn" id="purchaseBtn">支付宝支付</button>
       <p class="purchase-note" data-i18n="purchaseNote">支付完成后次数自动到账</p>
+    </div>
+  </div>
+
+  <!-- QR Code Payment Modal -->
+  <div class="qrcode-overlay" id="qrcodeOverlay">
+    <div class="qrcode-modal">
+      <button class="qrcode-close" id="qrcodeClose">&times;</button>
+      <h3 class="qrcode-title">支付宝扫码支付</h3>
+      <p class="qrcode-subtitle">请使用支付宝扫描下方二维码</p>
+      <div class="qrcode-image-container">
+        <img id="qrcodeImage" src="" alt="支付二维码">
+      </div>
+      <div class="qrcode-amount" id="qrcodeAmount">¥0</div>
+      <div class="qrcode-package" id="qrcodePackage">套餐名称</div>
+      <div class="qrcode-status" id="qrcodeStatus">
+        <div class="spinner-small"></div>
+        <span>等待支付中...</span>
+      </div>
+      <div class="qrcode-timer" id="qrcodeTimer">剩余支付时间：5:00</div>
     </div>
   </div>
 
@@ -2694,7 +2816,139 @@
       }
     });
 
-    // Purchase button
+    // ==================== QR CODE PAYMENT ====================
+
+    // QR Code modal state
+    let currentOrderNo = null;
+    let pollingTimer = null;
+    let countdownTimer = null;
+    let paymentTimeoutTimer = null;
+
+    // Detect if mobile device
+    function isMobile() {
+      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    }
+
+    // Show QR code modal
+    function showQrCodeModal(qrCodeUrl, orderNo, amount, packageName) {
+      currentOrderNo = orderNo;
+      document.getElementById('qrcodeImage').src = qrCodeUrl;
+      document.getElementById('qrcodeAmount').textContent = `¥${amount}`;
+      document.getElementById('qrcodePackage').textContent = packageName;
+      document.getElementById('qrcodeStatus').innerHTML = '<div class="spinner-small"></div><span>等待支付中...</span>';
+      document.getElementById('qrcodeStatus').classList.remove('success');
+      document.getElementById('qrcodeOverlay').classList.add('active');
+
+      // Start countdown (5 minutes)
+      startCountdown(5 * 60);
+
+      // Start polling for payment status
+      startPaymentPolling(orderNo);
+    }
+
+    // Hide QR code modal
+    function hideQrCodeModal() {
+      document.getElementById('qrcodeOverlay').classList.remove('active');
+      stopPaymentPolling();
+      stopCountdown();
+      currentOrderNo = null;
+    }
+
+    // Start countdown timer
+    function startCountdown(seconds) {
+      let remaining = seconds;
+      updateCountdownDisplay(remaining);
+
+      countdownTimer = setInterval(() => {
+        remaining--;
+        updateCountdownDisplay(remaining);
+
+        if (remaining <= 0) {
+          stopCountdown();
+          hideQrCodeModal();
+          alert(currentLang === 'zh' ? '支付超时，请重新下单' : 'Payment timeout, please try again');
+        }
+      }, 1000);
+
+      // Also set a hard timeout
+      paymentTimeoutTimer = setTimeout(() => {
+        stopPaymentPolling();
+        hideQrCodeModal();
+        alert(currentLang === 'zh' ? '支付超时，请重新下单' : 'Payment timeout, please try again');
+      }, seconds * 1000);
+    }
+
+    // Update countdown display
+    function updateCountdownDisplay(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      document.getElementById('qrcodeTimer').textContent =
+        `${currentLang === 'zh' ? '剩余支付时间' : 'Time remaining'}：${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Stop countdown
+    function stopCountdown() {
+      if (countdownTimer) {
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+      }
+      if (paymentTimeoutTimer) {
+        clearTimeout(paymentTimeoutTimer);
+        paymentTimeoutTimer = null;
+      }
+    }
+
+    // Start polling for payment status
+    function startPaymentPolling(orderNo) {
+      pollingTimer = setInterval(async () => {
+        try {
+          // 🔒 添加 Authorization 头以获取完整订单信息
+          const res = await fetch(`/api/pay?action=status&order=${orderNo}`, {
+            headers: {
+              'Authorization': `Bearer ${getAuthToken()}`
+            }
+          });
+          const data = await res.json();
+
+          if (data.success && data.order.status === 'paid') {
+            // Payment successful!
+            stopPaymentPolling();
+            stopCountdown();
+
+            // Update status display
+            document.getElementById('qrcodeStatus').innerHTML = '✅ 支付成功！';
+            document.getElementById('qrcodeStatus').classList.add('success');
+
+            // Wait a moment then close
+            setTimeout(() => {
+              hideQrCodeModal();
+              hidePurchaseModal();
+              loadUserCredits();
+              alert(currentLang === 'zh' ? '🎉 支付成功！次数已到账' : '🎉 Payment successful! Credits added');
+            }, 1500);
+          }
+        } catch (e) {
+          console.error('Polling error:', e);
+        }
+      }, 3000); // Poll every 3 seconds
+    }
+
+    // Stop polling
+    function stopPaymentPolling() {
+      if (pollingTimer) {
+        clearInterval(pollingTimer);
+        pollingTimer = null;
+      }
+    }
+
+    // Close QR code modal
+    document.getElementById('qrcodeClose').addEventListener('click', () => {
+      if (confirm(currentLang === 'zh' ? '确定要关闭吗？如已支付请等待系统确认' : 'Are you sure? If paid, please wait for confirmation')) {
+        hideQrCodeModal();
+      }
+    });
+
+    // Purchase button - Updated for QR code flow
     document.getElementById('purchaseBtn').addEventListener('click', async () => {
       const btn = document.getElementById('purchaseBtn');
       btn.disabled = true;
@@ -2712,19 +2966,33 @@
             promoCode: validatedPromo?.code || null
           })
         });
-        
+
         const data = await response.json();
-        
-        if (data.success && data.payUrl) {
-          // Redirect to payment page
-          window.location.href = data.payUrl;
+
+        if (data.success) {
+          // Check device type
+          if (isMobile() && data.mobileUrl) {
+            // Mobile: redirect to Alipay
+            window.location.href = data.mobileUrl;
+          } else if (data.qrCodeUrl) {
+            // PC: show QR code modal
+            const packageNames = { PACK_6: '6次套餐', PACK_20: '20次套餐' };
+            showQrCodeModal(
+              data.qrCodeUrl,
+              data.orderNo,
+              data.priceInfo.finalPrice,
+              packageNames[selectedPackage] || selectedPackage
+            );
+          } else {
+            throw new Error('无法获取支付信息');
+          }
         } else {
           alert(data.error || '创建订单失败');
-          btn.disabled = false;
-          btn.textContent = '支付宝支付';
         }
       } catch (e) {
+        console.error('Payment error:', e);
         alert('支付请求失败，请重试');
+      } finally {
         btn.disabled = false;
         btn.textContent = '支付宝支付';
       }

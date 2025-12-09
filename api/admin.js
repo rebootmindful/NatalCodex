@@ -36,6 +36,8 @@ module.exports = async (req, res) => {
         return await handleUserDetail(req, res);
       case 'update-credits':
         return await handleUpdateCredits(req, res);
+      case 'orders':
+        return await handleOrdersList(req, res);
       case 'generate-promo':
         return await handleGeneratePromo(req, res);
       case 'promo-list':
@@ -49,9 +51,9 @@ module.exports = async (req, res) => {
       case 'update-promo-config':
         return await handleUpdatePromoConfig(req, res);
       default:
-        return res.status(400).json({ 
-          error: 'Invalid action', 
-          validActions: ['users', 'user', 'update-credits', 'generate-promo', 'promo-list', 'delete-promo', 'stats', 'promo-config', 'update-promo-config'] 
+        return res.status(400).json({
+          error: 'Invalid action',
+          validActions: ['users', 'user', 'update-credits', 'orders', 'generate-promo', 'promo-list', 'delete-promo', 'stats', 'promo-config', 'update-promo-config']
         });
     }
   } catch (error) {
@@ -176,6 +178,61 @@ async function handleUserDetail(req, res) {
     user: userResult.rows[0],
     usageLogs: usageResult.rows,
     orders: ordersResult.rows
+  });
+}
+
+/**
+ * 订单列表
+ */
+async function handleOrdersList(req, res) {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 20;
+  const status = req.query.status || '';
+  const search = req.query.search || '';
+  const offset = (page - 1) * limit;
+
+  let whereClause = '1=1';
+  const params = [];
+  let paramIndex = 1;
+
+  if (status) {
+    whereClause += ` AND o.status = $${paramIndex}`;
+    params.push(status);
+    paramIndex++;
+  }
+
+  if (search) {
+    whereClause += ` AND o.order_no ILIKE $${paramIndex}`;
+    params.push(`%${search}%`);
+    paramIndex++;
+  }
+
+  // Count query
+  const countResult = await query(
+    `SELECT COUNT(*) as total FROM orders o WHERE ${whereClause}`,
+    params
+  );
+
+  // Data query with user email join
+  const ordersResult = await query(
+    `SELECT o.*, u.email as user_email
+     FROM orders o
+     LEFT JOIN users u ON o.user_id = u.id
+     WHERE ${whereClause}
+     ORDER BY o.created_at DESC
+     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+    [...params, limit, offset]
+  );
+
+  return res.json({
+    success: true,
+    orders: ordersResult.rows,
+    pagination: {
+      page,
+      limit,
+      total: parseInt(countResult.rows[0].total),
+      totalPages: Math.ceil(countResult.rows[0].total / limit)
+    }
   });
 }
 

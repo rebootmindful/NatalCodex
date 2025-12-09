@@ -107,6 +107,7 @@
     <div class="tabs">
       <button class="tab active" data-tab="stats">📊 统计概览</button>
       <button class="tab" data-tab="users">👥 用户管理</button>
+      <button class="tab" data-tab="orders">💰 订单管理</button>
       <button class="tab" data-tab="promo">🎫 优惠码管理</button>
       <button class="tab" data-tab="settings">📢 推广设置</button>
     </div>
@@ -161,6 +162,43 @@
           </tbody>
         </table>
         <div class="pagination" id="usersPagination"></div>
+      </div>
+    </div>
+
+    <!-- Orders Panel -->
+    <div class="panel" id="panel-orders">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">订单列表</h3>
+        </div>
+        <div class="filter-row">
+          <select class="filter-select" id="orderFilter" onchange="loadOrders()">
+            <option value="">全部</option>
+            <option value="paid">已支付</option>
+            <option value="pending">待支付</option>
+            <option value="expired">已过期</option>
+            <option value="failed">失败</option>
+          </select>
+          <input type="text" class="search-input" id="orderSearch" placeholder="搜索订单号..." style="max-width:200px">
+          <button class="btn btn-secondary" onclick="loadOrders()">搜索</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>订单号</th>
+              <th>用户</th>
+              <th>套餐</th>
+              <th>金额</th>
+              <th>优惠码</th>
+              <th>状态</th>
+              <th>创建时间</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTable">
+            <tr><td colspan="7" class="loading">加载中...</td></tr>
+          </tbody>
+        </table>
+        <div class="pagination" id="ordersPagination"></div>
       </div>
     </div>
 
@@ -305,7 +343,7 @@
   <script>
     const API_BASE = '/api';
     let token = localStorage.getItem('nc_token');
-    let currentPage = { users: 1, promo: 1 };
+    let currentPage = { users: 1, orders: 1, promo: 1 };
 
     // Check login
     async function checkAuth() {
@@ -718,11 +756,71 @@
       }
     }
 
+    // ==================== Orders Management ====================
+
+    async function loadOrders(page = 1) {
+      currentPage.orders = page;
+      const status = document.getElementById('orderFilter').value;
+      const search = document.getElementById('orderSearch').value;
+      const tbody = document.getElementById('ordersTable');
+      tbody.innerHTML = '<tr><td colspan="7" class="loading">加载中...</td></tr>';
+
+      try {
+        const data = await apiGet('orders', { page, status, search, limit: 20 });
+        if (data.success) {
+          if (data.orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="loading">无数据</td></tr>';
+            return;
+          }
+
+          const packageNames = { PACK_6: '6次套餐', PACK_20: '20次套餐' };
+
+          tbody.innerHTML = data.orders.map(o => {
+            let statusBadge;
+            switch (o.status) {
+              case 'paid':
+                statusBadge = '<span class="badge badge-green">已支付</span>';
+                break;
+              case 'pending':
+                statusBadge = '<span class="badge badge-yellow">待支付</span>';
+                break;
+              case 'expired':
+                statusBadge = '<span class="badge badge-red">已过期</span>';
+                break;
+              case 'failed':
+                statusBadge = '<span class="badge badge-red">失败</span>';
+                break;
+              default:
+                statusBadge = `<span class="badge">${o.status}</span>`;
+            }
+
+            return `
+              <tr>
+                <td><code style="font-size:12px">${o.order_no}</code></td>
+                <td>${o.user_email || '-'}</td>
+                <td>${packageNames[o.package_type] || o.package_type}</td>
+                <td>¥${parseFloat(o.final_price).toFixed(2)}</td>
+                <td>${o.promo_code || '-'}</td>
+                <td>${statusBadge}</td>
+                <td>${new Date(o.created_at).toLocaleString('zh-CN')}</td>
+              </tr>
+            `;
+          }).join('');
+
+          renderPagination('ordersPagination', data.pagination, loadOrders);
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7" class="error">加载失败</td></tr>';
+        console.error('Load orders error:', e);
+      }
+    }
+
     // Init
     async function init() {
       if (await checkAuth()) {
         loadStats();
         loadUsers();
+        loadOrders();
         loadPromoCodes();
         loadPromoConfig();
       }

@@ -99,26 +99,72 @@ async function handleCreate(req, res) {
     [orderNo, userId, packageType, priceInfo.credits, priceInfo.originalPrice, promoCode || null, discountPercent, priceInfo.discountAmount, priceInfo.finalPrice]
   );
 
-  // 创建支付链接
-  const payment = xunhupay.createPayment({
-    orderNo,
-    amount: priceInfo.finalPrice,
-    title: `NatalCodex ${priceInfo.packageName}`
-  });
+  // 创建支付订单 (2024新版: POST请求获取二维码URL)
+  try {
+    const payment = await xunhupay.createPayment({
+      orderNo,
+      amount: priceInfo.finalPrice,
+      title: `NatalCodex ${priceInfo.packageName}`
+    });
 
-  console.log('[Pay/Create] Order created:', orderNo, priceInfo);
+    console.log('[Pay/Create] Order created:', orderNo, priceInfo);
 
-  return res.json({
-    success: true,
-    orderNo,
-    payUrl: payment.payUrl,
-    priceInfo
-  });
+    return res.json({
+      success: true,
+      orderNo,
+      qrCodeUrl: payment.qrCodeUrl,   // PC端二维码URL
+      mobileUrl: payment.mobileUrl,    // 移动端跳转URL
+      priceInfo
+    });
+  } catch (paymentError) {
+    console.error('[Pay/Create] Payment API error:', paymentError);
+    // 更新订单状态为失败
+    await query(
+      `UPDATE orders SET status = 'failed' WHERE order_no = $1`,
+      [orderNo]
+    );
+    return res.status(500).json({
+      success: false,
+      error: paymentError.message || '支付接口调用失败'
+    });
+  }
 }
 
 /**
  * 查询订单状态
+ * 安全措施:
+ * 1. 验证用户身份，只有订单所有者才能查看完整信息
+ * 2. 速率限制防止轮询滥用
  */
+
+// 订单状态查询速率限制 (内存存储，生产环境建议用 Redis)
+const statusQueryLimits = new Map();
+const STATUS_QUERY_LIMIT = 30;      // 每分钟最多 30 次
+const STATUS_QUERY_WINDOW = 60000;  // 1 分钟窗口
+
+function checkStatusQueryLimit(orderNo) {
+  const now = Date.now();
+  const record = statusQueryLimits.get(orderNo) || { count: 0, resetAt: now + STATUS_QUERY_WINDOW };
+
+  if (now > record.resetAt) {
+    record.count = 1;
+    record.resetAt = now + STATUS_QUERY_WINDOW;
+  } else {
+    record.count++;
+  }
+
+  statusQueryLimits.set(orderNo, record);
+
+  // 定期清理过期记录 (防止内存泄漏)
+  if (statusQueryLimits.size > 1000) {
+    for (const [key, val] of statusQueryLimits) {
+      if (now > val.resetAt) statusQueryLimits.delete(key);
+    }
+  }
+
+  return record.count <= STATUS_QUERY_LIMIT;
+}
+
 async function handleStatus(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -129,8 +175,28 @@ async function handleStatus(req, res) {
     return res.status(400).json({ error: 'Missing order number' });
   }
 
+  // 🔒 速率限制检查
+  if (!checkStatusQueryLimit(orderNo)) {
+    return res.status(429).json({ error: 'Too many requests, please slow down' });
+  }
+
+  // 🔒 验证用户身份
+  const authHeader = req.headers.authorization;
+  let userId = null;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const jwt = require('jsonwebtoken');
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.id;
+    } catch (e) {
+      // token 无效，继续但限制返回信息
+    }
+  }
+
   const result = await query(
-    `SELECT order_no, package_type, credits, original_price, discount_amount, final_price, status, created_at, paid_at
+    `SELECT order_no, user_id, package_type, credits, original_price, discount_amount, final_price, status, created_at, paid_at
      FROM orders WHERE order_no = $1`,
     [orderNo]
   );
@@ -139,8 +205,37 @@ async function handleStatus(req, res) {
     return res.status(404).json({ error: 'Order not found' });
   }
 
-  const order = result.rows[0];
-  
+  let order = result.rows[0];
+
+  // 🕐 检查并标记过期订单 (pending 状态超过 30 分钟)
+  if (order.status === 'pending') {
+    const createdAt = new Date(order.created_at);
+    const now = new Date();
+    const diffMinutes = (now - createdAt) / (1000 * 60);
+
+    if (diffMinutes > 30) {
+      // 标记为过期
+      await query(
+        `UPDATE orders SET status = 'expired' WHERE order_no = $1 AND status = 'pending'`,
+        [orderNo]
+      );
+      order.status = 'expired';
+      console.log('[Pay/Status] Order expired:', orderNo);
+    }
+  }
+
+  // 🔒 权限检查: 非订单所有者只能查看状态
+  if (!userId || userId !== order.user_id) {
+    return res.json({
+      success: true,
+      order: {
+        orderNo: order.order_no,
+        status: order.status
+      }
+    });
+  }
+
+  // 订单所有者返回完整信息
   return res.json({
     success: true,
     order: {

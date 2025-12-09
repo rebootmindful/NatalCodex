@@ -120,7 +120,8 @@
         <p>产品：<span id="productName">-</span></p>
         <p>金额：<span id="amount">-</span></p>
       </div>
-      <a href="/generate.html" class="btn">开始生成报告</a>
+      <a href="/generate.html?payment=success" class="btn">开始生成报告</a>
+      <p style="color:#6b7280;font-size:12px;margin-top:16px">3秒后自动跳转...</p>
     </div>
 
     <!-- 待支付 -->
@@ -164,7 +165,7 @@
       }
 
       try {
-        const response = await fetch(`/api/pay/status?order=${encodeURIComponent(orderNo)}`);
+        const response = await fetch(`/api/pay?action=status&order=${encodeURIComponent(orderNo)}`);
         const data = await response.json();
 
         if (!response.ok || !data.success) {
@@ -173,12 +174,19 @@
           return;
         }
 
-        if (data.status === 'paid') {
+        const order = data.order;
+        if (order.status === 'paid') {
           showState('success');
           document.getElementById('orderNo').textContent = orderNo;
-          document.getElementById('productName').textContent = data.productName || '-';
-          document.getElementById('amount').textContent = data.amountDisplay || '-';
-        } else if (data.status === 'pending') {
+          // 套餐名称映射
+          const packageNames = { PACK_6: '6次套餐', PACK_20: '20次套餐' };
+          document.getElementById('productName').textContent = packageNames[order.packageType] || order.packageType || '-';
+          document.getElementById('amount').textContent = order.finalPrice ? `¥${order.finalPrice}` : '-';
+          // 3秒后自动跳转
+          setTimeout(() => {
+            window.location.href = '/generate.html?payment=success';
+          }, 3000);
+        } else if (order.status === 'pending') {
           showState('pending');
           document.getElementById('pendingOrderNo').textContent = orderNo;
         } else {
