@@ -2018,6 +2018,17 @@
           })
         });
 
+        console.log('[Report] Response status:', response.status);
+        console.log('[Report] Content-Type:', response.headers.get('content-type'));
+
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('[Report] Non-JSON response:', text.substring(0, 500));
+          throw new Error('Server returned an error page instead of JSON. Please check Vercel function logs.');
+        }
+
         const data = await response.json();
 
         if (!response.ok || !data.success) {
