@@ -99,7 +99,7 @@
     }
   </style>
 </head>
-<body>
+<body style="display:none">
   <header class="header">
     <h1>🔮 NatalCodex 管理后台</h1>
     <div class="header-right">
@@ -371,7 +371,15 @@
           throw new Error('Auth failed');
         }
         
+        // Check admin permission
+        if (data.user.email !== 'rebootmindful@gmail.com') {
+          alert('您没有管理员权限');
+          window.location.href = '/';
+          return false;
+        }
+        
         document.getElementById('adminEmail').textContent = data.user.email;
+        document.body.style.display = 'block';
         return true;
       } catch (e) {
         localStorage.removeItem('nc_auth_token');
