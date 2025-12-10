@@ -1309,8 +1309,20 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 
   <script>
+    // ========== Device Fingerprint for Anti-abuse ==========
+    let deviceFingerprint = null;
+    (async () => {
+      try {
+        const fp = await FingerprintJS.load();
+        const result = await fp.get();
+        deviceFingerprint = result.visitorId;
+      } catch (e) {
+        console.log('Fingerprint not available');
+      }
+    })();
     // ========== Translation System ==========
     const translations = {
       zh: {
@@ -2849,7 +2861,7 @@
         const response = await fetch('/api/auth?action=register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password, deviceId: deviceFingerprint })
         });
 
         const data = await response.json();

@@ -65,7 +65,7 @@ async function handleRegister(req, res) {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  const { email, password } = req.body;
+  const { email, password, deviceId } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -91,6 +91,34 @@ async function handleRegister(req, res) {
     });
   }
 
+  // Get client IP
+  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+             req.headers['x-real-ip'] ||
+             req.connection?.remoteAddress ||
+             'unknown';
+
+  // Check if IP or deviceId registered in last 7 days (anti-abuse)
+  if (deviceId || ip !== 'unknown') {
+    const antiAbuseCheck = await db.query(
+      `SELECT id FROM users
+       WHERE created_at > NOW() - INTERVAL '7 days'
+       AND (
+         (register_ip = $1 AND $1 != 'unknown')
+         OR (device_id = $2 AND $2 IS NOT NULL AND $2 != '')
+       )`,
+      [ip, deviceId || '']
+    );
+
+    if (antiAbuseCheck.rows.length > 0) {
+      console.log('[Auth] Registration blocked - IP:', ip, 'deviceId:', deviceId?.substring(0, 8));
+      return res.status(429).json({
+        success: false,
+        error: 'Registration limit: one account per device per week',
+        errorZh: '同一设备一周内只能注册一个账号'
+      });
+    }
+  }
+
   const existingUser = await db.query(
     'SELECT id FROM users WHERE email = $1',
     [email.toLowerCase()]
@@ -110,16 +138,16 @@ async function handleRegister(req, res) {
   const freeCredits = await getPromoFreeCredits();
 
   const result = await db.query(
-    `INSERT INTO users (email, password_hash, remaining_credits) 
-     VALUES ($1, $2, $3) 
+    `INSERT INTO users (email, password_hash, remaining_credits, register_ip, device_id)
+     VALUES ($1, $2, $3, $4, $5)
      RETURNING id, email, created_at, remaining_credits`,
-    [email.toLowerCase(), passwordHash, freeCredits]
+    [email.toLowerCase(), passwordHash, freeCredits, ip, deviceId || null]
   );
 
   const user = result.rows[0];
   const token = auth.generateToken(user);
 
-  console.log('[Auth] New user registered:', user.email, 'free credits:', freeCredits);
+  console.log('[Auth] New user registered:', user.email, 'IP:', ip, 'free credits:', freeCredits);
 
   return res.status(201).json({
     success: true,
