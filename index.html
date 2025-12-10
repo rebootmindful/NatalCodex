@@ -183,7 +183,7 @@
     .section-desc {text-align:center;color:#d4d4d8;font-size:16px;max-width:700px;margin:0 auto 60px;line-height:1.8}
 
     /* About Section */
-    #about {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    #about {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px auto;max-width:1120px}
     .about-grid {display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
     .about-text h3 {font-size:24px;color:#00ff9d;margin-bottom:16px}
     .about-text p {color:#d4d4d8;line-height:1.9;margin-bottom:16px}
@@ -199,7 +199,7 @@
     .feature-desc {color:#9ca3af;font-size:14px;line-height:1.7}
 
     /* Who Is It For Section */
-    #audience {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    #audience {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px auto;max-width:1120px}
     .audience-grid {display:grid;grid-template-columns:1fr 1fr;gap:40px}
     .audience-card {background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:32px}
     .audience-card-header {display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -212,7 +212,7 @@
     @media (max-width:900px) {.audience-grid {grid-template-columns:1fr}}
 
     /* Pricing Section */
-    #pricing {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px}
+    #pricing {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px auto;max-width:1120px}
     .pricing-card {max-width:480px;margin:0 auto;background:linear-gradient(135deg,rgba(0,255,157,0.1) 0%,rgba(0,212,170,0.05) 100%);border:2px solid #00ff9d;border-radius:24px;padding:48px;text-align:center}
     .pricing-badge {display:inline-block;background:#00ff9d;color:#0a0e27;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;margin-bottom:24px}
     .pricing-price {font-size:56px;font-weight:700;color:#fff;margin-bottom:8px}
@@ -247,14 +247,29 @@
       .features-grid{grid-template-columns:1fr 1fr}
     }
     @media (max-width:768px){
-      .logo{font-size:36px}
-      .tagline{font-size:32px}
-      .section-title{font-size:28px}
-      .mandala-wrap{width:300px;height:300px}
-      .card-preview{width:200px}
+      .logo{font-size:32px}
+      .tagline{font-size:28px}
+      .section{padding:60px 20px}
+      .section-title{font-size:24px}
+      .section-desc{font-size:14px;margin-bottom:40px}
+      .mandala-wrap{width:280px;height:280px}
+      .card-preview{width:180px}
       .features-grid{grid-template-columns:1fr}
-      .nav{gap:8px;padding:10px 16px}
-      .nav a{padding:8px 12px;font-size:12px}
+      .feature-card{padding:24px}
+      .feature-icon{font-size:36px}
+      .feature-title{font-size:18px}
+      #about,#audience,#pricing{margin:20px 16px;border-radius:16px}
+      .audience-card{padding:24px}
+      .audience-card-title{font-size:18px}
+      .audience-list li{font-size:14px;padding:10px 0}
+      .pricing-price{font-size:42px}
+      .pricing-card{padding:24px;border-radius:16px}
+      .pricing-cta{padding:14px;font-size:16px}
+      .nav{gap:6px;padding:8px 12px;bottom:16px}
+      .nav a{padding:8px 10px;font-size:11px}
+      .footer{padding:30px 20px 90px;font-size:12px}
+      .footer p:last-child{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+      .footer span{display:none}
     }
   </style>
 </head>
@@ -374,9 +389,9 @@
   <section id="pricing" class="section">
     <h2 class="section-title" data-i18n="pricingTitle">价格方案</h2>
     <p class="section-desc" data-i18n="pricingDesc">新用户免费体验1次，之后按次付费</p>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto">
+    <div style="display:flex;flex-direction:row;gap:20px;max-width:900px;margin:0 auto;overflow-x:auto;padding-bottom:10px">
       <!-- Free Trial -->
-      <div class="pricing-card" style="padding:32px;max-width:none">
+      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1">
         <div class="pricing-badge" data-i18n="pricingBadgeFree">新用户</div>
         <div class="pricing-price">¥0</div>
         <p class="pricing-subtitle" data-i18n="pricingSubFree">免费体验1次</p>
@@ -388,10 +403,10 @@
         <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCta">立即体验</a>
       </div>
       <!-- 6 Pack - Recommended -->
-      <div class="pricing-card" style="padding:32px;max-width:none;border-color:#00ff9d;transform:scale(1.05)">
+      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1;border-color:#00ff9d;transform:scale(1.05)">
         <div class="pricing-badge" style="background:#00ff9d;color:#0a0e27" data-i18n="pricingBadge6">推荐</div>
         <div class="pricing-price">¥29</div>
-        <p class="pricing-subtitle" data-i18n="pricingSub6">6次套餐 · ¥4.83/次</p>
+        <p class="pricing-subtitle" data-i18n="pricingSub6">6次套餐</p>
         <ul class="pricing-features" style="text-align:left;margin:20px 0">
           <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6a">6次报告+卡片生成</span></li>
           <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6b">适合自己+家人</span></li>
@@ -400,10 +415,10 @@
         <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCtaBuy">先体验再买</a>
       </div>
       <!-- 20 Pack -->
-      <div class="pricing-card" style="padding:32px;max-width:none">
+      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1">
         <div class="pricing-badge" data-i18n="pricingBadge20">超值</div>
         <div class="pricing-price">¥89</div>
-        <p class="pricing-subtitle" data-i18n="pricingSub20">20次套餐 · ¥4.45/次</p>
+        <p class="pricing-subtitle" data-i18n="pricingSub20">20次套餐</p>
         <ul class="pricing-features" style="text-align:left;margin:20px 0">
           <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20a">20次报告+卡片生成</span></li>
           <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20b">适合一家人使用</span></li>
@@ -438,7 +453,7 @@
     <a href="#features" data-i18n="navFeatures">功能</a>
     <a href="#pricing" data-i18n="navPricing">价格</a>
     <a href="blog/" data-i18n="navBlog">博客</a>
-    <a href="generate.html" data-i18n="navGenerate">生成</a>
+    <a href="generate.html" data-i18n="navGenerate">试用</a>
   </nav>
 
   <script>
@@ -489,13 +504,13 @@
         pricingF4: '报告下载',
         pricingCta: '立即体验',
         pricingBadge6: '推荐',
-        pricingSub6: '6次套餐 · ¥4.83/次',
+        pricingSub6: '6次套餐',
         pricingF6a: '6次报告+卡片生成',
         pricingF6b: '适合自己+家人',
         pricingF5: '中英双语支持',
         pricingCtaBuy: '先体验再买',
         pricingBadge20: '超值',
-        pricingSub20: '20次套餐 · ¥4.45/次',
+        pricingSub20: '20次套餐',
         pricingF20a: '20次报告+卡片生成',
         pricingF20b: '适合一家人使用',
         footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
@@ -508,7 +523,7 @@
         navFeatures: '功能',
         navPricing: '价格',
         navBlog: '博客',
-        navGenerate: '生成'
+        navGenerate: '试用'
       },
       en: {
         tagline: 'Unlock the Source Code of Your Soul',
@@ -556,13 +571,13 @@
         pricingF4: 'Report Download',
         pricingCta: 'Try Free',
         pricingBadge6: 'Popular',
-        pricingSub6: '6 Pack · $4/each',
+        pricingSub6: '6 Pack',
         pricingF6a: '6 Reports + Cards',
         pricingF6b: 'Great for family',
         pricingF5: 'Bilingual Support',
         pricingCtaBuy: 'Try First, Buy Later',
         pricingBadge20: 'Best Value',
-        pricingSub20: '20 Pack · $3.5/each',
+        pricingSub20: '20 Pack',
         pricingF20a: '20 Reports + Cards',
         pricingF20b: 'For extended family',
         footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
@@ -575,7 +590,7 @@
         navFeatures: 'Features',
         navPricing: 'Pricing',
         navBlog: 'Blog',
-        navGenerate: 'Generate'
+        navGenerate: 'Try'
       }
     };
 
