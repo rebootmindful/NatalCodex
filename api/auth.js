@@ -113,8 +113,8 @@ async function handleRegister(req, res) {
       console.log('[Auth] Registration blocked - IP:', ip, 'deviceId:', deviceId?.substring(0, 8));
       return res.status(429).json({
         success: false,
-        error: 'Registration limit: one account per device per week',
-        errorZh: '同一设备一周内只能注册一个账号'
+        error: 'Registration too frequent, resources are limited',
+        errorZh: '不能太频繁注册用户，资源有限'
       });
     }
   }
