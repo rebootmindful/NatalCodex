@@ -16,7 +16,7 @@ const auth = require('../lib/auth');
 // Google OAuth config
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://natalcodex.com/api/auth?action=google-callback';
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://www.natalcodex.com/api/auth?action=google-callback';
 
 module.exports = async (req, res) => {
   // CORS headers
@@ -282,7 +282,7 @@ async function handleGoogleCallback(req, res) {
   const { code, error } = req.query;
 
   // Redirect URL for frontend
-  const frontendUrl = 'https://natalcodex.com/generate.html';
+  const frontendUrl = 'https://www.natalcodex.com/generate.html';
 
   if (error) {
     console.error('[Auth] Google OAuth error:', error);
