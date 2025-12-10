@@ -1,5 +1,5 @@
 # NatalCodex robots.txt
-# https://natalcodex.com
+# https://www.natalcodex.com
 
 User-agent: *
 Allow: /
@@ -12,4 +12,4 @@ Disallow: /tests/
 Disallow: /prompts/
 
 # Sitemap
-Sitemap: https://natalcodex.com/sitemap.xml
+Sitemap: https://www.natalcodex.com/sitemap.xml

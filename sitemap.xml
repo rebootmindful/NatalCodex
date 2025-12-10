@@ -4,62 +4,62 @@
   
   <!-- Homepage -->
   <url>
-    <loc>https://natalcodex.com/</loc>
+    <loc>https://www.natalcodex.com/</loc>
     <lastmod>2025-12-09</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://natalcodex.com/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://natalcodex.com/?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://natalcodex.com/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/"/>
   </url>
   
   <!-- Generate Report Page -->
   <url>
-    <loc>https://natalcodex.com/generate.html</loc>
+    <loc>https://www.natalcodex.com/generate.html</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://natalcodex.com/generate.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://natalcodex.com/generate.html?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://natalcodex.com/generate.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/generate.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/generate.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/generate.html"/>
   </url>
   
   <!-- About Page -->
   <url>
-    <loc>https://natalcodex.com/about.html</loc>
+    <loc>https://www.natalcodex.com/about.html</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://natalcodex.com/about.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://natalcodex.com/about.html?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://natalcodex.com/about.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/about.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/about.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/about.html"/>
   </url>
   
   <!-- Blog Index -->
   <url>
-    <loc>https://natalcodex.com/blog/</loc>
+    <loc>https://www.natalcodex.com/blog/</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://natalcodex.com/blog/"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://natalcodex.com/blog/?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://natalcodex.com/blog/"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/"/>
   </url>
   
   <!-- FAQ Page -->
   <url>
-    <loc>https://natalcodex.com/faq.html</loc>
+    <loc>https://www.natalcodex.com/faq.html</loc>
     <lastmod>2025-12-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://natalcodex.com/faq.html"/>
-    <xhtml:link rel="alternate" hreflang="en" href="https://natalcodex.com/faq.html?lang=en"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://natalcodex.com/faq.html"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/faq.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/faq.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/faq.html"/>
   </url>
   
   <!-- Privacy Policy -->
   <url>
-    <loc>https://natalcodex.com/privacy.html</loc>
+    <loc>https://www.natalcodex.com/privacy.html</loc>
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -67,7 +67,7 @@
   
   <!-- Terms of Service -->
   <url>
-    <loc>https://natalcodex.com/terms.html</loc>
+    <loc>https://www.natalcodex.com/terms.html</loc>
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -75,7 +75,7 @@
   
   <!-- Payment Result Page -->
   <url>
-    <loc>https://natalcodex.com/pay/result.html</loc>
+    <loc>https://www.natalcodex.com/pay/result.html</loc>
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.2</priority>
@@ -83,21 +83,21 @@
   
   <!-- Blog Articles -->
   <url>
-    <loc>https://natalcodex.com/blog/who-needs-natalcodex-personality-career-guide.html</loc>
+    <loc>https://www.natalcodex.com/blog/who-needs-natalcodex-personality-career-guide.html</loc>
     <lastmod>2025-12-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://natalcodex.com/blog/why-mbti-changes-bazi-reveals-true-self.html</loc>
+    <loc>https://www.natalcodex.com/blog/why-mbti-changes-bazi-reveals-true-self.html</loc>
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://natalcodex.com/blog/kuder-test-vs-bazi-destiny-career.html</loc>
+    <loc>https://www.natalcodex.com/blog/kuder-test-vs-bazi-destiny-career.html</loc>
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
