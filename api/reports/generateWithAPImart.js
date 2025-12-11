@@ -1,6 +1,6 @@
 /**
  * Main API endpoint for BaZi + MBTI report generation
- * Uses APIMart: GPT-4o-mini for analysis
+ * Uses APIMart: Doubao-Seed-1.6 for analysis
  * Includes caching for identical birth data requests
  */
 
@@ -10,7 +10,7 @@ const cache = require('../../lib/cache');
 const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
-  MODEL: 'gpt-4o-mini'
+  MODEL: 'doubao-seed-1-6-251015'
 };
 
 module.exports = async (req, res) => {
@@ -52,8 +52,16 @@ module.exports = async (req, res) => {
       });
     }
 
-    // Step 1: Analyze with GPT-4o-mini (BaZi + MBTI)
-    console.log('[GenerateWithAPImart] Step 1/4: Analyzing with GPT-4o-mini...');
+    // Step 1: Analyze with Doubao-Seed-1.6 (BaZi + MBTI)
+    console.log('[GenerateWithAPImart] Step 1/4: Analyzing with Doubao-Seed-1.6...');
+
+    // Generate random seed for unique responses
+    const randomSeed = Math.random().toString(36).substring(2, 10);
+
+    // Calculate current age
+    const birthYear = parseInt(birthData.date.split('-')[0]);
+    const currentYear = new Date().getFullYear();
+    const currentAge = currentYear - birthYear;
 
     // Build location info with timezone and coordinates
     let locationInfo = `${birthData.location}`;
@@ -166,15 +174,24 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 公式: 真太阳时 = 钟表时间 + (出生地经度 - 120°) × 4分钟
 例如: 出生地经度104°E，修正值 = (104-120) × 4 = -64分钟，即比北京时间慢64分钟
 
-**重要**: 每个八字组合都是独一无二的宇宙密码。请深入分析此命的独特之处,避免套话和模板化表达。用生动、具体、有洞察力的语言,让读者感受到"这就是在说我"。
+**核心要求 - 千人千面:**
+本次分析编号: ${randomSeed}
+每份报告必须独一无二！严禁使用以下套话：
+- ❌ "您是一个..." / "你是一个有..."
+- ❌ "总的来说" / "综上所述"
+- ❌ "建议您..." / "希望您..."
+- ❌ 任何放之四海皆准的泛泛描述
+用第二人称"你"直接对话，像老友聊天般自然。
 
 用户信息:
+- 姓名: ${birthData.name || '缘主'}
 - 出生日期: ${birthData.date}
 - 出生时间: ${birthData.time} (钟表时间，需换算真太阳时)
 - 性别: ${birthData.gender === '男' ? '男性' : '女性'}
+- 当前年龄: ${currentAge}岁
 - 出生地: ${locationInfo}${coordinatesInfo}
 
-请按以下结构生成命理分析报告(约5000-6000字,重点在分析而非排盘):
+请为【${birthData.name || '缘主'}】生成专属命理分析报告(约5000-6000字):
 
 ### 一、命盘速览
 用表格呈现核心信息:
@@ -187,6 +204,7 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 | 忌神 | X(五行) |
 | 重要神煞 | 3-5个最重要的 |
 | 空亡 | XX |
+| 当前大运 | XX岁-XX岁 XX运 |
 
 ### 二、格局深度解析
 分析此命格局的独特之处:
@@ -196,33 +214,51 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 - 此命独有的优势与需要注意的挑战
 
 ### 三、MBTI人格推导
-基于命格特征推导(注意:不同八字应得出不同结论):
-- 日主五行+十神配置 → I/E倾向
-- 格局+思维模式 → N/S倾向
-- 食伤/官杀强弱 → T/F倾向
-- 印星/财星配置 → J/P倾向
+基于命格特征严格推导(不同八字必须得出不同结论):
+- 日主五行+十神配置 → I/E倾向 (具体分析)
+- 格局+思维模式 → N/S倾向 (具体分析)
+- 食伤/官杀强弱 → T/F倾向 (具体分析)
+- 印星/财星配置 → J/P倾向 (具体分析)
 
-**结论**: MBTI类型 + 认知功能栈
-**推导逻辑**: 具体说明为何此八字对应此类型
+**结论**: MBTI类型 + 认知功能栈(如Ni-Te-Fi-Se)
+**推导逻辑**: 用3-5句话说明为何此八字对应此类型
 
 ### 四、灵魂称号(必须输出)
-格式: "{日主五行}{意象}·{MBTI}"
-要求: 根据此命的核心特质创造独特称号,不要使用常见词汇组合,要有诗意和画面感
+格式: "{日主五行意象}·{MBTI}"
+要求:
+- 结合日主特质+格局精华+MBTI风格
+- 用诗意且有画面感的词汇
+- 避免"XX之人"这类平庸表达
+- 示例: "寒潭映月·INFJ" "烈焰锻心·ENTJ" "云中独鹤·INTP"
 
 ### 五、性格深度画像
-描绘此人独特的性格特征(6-8条):
-- 每条要具体生动,有场景感
-- 结合命理依据和MBTI特质
-- 写出只有这个八字才会有的特点,避免泛泛而谈
+为【${birthData.name || '缘主'}】描绘6-8条独特性格特征:
+- 每条必须具体到场景，如"开会时你往往..."、"面对压力你会..."
+- 结合命理依据(十神/神煞)和MBTI特质
+- 写出只有这个八字+这个MBTI才会有的特点
+- 语气亲切，像在和老朋友聊天
 
 ### 六、人生运势分析
-1. **事业财运**: 适合什么领域?关键转折期在何时?如何求财?
-2. **婚姻感情**: 配偶可能是什么样的人?感情中的优势与挑战?
-3. **健康提示**: 需要注意什么?如何养生?
+结合【${birthData.name || '缘主'}】当前${currentAge}岁的人生阶段:
+
+1. **事业财运**
+   - 最适合的3个具体职业方向(不要泛泛说"管理"，要具体如"产品经理"、"心理咨询师")
+   - 当前大运对事业的影响
+   - 未来3-5年的关键机遇期
+
+2. **婚姻感情**
+   - 最契合的伴侣类型(具体到性格特征)
+   - 感情中你的优势与盲点
+   - ${currentAge >= 25 ? '当前感情运势分析' : '未来感情发展建议'}
+
+3. **健康提示**
+   - 根据五行偏枯，最需注意的1-2个健康问题
+   - 具体的养生建议(饮食/运动/作息)
 
 ### 七、人生金句(必须输出)
-从古籍中选一句最契合此命的话,配现代翻译。
+从古籍中选一句最契合【${birthData.name || '缘主'}】此命的话:
 格式: 「古文原句」——《书名》，译：现代白话
+要求: 这句话必须与此人命格高度相关，不能是万能金句
 
 ---
 
@@ -237,9 +273,9 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 
 ---报告总结结束---
 
-输出格式: Markdown,层次清晰。
-语气: 专业+温和,避免宿命论,强调"趋势可知,命运可改"。
-**切记**: 让每份报告都独一无二,读者能感受到这是专属于TA的分析。`;
+输出格式: Markdown，层次清晰，重点加粗。
+语气: 专业但温暖，像一位智慧的朋友在聊天，避免说教感。
+**切记**: 这是为【${birthData.name || '缘主'}】量身定制的唯一报告！`;
     }
 
     // Call APIMart Chat API directly with retry logic
@@ -249,7 +285,7 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
 
     while (retries <= maxRetries) {
       try {
-        // Use balanced settings: low temperature for consistency, sufficient tokens for complete response
+        // High temperature for creative, unique responses
         chatResponse = await fetch(`${config.BASE_URL}/chat/completions`, {
           method: 'POST',
           headers: {
@@ -261,8 +297,8 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
             messages: [
               { role: 'user', content: prompt }
             ],
-            temperature: 0.78,
-            max_tokens: 4000,  // Increased for comprehensive BaZi advice including fortune analysis
+            temperature: 0.9,
+            max_tokens: 5000,
             stream: false
           })
         });
