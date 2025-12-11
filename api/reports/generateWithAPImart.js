@@ -10,7 +10,7 @@ const cache = require('../../lib/cache');
 const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
-  MODEL: 'doubao-seed-1-6-251015'
+  MODEL: 'gpt-5-mini'
 };
 
 module.exports = async (req, res) => {
