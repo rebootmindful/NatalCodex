@@ -211,18 +211,19 @@
     .audience-check {color:#00ff9d;font-size:18px;flex-shrink:0;margin-top:2px}
     @media (max-width:900px) {.audience-grid {grid-template-columns:1fr}}
 
-    /* Pricing Section */
+    /* Pricing Section - Row Layout */
     #pricing {background:rgba(0,0,0,0.2);border-radius:24px;margin:40px auto;max-width:1120px}
-    .pricing-card {max-width:480px;margin:0 auto;background:linear-gradient(135deg,rgba(0,255,157,0.1) 0%,rgba(0,212,170,0.05) 100%);border:2px solid #00ff9d;border-radius:24px;padding:48px;text-align:center}
-    .pricing-badge {display:inline-block;background:#00ff9d;color:#0a0e27;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;margin-bottom:24px}
-    .pricing-price {font-size:56px;font-weight:700;color:#fff;margin-bottom:8px}
-    .pricing-price span {font-size:20px;color:#9ca3af}
-    .pricing-subtitle {color:#9ca3af;margin-bottom:32px}
-    .pricing-features {text-align:left;margin-bottom:32px}
-    .pricing-features li {display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);color:#d4d4d8}
-    .pricing-features li:last-child {border-bottom:none}
-    .pricing-check {color:#00ff9d;font-size:20px}
-    .pricing-cta {width:100%;padding:18px;font-size:18px}
+    .pricing-rows {display:flex;flex-direction:column;gap:16px;max-width:800px;margin:0 auto}
+    .pricing-row {display:flex;align-items:center;gap:24px;background:linear-gradient(135deg,rgba(0,255,157,0.08) 0%,rgba(0,212,170,0.03) 100%);border:1px solid rgba(0,255,157,0.3);border-radius:16px;padding:20px 24px}
+    .pricing-row-highlight {border:2px solid #00ff9d;background:linear-gradient(135deg,rgba(0,255,157,0.15) 0%,rgba(0,212,170,0.08) 100%)}
+    .pricing-row-left {min-width:120px;text-align:center}
+    .pricing-badge {display:inline-block;background:rgba(0,255,157,0.2);color:#00ff9d;padding:4px 12px;border-radius:12px;font-size:11px;font-weight:700;margin-bottom:8px}
+    .pricing-row-price {font-size:36px;font-weight:700;color:#fff}
+    .pricing-row-sub {color:#9ca3af;font-size:13px;margin-top:4px}
+    .pricing-row-features {flex:1;display:flex;flex-wrap:wrap;gap:8px 16px;color:#d4d4d8;font-size:14px}
+    .pricing-row-features span {display:flex;align-items:center;gap:6px}
+    .pricing-check {color:#00ff9d;font-size:16px}
+    .pricing-row-btn {padding:12px 24px;font-size:14px;white-space:nowrap}
 
     /* Footer */
     .footer {position:relative;z-index:1;text-align:center;padding:40px 40px 100px;color:#6b7280;font-size:14px}
@@ -262,9 +263,11 @@
       .audience-card{padding:24px}
       .audience-card-title{font-size:18px}
       .audience-list li{font-size:14px;padding:10px 0}
-      .pricing-price{font-size:42px}
-      .pricing-card{padding:24px;border-radius:16px}
-      .pricing-cta{padding:14px;font-size:16px}
+      .pricing-row{flex-direction:column;gap:12px;padding:16px;text-align:center}
+      .pricing-row-left{min-width:auto}
+      .pricing-row-price{font-size:32px}
+      .pricing-row-features{justify-content:center;font-size:13px}
+      .pricing-row-btn{width:100%;text-align:center}
       .nav{gap:6px;padding:8px 12px;bottom:16px}
       .nav a{padding:8px 10px;font-size:11px}
       .footer{padding:30px 20px 90px;font-size:12px}
@@ -389,42 +392,48 @@
   <section id="pricing" class="section">
     <h2 class="section-title" data-i18n="pricingTitle">价格方案</h2>
     <p class="section-desc" data-i18n="pricingDesc">新用户免费体验1次，之后按次付费</p>
-    <div style="display:flex;flex-direction:row;gap:20px;max-width:900px;margin:0 auto;overflow-x:auto;padding-bottom:10px">
+    <div class="pricing-rows">
       <!-- Free Trial -->
-      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1">
-        <div class="pricing-badge" data-i18n="pricingBadgeFree">新用户</div>
-        <div class="pricing-price">¥0</div>
-        <p class="pricing-subtitle" data-i18n="pricingSubFree">免费体验1次</p>
-        <ul class="pricing-features" style="text-align:left;margin:20px 0">
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF1">MBTI/KUDER 二选一</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF3">AI 生成卡片</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF4">报告下载</span></li>
-        </ul>
-        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCta">立即体验</a>
+      <div class="pricing-row">
+        <div class="pricing-row-left">
+          <div class="pricing-badge" data-i18n="pricingBadgeFree">新用户</div>
+          <div class="pricing-row-price">¥0</div>
+          <p class="pricing-row-sub" data-i18n="pricingSubFree">免费体验1次</p>
+        </div>
+        <div class="pricing-row-features">
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF1">MBTI/KUDER 二选一</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF3">AI 生成卡片</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF4">报告下载</span></span>
+        </div>
+        <a class="cta pricing-row-btn" href="generate.html" data-i18n="pricingCta">立即体验</a>
       </div>
       <!-- 6 Pack - Recommended -->
-      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1;border-color:#00ff9d;transform:scale(1.05)">
-        <div class="pricing-badge" style="background:#00ff9d;color:#0a0e27" data-i18n="pricingBadge6">推荐</div>
-        <div class="pricing-price">¥29</div>
-        <p class="pricing-subtitle" data-i18n="pricingSub6">6次套餐</p>
-        <ul class="pricing-features" style="text-align:left;margin:20px 0">
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6a">6次报告+卡片生成</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF6b">适合自己+家人</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
-        </ul>
-        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCtaBuy">先体验再买</a>
+      <div class="pricing-row pricing-row-highlight">
+        <div class="pricing-row-left">
+          <div class="pricing-badge" style="background:#00ff9d;color:#0a0e27" data-i18n="pricingBadge6">推荐</div>
+          <div class="pricing-row-price">¥29</div>
+          <p class="pricing-row-sub" data-i18n="pricingSub6">6次套餐</p>
+        </div>
+        <div class="pricing-row-features">
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF6a">6次报告+卡片生成</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF6b">适合自己+家人</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></span>
+        </div>
+        <a class="cta pricing-row-btn" href="generate.html" data-i18n="pricingCtaBuy">先体验再买</a>
       </div>
       <!-- 20 Pack -->
-      <div class="pricing-card" style="padding:32px;min-width:260px;flex:1">
-        <div class="pricing-badge" data-i18n="pricingBadge20">超值</div>
-        <div class="pricing-price">¥89</div>
-        <p class="pricing-subtitle" data-i18n="pricingSub20">20次套餐</p>
-        <ul class="pricing-features" style="text-align:left;margin:20px 0">
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20a">20次报告+卡片生成</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF20b">适合一家人使用</span></li>
-          <li><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></li>
-        </ul>
-        <a class="cta pricing-cta" href="generate.html" data-i18n="pricingCtaBuy">先体验再买</a>
+      <div class="pricing-row">
+        <div class="pricing-row-left">
+          <div class="pricing-badge" data-i18n="pricingBadge20">超值</div>
+          <div class="pricing-row-price">¥89</div>
+          <p class="pricing-row-sub" data-i18n="pricingSub20">20次套餐</p>
+        </div>
+        <div class="pricing-row-features">
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF20a">20次报告+卡片生成</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF20b">适合一家人使用</span></span>
+          <span><span class="pricing-check">✓</span> <span data-i18n="pricingF5">中英双语支持</span></span>
+        </div>
+        <a class="cta pricing-row-btn" href="generate.html" data-i18n="pricingCtaBuy">先体验再买</a>
       </div>
     </div>
   </section>

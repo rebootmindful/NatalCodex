@@ -52,22 +52,31 @@ module.exports = async (req, res) => {
     if (timezone) {
       locationInfo += ` (时区: ${timezone})`;
     }
+    let coordinatesInfo = '';
+    if (coordinates && coordinates.lon) {
+      coordinatesInfo = `\n- 经度: ${coordinates.lon}° (用于计算真太阳时)`;
+    }
 
     // KUDER prompt - optimized for career guidance analysis
     // Use system message to set professional context and avoid content filter issues
     let systemMessage;
     let userMessage;
-    
+
     if (isEnglish) {
       systemMessage = `You are a senior destiny analyst and career psychologist, expert in Chinese BaZi astrology from "Yuan Hai Zi Ping", "Di Tian Sui", "San Ming Tong Hui", "Qiong Tong Bao Jian", "Shen Feng Tong Kao", and Kuder Preference Record career interest theory.
 
-Your role is to provide educational and entertainment-focused career guidance reports for personal development and self-discovery purposes.`;
+Your role is to provide educational and entertainment-focused career guidance reports for personal development and self-discovery purposes.
+
+**IMPORTANT - True Solar Time Calculation:**
+The birth time provided is standard clock time (Beijing Time for China). You MUST convert it to True Solar Time before calculating the BaZi chart.
+Formula: True Solar Time = Clock Time + (Longitude - 120°) × 4 minutes
+For example: If birth location is at 104°E longitude, correction = (104-120) × 4 = -64 minutes`;
 
       userMessage = `User Information:
 - Birth Date: ${birthData.date}
-- Birth Time: ${birthData.time}
+- Birth Time: ${birthData.time} (Standard Clock Time, needs True Solar Time conversion)
 - Gender: ${birthData.gender === '男' ? 'Male' : 'Female'}
-- Birth Place: ${locationInfo}
+- Birth Place: ${locationInfo}${coordinates ? `\n- Longitude: ${coordinates.lon}° (for True Solar Time calculation)` : ''}
 
 Generate a career talent analysis report (approximately 4000-5000 words, focus on career analysis):
 
@@ -150,13 +159,18 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 
 你的职责是提供教育性和娱乐性的职业指导报告，用于个人发展和自我探索目的。
 
+**重要 - 真太阳时计算:**
+用户提供的出生时间是钟表时间（北京时间）。排盘前必须先换算成真太阳时！
+公式: 真太阳时 = 钟表时间 + (出生地经度 - 120°) × 4分钟
+例如: 出生地经度104°E，修正值 = (104-120) × 4 = -64分钟，即比北京时间慢64分钟
+
 **重要**: 每个八字都蕴含独特的职业天赋密码。请深入挖掘此命的独特职业潜能,避免套话和模板化表达。用具体、有洞察力的语言,让读者感受到"这份职业分析就是为我量身定制的"。`;
 
       userMessage = `用户信息:
 - 出生日期: ${birthData.date}
-- 出生时间: ${birthData.time}
+- 出生时间: ${birthData.time} (钟表时间，需换算真太阳时)
 - 性别: ${birthData.gender === '男' ? '男性' : '女性'}
-- 出生地: ${locationInfo}
+- 出生地: ${locationInfo}${coordinatesInfo}
 
 请按以下结构生成职业天赋分析报告(约5000-6000字,重点在职业分析而非排盘):
 

@@ -55,10 +55,14 @@ module.exports = async (req, res) => {
     // Step 1: Analyze with GPT-4o-mini (BaZi + MBTI)
     console.log('[GenerateWithAPImart] Step 1/4: Analyzing with GPT-4o-mini...');
 
-    // Build location info with timezone
+    // Build location info with timezone and coordinates
     let locationInfo = `${birthData.location}`;
     if (timezone) {
       locationInfo += ` (时区: ${timezone})`;
+    }
+    let coordinatesInfo = '';
+    if (coordinates && coordinates.lon) {
+      coordinatesInfo = `\n- 经度: ${coordinates.lon}° (用于计算真太阳时)`;
     }
 
     // Full professional prompt - bilingual support
@@ -66,11 +70,16 @@ module.exports = async (req, res) => {
     if (isEnglish) {
       prompt = `You are a senior destiny analyst, expert in Chinese BaZi (Four Pillars) astrology from classical texts "Yuan Hai Zi Ping", "Di Tian Sui", "San Ming Tong Hui", "Qiong Tong Bao Jian" and MBTI psychology.
 
+**IMPORTANT - True Solar Time Calculation:**
+The birth time provided is standard clock time (Beijing Time for China). You MUST convert it to True Solar Time before calculating the BaZi chart.
+Formula: True Solar Time = Clock Time + (Longitude - 120°) × 4 minutes
+For example: If birth location is at 104°E longitude, correction = (104-120) × 4 = -64 minutes
+
 User Information:
 - Birth Date: ${birthData.date}
-- Birth Time: ${birthData.time}
+- Birth Time: ${birthData.time} (Standard Clock Time, needs True Solar Time conversion)
 - Gender: ${birthData.gender === '男' ? 'Male' : 'Female'}
-- Birth Place: ${locationInfo}
+- Birth Place: ${locationInfo}${coordinates ? `\n- Longitude: ${coordinates.lon}° (for True Solar Time calculation)` : ''}
 
 Generate a destiny analysis report (approximately 4000-5000 words, focus on analysis rather than charting):
 
@@ -152,13 +161,18 @@ Tone: Professional + warm, avoid fatalism, emphasize "trends can be known, desti
     } else {
       prompt = `你是资深命理师,精通《渊海子平》《滴天髓》《三命通会》《穷通宝鉴》和MBTI心理学。
 
+**重要 - 真太阳时计算:**
+用户提供的出生时间是钟表时间（北京时间）。排盘前必须先换算成真太阳时！
+公式: 真太阳时 = 钟表时间 + (出生地经度 - 120°) × 4分钟
+例如: 出生地经度104°E，修正值 = (104-120) × 4 = -64分钟，即比北京时间慢64分钟
+
 **重要**: 每个八字组合都是独一无二的宇宙密码。请深入分析此命的独特之处,避免套话和模板化表达。用生动、具体、有洞察力的语言,让读者感受到"这就是在说我"。
 
 用户信息:
 - 出生日期: ${birthData.date}
-- 出生时间: ${birthData.time}
+- 出生时间: ${birthData.time} (钟表时间，需换算真太阳时)
 - 性别: ${birthData.gender === '男' ? '男性' : '女性'}
-- 出生地: ${locationInfo}
+- 出生地: ${locationInfo}${coordinatesInfo}
 
 请按以下结构生成命理分析报告(约5000-6000字,重点在分析而非排盘):
 
