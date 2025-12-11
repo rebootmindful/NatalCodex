@@ -1,6 +1,6 @@
 /**
  * KUDER Career Analysis API endpoint
- * Uses APIMart: Doubao-Seed-1.6 for BaZi + Kuder Preference Record analysis
+ * Uses APIMart: GPT-4o-mini for BaZi + Kuder Preference Record analysis
  * Includes caching for identical birth data requests
  */
 
@@ -10,7 +10,7 @@ const cache = require('../../lib/cache');
 const config = {
   API_KEY: process.env.APIMART_API_KEY || '',
   BASE_URL: 'https://api.apimart.ai/v1',
-  MODEL: 'deepseek-v3.1-250821'
+  MODEL: 'gpt-4o-mini'
 };
 
 module.exports = async (req, res) => {
@@ -46,15 +46,7 @@ module.exports = async (req, res) => {
       });
     }
 
-    console.log('[GenerateKuder] Analyzing with Doubao-Seed-1.6...');
-
-    // Generate random seed for unique responses
-    const randomSeed = Math.random().toString(36).substring(2, 10);
-
-    // Calculate current age
-    const birthYear = parseInt(birthData.date.split('-')[0]);
-    const currentYear = new Date().getFullYear();
-    const currentAge = currentYear - birthYear;
+    console.log('[GenerateKuder] Analyzing with GPT-4o-mini...');
 
     let locationInfo = `${birthData.location}`;
     if (timezone) {
@@ -172,24 +164,15 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 公式: 真太阳时 = 钟表时间 + (出生地经度 - 120°) × 4分钟
 例如: 出生地经度104°E，修正值 = (104-120) × 4 = -64分钟，即比北京时间慢64分钟
 
-**核心要求 - 千人千面:**
-本次分析编号: ${randomSeed}
-每份报告必须独一无二！严禁使用以下套话：
-- ❌ "您是一个..." / "你是一个有..."
-- ❌ "总的来说" / "综上所述"
-- ❌ "建议您..." / "希望您..."
-- ❌ 任何放之四海皆准的泛泛描述
-用第二人称"你"直接对话，像老友聊天般自然。`;
+**重要**: 每个八字都蕴含独特的职业天赋密码。请深入挖掘此命的独特职业潜能,避免套话和模板化表达。用具体、有洞察力的语言,让读者感受到"这份职业分析就是为我量身定制的"。`;
 
       userMessage = `用户信息:
-- 姓名: ${birthData.name || '缘主'}
 - 出生日期: ${birthData.date}
 - 出生时间: ${birthData.time} (钟表时间，需换算真太阳时)
 - 性别: ${birthData.gender === '男' ? '男性' : '女性'}
-- 当前年龄: ${currentAge}岁
 - 出生地: ${locationInfo}${coordinatesInfo}
 
-请为【${birthData.name || '缘主'}】生成专属职业天赋分析报告(约5000-6000字):
+请按以下结构生成职业天赋分析报告(约5000-6000字,重点在职业分析而非排盘):
 
 ### 一、命盘速览
 用表格呈现核心信息:
@@ -202,7 +185,6 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 | 忌神 | X(五行) |
 | 重要神煞 | 3-5个最重要的 |
 | 空亡 | XX |
-| 当前大运 | XX岁-XX岁 XX运 |
 
 ### 二、库德尔十大领域推演
 **十大领域与十神对应:**
@@ -212,45 +194,30 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 - 正印/偏印 → 3科学、6文学(学习研究)
 - 比肩/劫财 → 0户外、1机械(体力协作)
 
-根据【${birthData.name || '缘主'}】的十神配置,给出个性化的领域分数和分析:
+根据此命的十神配置,给出个性化的领域分数和分析:
 🥇 **前三强领域**: 领域名称+分数(0-100)+命理依据+具体天赋表现
 ⚠️ **后三弱领域**: 领域名称+分数+弱势原因+规避建议
 📊 **中间四域**: 简要说明
 
 ### 三、宿命职业称号(必须输出)
 格式: "{神煞/十神特征}·{职业意象}"
-要求:
-- 根据此命独特的十神组合创造专属称号
-- 要有画面感和诗意
-- 避免"XX之人"这类平庸表达
-- 示例: "华盖孤鹤·文曲星" "伤官透杀·破局者" "食神生财·创意商人"
+要求: 根据此命独特的十神组合创造专属称号,要有画面感,不要套用常见词汇
 
 ### 四、现代职业匹配TOP5
-为【${birthData.name || '缘主'}】推荐5个最适合的具体职业:
+根据此命特点推荐5个最适合的职业,每个包含:
 - 匹配度(百分比)
-- 推荐理由(2-3点，必须结合此命特点)
-- 具体方向(细分岗位，如"产品经理-ToB方向"而非泛泛说"产品")
-- 性格短板提醒(针对此命具体弱点)
+- 推荐理由(要具体到此命的特点)
+- 具体方向(细分岗位)
+- 注意事项(针对此命的性格短板)
 
 ### 五、人生发展建议
-结合【${birthData.name || '缘主'}】当前${currentAge}岁的人生阶段:
-1. **职业发展路径**
-   - 当前大运对职业的影响
-   - 未来3-5年的关键机遇期
-   - ${currentAge < 30 ? '30岁前应完成的职业积累' : currentAge < 40 ? '当前阶段的职业突破方向' : '经验变现与价值最大化建议'}
-
-2. **性格修炼建议**
-   - 此命最需要克服的1-2个职场短板
-   - 具体的提升方法
-
-3. **生活方式建议**
-   - 有利的办公方位和颜色
-   - 适合的社交圈层
+1. 职业发展路径(结合大运分析关键转折期)
+2. 性格修炼建议(针对此命具体的优缺点)
+3. 生活方式建议(颜色/方位/社交)
 
 ### 六、天赋金句(必须输出)
-从古籍中选一句最契合【${birthData.name || '缘主'}】职业天赋的话:
+从古籍中选一句最契合此命职业天赋的话,配现代翻译。
 格式: 「古文原句」——《书名》，译：现代白话
-要求: 这句话必须与此人职业命格高度相关，不能是万能金句
 
 ---
 
@@ -267,9 +234,9 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
 
 ---报告总结结束---
 
-输出格式: Markdown，层次清晰，重点加粗。
-语气: 专业但温暖，像一位智慧的职业导师在聊天。
-**切记**: 这是为【${birthData.name || '缘主'}】量身定制的唯一职业分析报告！`;
+输出格式: Markdown,层次清晰。
+语气: 专业+激励,强调"天赋可发掘,职业可选择"。
+**切记**: 让每份报告都独一无二,读者能感受到这是专属于TA的职业分析。`;
     }
 
     // Call APIMart Chat API with retry logic
@@ -291,8 +258,8 @@ Tone: Professional + encouraging, emphasize "talents can be discovered, careers 
               { role: 'system', content: systemMessage },
               { role: 'user', content: userMessage }
             ],
-            temperature: 0.9,
-            max_tokens: 5000,
+            temperature: 0.78,
+            max_tokens: 4500,
             stream: false
           })
         });
