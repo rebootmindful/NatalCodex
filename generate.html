@@ -1273,8 +1273,8 @@
           <div class="form-group full" style="position:relative">
             <label for="location" data-i18n="labelLocation">出生地点</label>
             <input type="text" id="location" name="location" data-i18n-placeholder="placeholderLocation" placeholder="例如：北京市海淀区" required autocomplete="off">
-            <div class="help-text" data-i18n="helpLocation">具体到城市或区县即可，用于真太阳时修正</div>
-            <!-- City suggestions dropdown -->
+            <div class="help-text" data-i18n="helpLocation">支持输入“北京市海淀区”这类完整地址，系统会优先匹配城市；若无结果请选择附近大城市或直接输入出生地，时区会自动推断。英文可输入“New York”或“Tokyo”。</div>
+            <div class="help-text" data-i18n="helpLocationEn">You can type full addresses like "Haidian District, Beijing". The system will match the nearest city first. If no result appears, please choose the nearest major city or enter your birthplace directly; the timezone will be inferred automatically. English input examples: "New York", "Tokyo".</div>
             <div id="citySuggestions" style="display:none;position:absolute;left:0;right:0;z-index:20;background:#0a0e27;border:1px solid rgba(0,255,157,0.5);border-radius:8px;margin-top:4px;max-height:200px;overflow-y:auto;top:100%"></div>
           </div>
 
@@ -1399,7 +1399,8 @@
         helpTime: '请尽量精确到分钟，用于计算真太阳时',
         labelLocation: '出生地点',
         placeholderLocation: '搜索城市（例如：北京、上海、New York）',
-        helpLocation: '输入城市名称搜索，系统将自动识别时区',
+        helpLocation: '支持输入“北京市海淀区”这类完整地址，系统会优先匹配城市；若无结果请选择附近大城市或直接输入出生地，时区会自动推断。',
+        helpLocationEn: 'You can type full addresses like "Haidian District, Beijing". The system will match the nearest city first. If no result appears, please choose the nearest major city or enter your birthplace directly; the timezone will be inferred automatically.',
         labelTimezone: '时区',
         helpTimezone: '根据您选择的城市自动检测',
         btnGenerate: '生成报告',
@@ -1471,7 +1472,8 @@
         helpTime: 'Accurate to the minute for true solar time calculation',
         labelLocation: 'Birth Location',
         placeholderLocation: 'Search city (e.g., Beijing, Shanghai, New York)',
-        helpLocation: 'Enter city name to search, timezone will be auto-detected',
+        helpLocation: 'You can type full addresses like "Haidian District, Beijing". The system will match the nearest city first. If no result appears, please choose the nearest major city or enter your birthplace directly; the timezone will be inferred automatically.',
+        helpLocationEn: 'You can type full addresses like "Haidian District, Beijing". The system will match the nearest city first. If no result appears, please choose the nearest major city or enter your birthplace directly; the timezone will be inferred automatically.',
         labelTimezone: 'Timezone',
         helpTimezone: 'Auto-detected based on your selected city',
         btnGenerate: 'Generate Report',
@@ -1819,29 +1821,41 @@
     // Debounce timer for API calls
     let searchDebounceTimer = null;
 
-    // Detect if input is Chinese
     function isChinese(str) {
       return /[\u4e00-\u9fa5]/.test(str);
     }
 
-    // Search cities locally - instant response
+    function normalizeChinesePlace(str) {
+      return str.replace(/(省|市|区|县|自治州|特别行政区|壮族自治区|回族自治区|维吾尔自治区|地区|盟)/g, '');
+    }
+
     function searchCitiesLocal(query) {
       if (!query || query.length === 0) return [];
 
-      const q = query.toLowerCase().trim();
-      const isZh = isChinese(q);
+      const trimmed = query.trim();
+      const isZh = isChinese(trimmed);
 
-      return cityDatabase.filter(city => {
-        if (isZh) {
-          // Chinese input: match Chinese name
-          return city.zh.includes(q);
-        } else {
-          // English/Pinyin input: match English name or pinyin
-          return city.en.toLowerCase().startsWith(q) ||
-                 city.pinyin.startsWith(q) ||
-                 city.en.toLowerCase().includes(q);
-        }
-      }).slice(0, 8); // Max 8 results
+      if (isZh) {
+        const normQ = normalizeChinesePlace(trimmed);
+        return cityDatabase
+          .filter(city => {
+            const cityZh = normalizeChinesePlace(city.zh);
+            return cityZh.includes(normQ) || normQ.includes(cityZh);
+          })
+          .slice(0, 8);
+      }
+
+      const q = trimmed.toLowerCase();
+
+      return cityDatabase
+        .filter(city => {
+          return (
+            city.en.toLowerCase().startsWith(q) ||
+            city.pinyin.startsWith(q) ||
+            city.en.toLowerCase().includes(q)
+          );
+        })
+        .slice(0, 8);
     }
 
     // Search cities via OpenStreetMap Nominatim API (fallback)
