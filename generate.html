@@ -907,6 +907,14 @@
       border:1px solid rgba(239,68,68,0.3);
       color:#fca5a5;
     }
+    .payment-methods {
+      display:flex;
+      gap:12px;
+      margin-top:8px;
+    }
+    .payment-methods .purchase-btn {
+      flex:1;
+    }
     .purchase-btn {
       width:100%;
       padding:16px;
@@ -1168,7 +1176,10 @@
         <div class="promo-result" id="promoResult" style="display:none"></div>
       </div>
 
-      <button class="purchase-btn" id="purchaseBtn">支付宝支付</button>
+      <div class="payment-methods">
+        <button class="purchase-btn" id="alipayBtn" data-i18n="payWithAlipay">支付宝支付</button>
+        <button class="purchase-btn" id="creemBtn" data-i18n="payWithCard">海外信用卡</button>
+      </div>
       <p class="purchase-note" data-i18n="purchaseNote">支付完成后次数自动到账</p>
     </div>
   </div>
@@ -1456,7 +1467,13 @@
         authRegistering: '注册中...',
         creditsRemaining: '剩余',
         creditsUnit: '次',
-        creditsBuy: '购买'
+        creditsBuy: '购买',
+        purchaseTitle: '购买次数',
+        purchaseSubtitle: '一次可生成一份报告及其配套卡片',
+        purchaseCreditsLabel: '剩余次数',
+        purchaseNote: '支付完成后次数自动到账',
+        payWithAlipay: '支付宝支付',
+        payWithCard: '海外信用卡'
       },
       en: {
         backHome: 'Back Home',
@@ -1529,7 +1546,13 @@
         authRegistering: 'Registering...',
         creditsRemaining: 'Remaining',
         creditsUnit: 'credits',
-        creditsBuy: 'Buy'
+        creditsBuy: 'Buy',
+        purchaseTitle: 'Buy Credits',
+        purchaseSubtitle: 'Each credit generates one report and its card',
+        purchaseCreditsLabel: 'Remaining credits',
+        purchaseNote: 'Credits will be added automatically after payment',
+        payWithAlipay: 'Pay with Alipay',
+        payWithCard: 'Pay with Card'
       }
     };
 
@@ -2374,10 +2397,11 @@
     // Store analysis data for card generation
     let lastAnalysisData = null;
 
-    // Progress bar elements
     const progressBar = document.getElementById('progressBar');
     const progressText = document.getElementById('progressText');
     const progressTip = document.getElementById('progressTip');
+    const progressContainer = document.getElementById('progressContainer');
+    const spinner = cardLoading.querySelector('.spinner');
     let progressInterval = null;
 
     // Simulated progress animation (since API doesn't provide real progress)
@@ -2543,12 +2567,32 @@
       } catch (error) {
         console.error('Card generation error:', error);
         stopProgressAnimation(false);
-        cardLoading.innerHTML = `<div style="color:#fca5a5">${translations[currentLang].cardError}${error.message}<br><button id="retryCardBtn" class="copy-btn" style="margin-top:16px">🔄 ${currentLang === 'zh' ? '重试' : 'Retry'}</button></div>`;
-
-        // Add retry button listener
-        document.getElementById('retryCardBtn')?.addEventListener('click', () => {
-          generateCardBtn.click();
-        });
+        if (spinner) {
+          spinner.style.display = 'none';
+        }
+        if (progressContainer) {
+          progressContainer.style.display = 'none';
+        }
+        const loadingTextEl = cardLoading.querySelector('.loading-text');
+        if (loadingTextEl) {
+          const baseError = `${translations[currentLang].cardError}${error.message}`;
+          const creditNotice = currentLang === 'zh'
+            ? '本次图片生成失败，不会扣除您的使用次数。'
+            : 'This image generation attempt failed. Your credits were not deducted.';
+          loadingTextEl.innerHTML = `${baseError}<br>${creditNotice}<br><button id="retryCardBtn" class="copy-btn" style="margin-top:16px">🔄 ${currentLang === 'zh' ? '重试' : 'Retry'}</button>`;
+        }
+        const retryBtn = document.getElementById('retryCardBtn');
+        if (retryBtn) {
+          retryBtn.addEventListener('click', () => {
+            if (spinner) {
+              spinner.style.display = 'block';
+            }
+            if (progressContainer) {
+              progressContainer.style.display = 'block';
+            }
+            generateCardBtn.click();
+          });
+        }
       } finally {
         generateCardBtn.disabled = false;
         // Restore button text based on report type
@@ -3348,11 +3392,10 @@
     // Retry button click
     document.getElementById('qrcodeRetryBtn').addEventListener('click', retryPayment);
 
-    // Purchase button - Updated for QR code flow
-    document.getElementById('purchaseBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('purchaseBtn');
+    async function createXunhuOrder() {
+      const btn = document.getElementById('alipayBtn');
       btn.disabled = true;
-      btn.textContent = '处理中...';
+      btn.textContent = currentLang === 'zh' ? '处理中...' : 'Processing...';
 
       try {
         const response = await fetch('/api/pay?action=create', {
@@ -3370,12 +3413,9 @@
         const data = await response.json();
 
         if (data.success) {
-          // Check device type
           if (isMobile() && data.mobileUrl) {
-            // Mobile: redirect to Alipay
             window.location.href = data.mobileUrl;
           } else if (data.qrCodeUrl) {
-            // PC: show QR code modal
             const packageNames = { PACK_6: '6次套餐', PACK_20: '20次套餐' };
             showQrCodeModal(
               data.qrCodeUrl,
@@ -3384,19 +3424,66 @@
               packageNames[selectedPackage] || selectedPackage
             );
           } else {
-            throw new Error('无法获取支付信息');
+            throw new Error(currentLang === 'zh' ? '无法获取支付信息' : 'Unable to get payment info');
           }
         } else {
-          alert(data.error || '创建订单失败');
+          alert(data.error || (currentLang === 'zh' ? '创建订单失败' : 'Failed to create order'));
         }
       } catch (e) {
         console.error('Payment error:', e);
-        alert('支付请求失败，请重试');
+        alert(currentLang === 'zh' ? '支付请求失败，请重试' : 'Payment request failed, please try again');
       } finally {
         btn.disabled = false;
-        btn.textContent = '支付宝支付';
+        btn.textContent = (translations[currentLang] && translations[currentLang].payWithAlipay) || '支付宝支付';
       }
-    });
+    }
+
+    async function createCreemOrder() {
+      const btn = document.getElementById('creemBtn');
+      btn.disabled = true;
+      btn.textContent = currentLang === 'zh' ? '跳转中...' : 'Redirecting...';
+
+      try {
+        const response = await fetch('/api/creem/pay', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAuthToken()}`
+          },
+          body: JSON.stringify({
+            packageType: selectedPackage,
+            promoCode: validatedPromo?.code || null
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+        } else {
+          alert(data.error || (currentLang === 'zh' ? 'Creem 支付创建失败' : 'Failed to create Creem payment'));
+        }
+      } catch (e) {
+        console.error('Creem payment error:', e);
+        alert(currentLang === 'zh' ? 'Creem 支付请求失败，请重试' : 'Creem payment request failed, please try again');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = (translations[currentLang] && translations[currentLang].payWithCard) || '海外信用卡';
+      }
+    }
+
+    const alipayBtn = document.getElementById('alipayBtn');
+    const creemBtn = document.getElementById('creemBtn');
+    if (alipayBtn) {
+      alipayBtn.addEventListener('click', async () => {
+        await createXunhuOrder();
+      });
+    }
+    if (creemBtn) {
+      creemBtn.addEventListener('click', async () => {
+        await createCreemOrder();
+      });
+    }
 
     // Check for payment result on page load
     const urlParams = new URLSearchParams(window.location.search);
