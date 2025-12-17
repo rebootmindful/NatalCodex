@@ -4,7 +4,11 @@ const xunhupay = require('../../lib/xunhupay');
 const jwt = require('jsonwebtoken');
 
 const CREEM_API_KEY = process.env.CREEM_API_KEY;
-const CREEM_SERVER_URL = process.env.CREEM_SERVER_URL || 'https://api.creem.io';
+const CREEM_SERVER_URL =
+  process.env.CREEM_SERVER_URL ||
+  (CREEM_API_KEY && CREEM_API_KEY.startsWith('creem_test_')
+    ? 'https://test-api.creem.io'
+    : 'https://api.creem.io');
 
 const CREEM_PRODUCTS = {
   PACK_6: process.env.CREEM_PRODUCT_PACK_6,
@@ -148,9 +152,21 @@ module.exports = async (req, res) => {
       [orderNo]
     );
 
+    const debugInfo = {
+      message: error && error.message,
+      name: error && error.name,
+      status: error && (error.status || (error.response && error.response.status)),
+      serverURL: CREEM_SERVER_URL,
+      productId,
+      apiKeyPrefix: CREEM_API_KEY ? CREEM_API_KEY.slice(0, 10) : null
+    };
+
+    console.error('[CreemPay] Error creating checkout', debugInfo);
+
     return res.status(500).json({
       success: false,
-      error: error.message || 'Creem payment creation failed'
+      error: error && error.message ? error.message : 'Creem payment creation failed',
+      debug: debugInfo
     });
   }
 };
