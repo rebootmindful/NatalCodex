@@ -571,12 +571,21 @@
         container.innerHTML = '';
         return;
       }
-      
-      let html = '';
+
+      container.innerHTML = '';
+      const fragment = document.createDocumentFragment();
       for (let i = 1; i <= pagination.totalPages; i++) {
-        html += `<button class="page-btn ${i === pagination.page ? 'active' : ''}" onclick="(${callback.toString()})(${i})">${i}</button>`;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = `page-btn ${i === pagination.page ? 'active' : ''}`;
+        button.textContent = String(i);
+        button.addEventListener('click', () => {
+          if (i === pagination.page) return;
+          callback(i);
+        });
+        fragment.appendChild(button);
       }
-      container.innerHTML = html;
+      container.appendChild(fragment);
     }
 
     // Modals
