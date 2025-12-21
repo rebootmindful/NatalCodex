@@ -398,7 +398,8 @@
       }
     };
 
-    let currentLang = localStorage.getItem('nc_language') || 'zh';
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    let currentLang = urlLang === 'en' ? 'en' : (localStorage.getItem('nc_language') || 'zh');
     function updateLanguage(lang) {
       currentLang = lang;
       localStorage.setItem('nc_language', lang);
@@ -407,6 +408,11 @@
         const key = el.getAttribute('data-i18n');
         if (translations[lang][key]) el.innerHTML = translations[lang][key];
       });
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      if (lang === 'en') url.searchParams.set('lang', 'en');
+      else url.searchParams.delete('lang');
+      history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
     }
     updateLanguage(currentLang);
     document.getElementById('langSwitch').addEventListener('click', () => {

@@ -4,5 +4,19 @@
       "maxDuration": 60,
       "memory": 1024
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "natalcodex.com" }],
+      "destination": "https://www.natalcodex.com/:path*",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/pay/result.html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
+  ]
 }

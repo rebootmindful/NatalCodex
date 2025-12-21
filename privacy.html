@@ -15,16 +15,51 @@
   <title>隐私政策 | Privacy Policy - NatalCodex</title>
   <meta name="description" content="NatalCodex隐私政策 - 了解我们如何保护您的数据隐私。我们采用隐私优先设计，所有数据仅保存在您的浏览器本地，不收集不传输任何个人信息。">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://natalcodex.com/privacy.html">
+  <link rel="canonical" href="https://www.natalcodex.com/privacy.html">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/privacy.html">
+  <link rel="alternate" hreflang="en" href="https://www.natalcodex.com/privacy.html?lang=en">
+  <link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/privacy.html">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta name="theme-color" content="#0a0e27">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://natalcodex.com/privacy.html">
+  <meta property="og:url" content="https://www.natalcodex.com/privacy.html">
   <meta property="og:title" content="隐私政策 - NatalCodex">
   <meta property="og:description" content="NatalCodex隐私政策 - 我们采用隐私优先设计，所有数据仅保存在本地。">
+  <meta property="og:image" content="https://www.natalcodex.com/og-image.png">
   <meta property="og:site_name" content="NatalCodex">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="隐私政策 - NatalCodex">
+  <meta name="twitter:description" content="NatalCodex隐私政策 - 我们采用隐私优先设计，所有数据仅保存在本地。">
+  <meta name="twitter:image" content="https://www.natalcodex.com/og-image.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "PrivacyPolicy",
+    "name": "隐私政策",
+    "url": "https://www.natalcodex.com/privacy.html",
+    "inLanguage": ["zh-CN", "en"],
+    "isPartOf": {
+      "@type": "WebSite",
+      "@id": "https://www.natalcodex.com/#website",
+      "url": "https://www.natalcodex.com",
+      "name": "NatalCodex"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "@id": "https://www.natalcodex.com/#organization",
+      "name": "NatalCodex",
+      "url": "https://www.natalcodex.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.natalcodex.com/favicon.svg"
+      }
+    }
+  }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
@@ -223,7 +258,8 @@
       }
     };
 
-    let currentLang = localStorage.getItem('nc_language') || 'zh';
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    let currentLang = urlLang === 'en' ? 'en' : (localStorage.getItem('nc_language') || 'zh');
 
     function updateLanguage(lang) {
       currentLang = lang;
@@ -240,6 +276,10 @@
       });
       document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
       document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      if (lang === 'en') url.searchParams.set('lang', 'en');
+      else url.searchParams.delete('lang');
+      history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
     }
 
     updateLanguage(currentLang);

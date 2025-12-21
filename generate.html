@@ -1557,7 +1557,8 @@
       }
     };
 
-    let currentLang = localStorage.getItem('nc_language') || 'zh';
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    let currentLang = urlLang === 'en' ? 'en' : (localStorage.getItem('nc_language') || 'zh');
     let selectedCity = null;
     let selectedTimezone = null;
 
@@ -1583,6 +1584,11 @@
 
       // Update language button
       document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      if (lang === 'en') url.searchParams.set('lang', 'en');
+      else url.searchParams.delete('lang');
+      history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
     }
 
     // Initialize language

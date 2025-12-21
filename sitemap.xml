@@ -63,6 +63,9 @@
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/privacy.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/privacy.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/privacy.html"/>
   </url>
   
   <!-- Terms of Service -->
@@ -71,14 +74,9 @@
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-  </url>
-  
-  <!-- Payment Result Page -->
-  <url>
-    <loc>https://www.natalcodex.com/pay/result.html</loc>
-    <lastmod>2025-12-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.2</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/terms.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/terms.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/terms.html"/>
   </url>
   
   <!-- Blog Articles -->
@@ -87,6 +85,9 @@
     <lastmod>2025-12-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/who-needs-natalcodex-personality-career-guide.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/who-needs-natalcodex-personality-career-guide.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/who-needs-natalcodex-personality-career-guide.html"/>
   </url>
   
   <url>
@@ -94,6 +95,9 @@
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/why-mbti-changes-bazi-reveals-true-self.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/why-mbti-changes-bazi-reveals-true-self.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/why-mbti-changes-bazi-reveals-true-self.html"/>
   </url>
   
   <url>
@@ -101,6 +105,9 @@
     <lastmod>2025-12-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/kuder-test-vs-bazi-destiny-career.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/kuder-test-vs-bazi-destiny-career.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/kuder-test-vs-bazi-destiny-career.html"/>
   </url>
 
 
@@ -109,6 +116,9 @@
     <lastmod>2025-12-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/five-elements-big-five-psychology.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/five-elements-big-five-psychology.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/five-elements-big-five-psychology.html"/>
   </url>
 
   <url>
@@ -116,6 +126,9 @@
     <lastmod>2025-12-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/circadian-rhythm-bazi-hour-science.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/circadian-rhythm-bazi-hour-science.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/circadian-rhythm-bazi-hour-science.html"/>
   </url>
 
   <url>
@@ -123,6 +136,9 @@
     <lastmod>2025-12-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/blog/epigenetics-destiny-birth-environment.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.natalcodex.com/blog/epigenetics-destiny-birth-environment.html?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.natalcodex.com/blog/epigenetics-destiny-birth-environment.html"/>
   </url>
 
 </urlset>

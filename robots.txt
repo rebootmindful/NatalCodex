@@ -10,6 +10,7 @@ Disallow: /backup-*/
 Disallow: /node_modules/
 Disallow: /tests/
 Disallow: /prompts/
+Disallow: /pay/result.html
 
 # Sitemap
 Sitemap: https://www.natalcodex.com/sitemap.xml

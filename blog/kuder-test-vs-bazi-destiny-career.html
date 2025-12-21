@@ -284,6 +284,29 @@
       font-size: 14px;
       margin: 0;
     }
+
+    .related-articles {
+      margin: 48px 0;
+    }
+    .related-articles h3 {
+      color: #00ff9d;
+      margin-bottom: 20px;
+    }
+    .related-link {
+      display: block;
+      padding: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,255,157,0.2);
+      border-radius: 8px;
+      color: #d4d4d8;
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    .related-link:hover {
+      border-color: #00ff9d;
+      background: rgba(0,255,157,0.05);
+    }
     
     .footer {
       text-align: center;
@@ -623,6 +646,13 @@
         <p data-i18n="authorDesc">融合东方智慧与现代科技，用AI解码灵魂密码</p>
       </div>
     </div>
+
+    <div class="related-articles">
+      <h3 data-i18n="relatedTitle">相关文章</h3>
+      <a href="/blog/who-needs-natalcodex-personality-career-guide.html" class="related-link" data-i18n="related1">谁需要NatalCodex？MBTI人格与职业规划完全指南</a>
+      <a href="/blog/why-mbti-changes-bazi-reveals-true-self.html" class="related-link" data-i18n="related2">为什么你每次做MBTI结果都不一样？八字排盘算MBTI直击灵魂</a>
+      <a href="/blog/five-elements-big-five-psychology.html" class="related-link" data-i18n="related3">五行与大五人格：古老智慧与现代心理学的惊人对应</a>
+    </div>
     
   </article>
   
@@ -758,6 +788,10 @@
         tagPlanning: '职业规划',
         tagAI: 'AI分析',
         authorDesc: '融合东方智慧与现代科技，用AI解码灵魂密码',
+        relatedTitle: '相关文章',
+        related1: '谁需要NatalCodex？MBTI人格与职业规划完全指南',
+        related2: '为什么你每次做MBTI结果都不一样？八字排盘算MBTI直击灵魂',
+        related3: '五行与大五人格：古老智慧与现代心理学的惊人对应',
         footerText: '© 2025 NatalCodex. 融合东方智慧与现代科技。',
         footerHome: '首页',
         footerGenerate: '生成报告',
@@ -881,6 +915,10 @@
         tagPlanning: 'Career Planning',
         tagAI: 'AI Analysis',
         authorDesc: 'Blending Eastern Wisdom with Modern Technology, Decoding Souls with AI',
+        relatedTitle: 'Related Articles',
+        related1: 'Who Needs NatalCodex? Complete Guide to MBTI & Career Planning',
+        related2: 'Why Does Your MBTI Result Change Every Time? BaZi-Based MBTI Hits the Core',
+        related3: 'Five Elements and the Big Five: Ancient Wisdom Meets Modern Psychology',
         footerText: '© 2025 NatalCodex. Blending Eastern Wisdom with Modern Technology.',
         footerHome: 'Home',
         footerGenerate: 'Generate Report',
@@ -889,7 +927,8 @@
       }
     };
 
-    let currentLang = localStorage.getItem('nc_language') || 'zh';
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    let currentLang = urlLang === 'en' ? 'en' : (localStorage.getItem('nc_language') || 'zh');
 
     function updateLanguage(lang) {
       currentLang = lang;
@@ -902,6 +941,10 @@
       });
       document.getElementById('langText').textContent = lang === 'zh' ? 'EN' : '中文';
       document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      const url = new URL(window.location.href);
+      if (lang === 'en') url.searchParams.set('lang', 'en');
+      else url.searchParams.delete('lang');
+      history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
     }
 
     updateLanguage(currentLang);
