@@ -30,6 +30,11 @@ function applyCors(req, res) {
     return true;
   }
   if (!origin) return true;
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (host && (origin === `https://${host}` || origin === `http://${host}`)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    return true;
+  }
   if (allowed.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     return true;
