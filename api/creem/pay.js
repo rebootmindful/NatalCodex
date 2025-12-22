@@ -52,98 +52,105 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'Method not allowed' });
-  }
-
-  if (!CREEM_API_KEY) {
-    return res.status(500).json({ success: false, error: 'Creem is not configured' });
-  }
-
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ success: false, error: 'Unauthorized' });
-  }
-
-  const token = authHeader.substring(7);
-
-  let userId;
+  let stage = 'init';
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    userId = decoded.id;
-  } catch (e) {
-    return res.status(401).json({ success: false, error: 'Invalid token' });
-  }
-
-  const { packageType, promoCode } = req.body || {};
-
-  if (!['PACK_6', 'PACK_20'].includes(packageType)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Invalid package type',
-      validTypes: ['PACK_6', 'PACK_20']
-    });
-  }
-
-  let discountPercent = 0;
-
-  if (promoCode) {
-    const promoResult = await query(
-      `SELECT * FROM promo_codes 
-       WHERE code = $1 AND is_used = false AND expires_at > NOW()`,
-      [promoCode.toUpperCase()]
-    );
-
-    if (promoResult.rows.length === 0) {
-      return res.status(400).json({ success: false, error: 'Invalid or expired promo code' });
+    if (req.method !== 'POST') {
+      return res.status(405).json({ success: false, error: 'Method not allowed' });
     }
 
-    discountPercent = promoResult.rows[0].discount_percent;
-  }
+    stage = 'check_config';
+    if (!CREEM_API_KEY) {
+      return res.status(500).json({ success: false, error: 'Creem is not configured' });
+    }
 
-  const priceInfo = xunhupay.calculatePrice(packageType, discountPercent);
-  const orderNo = xunhupay.generateOrderNo();
+    stage = 'auth_header';
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
 
-  await query(
-    `INSERT INTO orders (order_no, user_id, package_type, credits, original_price, promo_code, discount_percent, discount_amount, final_price, status, payment_method)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', 'creem')`,
-    [
-      orderNo,
-      userId,
-      packageType,
-      priceInfo.credits,
-      priceInfo.originalPrice,
-      promoCode || null,
-      discountPercent,
-      priceInfo.discountAmount,
-      priceInfo.finalPrice
-    ]
-  );
+    stage = 'jwt_verify';
+    const token = authHeader.substring(7);
+    let userId;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      userId = decoded.id;
+    } catch (e) {
+      return res.status(401).json({ success: false, error: 'Invalid token' });
+    }
 
-  const productId = CREEM_PRODUCTS[packageType];
-  if (!productId) {
-    return res.status(500).json({
-      success: false,
-      error: `Creem product not configured for ${packageType}`
-    });
-  }
+    stage = 'validate_body';
+    const { packageType, promoCode } = req.body || {};
+    if (!['PACK_6', 'PACK_20'].includes(packageType)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid package type',
+        validTypes: ['PACK_6', 'PACK_20']
+      });
+    }
 
-  const userResult = await query(
-    'SELECT email FROM users WHERE id = $1',
-    [userId]
-  );
+    stage = 'promo_lookup';
+    let discountPercent = 0;
+    if (promoCode) {
+      const promoResult = await query(
+        `SELECT * FROM promo_codes 
+       WHERE code = $1 AND is_used = false AND expires_at > NOW()`,
+        [promoCode.toUpperCase()]
+      );
 
-  const userEmail = userResult.rows[0]?.email || null;
+      if (promoResult.rows.length === 0) {
+        return res.status(400).json({ success: false, error: 'Invalid or expired promo code' });
+      }
 
-  try {
+      discountPercent = promoResult.rows[0].discount_percent;
+    }
+
+    stage = 'calc_price';
+    const priceInfo = xunhupay.calculatePrice(packageType, discountPercent);
+    const orderNo = xunhupay.generateOrderNo();
+
+    stage = 'create_order';
+    await query(
+      `INSERT INTO orders (order_no, user_id, package_type, credits, original_price, promo_code, discount_percent, discount_amount, final_price, status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')`,
+      [
+        orderNo,
+        userId,
+        packageType,
+        priceInfo.credits,
+        priceInfo.originalPrice,
+        promoCode || null,
+        discountPercent,
+        priceInfo.discountAmount,
+        priceInfo.finalPrice
+      ]
+    );
+
+    stage = 'set_payment_method';
+    try {
+      await query(`UPDATE orders SET payment_method = 'creem' WHERE order_no = $1`, [orderNo]);
+    } catch (e) {}
+
+    stage = 'product_config';
+    const productId = CREEM_PRODUCTS[packageType];
+    if (!productId) {
+      return res.status(500).json({
+        success: false,
+        error: `Creem product not configured for ${packageType}`
+      });
+    }
+
+    stage = 'user_email';
+    const userResult = await query('SELECT email FROM users WHERE id = $1', [userId]);
+    const userEmail = userResult.rows[0]?.email || null;
+
+    stage = 'create_checkout';
     const { Creem } = await import('creem');
     const creem = new Creem({
       serverURL: CREEM_SERVER_URL
     });
 
-    const successUrlBase =
-      process.env.CREEM_SUCCESS_URL ||
-      'https://www.natalcodex.com/pay/result.html';
+    const successUrlBase = process.env.CREEM_SUCCESS_URL || 'https://www.natalcodex.com/pay/result.html';
     const successUrl = `${successUrlBase}${successUrlBase.includes('?') ? '&' : '?'}provider=creem&order=${encodeURIComponent(orderNo)}`;
 
     const checkoutData = {
@@ -166,11 +173,11 @@ module.exports = async (req, res) => {
       throw new Error('Failed to create Creem checkout session');
     }
 
+    stage = 'persist_checkout_id';
     if (checkoutResult.id) {
-      await query(
-        `UPDATE orders SET trade_no = $1 WHERE order_no = $2`,
-        [checkoutResult.id, orderNo]
-      );
+      try {
+        await query(`UPDATE orders SET trade_no = $1 WHERE order_no = $2`, [checkoutResult.id, orderNo]);
+      } catch (e) {}
     }
 
     return res.json({
@@ -180,26 +187,22 @@ module.exports = async (req, res) => {
       paymentUrl: checkoutResult.checkoutUrl
     });
   } catch (error) {
-    await query(
-      `UPDATE orders SET status = 'failed' WHERE order_no = $1`,
-      [orderNo]
-    );
-
     const debugInfo = {
+      stage,
       message: error && error.message,
       name: error && error.name,
       status: error && (error.status || (error.response && error.response.status)),
       serverURL: CREEM_SERVER_URL,
-      productId,
       apiKeyPrefix: CREEM_API_KEY ? CREEM_API_KEY.slice(0, 10) : null
     };
 
-    console.error('[CreemPay] Error creating checkout', debugInfo);
+    console.error('[CreemPay] Unhandled error', debugInfo);
 
     return res.status(500).json({
       success: false,
-      error: error && error.message ? error.message : 'Creem payment creation failed',
-      debug: debugInfo
+      error: 'Internal server error',
+      stage,
+      details: process.env.NODE_ENV !== 'production' ? debugInfo : undefined
     });
   }
 };
