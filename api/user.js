@@ -150,24 +150,12 @@ async function handleDeduct(req, res, userId) {
     return res.status(400).json({ error: 'Invalid reportType', validTypes: ['mbti', 'kuder'] });
   }
 
-  // 检查剩余次数
   const userResult = await query(
     `SELECT remaining_credits FROM users WHERE id = $1`,
     [userId]
   );
-
   if (userResult.rows.length === 0) {
     return res.status(404).json({ error: 'User not found' });
-  }
-
-  const credits = userResult.rows[0].remaining_credits;
-  
-  if (credits < 1) {
-    return res.status(403).json({ 
-      error: 'Insufficient credits',
-      credits: 0,
-      needPurchase: true
-    });
   }
 
   // 生成报告ID
@@ -177,11 +165,21 @@ async function handleDeduct(req, res, userId) {
   const client = await getClient();
   try {
     await client.query('BEGIN');
-    // 扣次数
-    await client.query(
-      `UPDATE users SET remaining_credits = remaining_credits - 1 WHERE id = $1`,
+    const updateRes = await client.query(
+      `UPDATE users 
+       SET remaining_credits = remaining_credits - 1 
+       WHERE id = $1 AND remaining_credits >= 1
+       RETURNING remaining_credits`,
       [userId]
     );
+    if (updateRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({
+        error: 'Insufficient credits',
+        credits: 0,
+        needPurchase: true
+      });
+    }
 
     // 创建使用记录
     await client.query(
@@ -198,7 +196,7 @@ async function handleDeduct(req, res, userId) {
       success: true,
       reportId,
       reportType,
-      remainingCredits: credits - 1
+      remainingCredits: updateRes.rows[0].remaining_credits
     });
 
   } catch (error) {

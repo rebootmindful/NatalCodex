@@ -15,6 +15,7 @@
   <title>隐私政策 | Privacy Policy - NatalCodex</title>
   <meta name="description" content="NatalCodex隐私政策 - 了解我们如何保护您的数据隐私。我们采用隐私优先设计，所有数据仅保存在您的浏览器本地，不收集不传输任何个人信息。">
   <meta name="robots" content="index, follow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' https://www.googletagmanager.com 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src 'self' https://www.natalcodex.com; frame-ancestors 'self'; base-uri 'self'">
   <link rel="canonical" href="https://www.natalcodex.com/privacy.html">
   <link rel="alternate" hreflang="zh-CN" href="https://www.natalcodex.com/privacy.html">
   <link rel="alternate" hreflang="en" href="https://www.natalcodex.com/privacy.html?lang=en">
@@ -29,6 +30,7 @@
   <meta property="og:description" content="NatalCodex隐私政策 - 我们采用隐私优先设计，所有数据仅保存在本地。">
   <meta property="og:image" content="https://www.natalcodex.com/og-image.png">
   <meta property="og:site_name" content="NatalCodex">
+  <meta property="og:locale" content="zh_CN">
 
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="隐私政策 - NatalCodex">
@@ -280,6 +282,31 @@
       if (lang === 'en') url.searchParams.set('lang', 'en');
       else url.searchParams.delete('lang');
       history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
+
+      const descZh = 'NatalCodex隐私政策 - 了解我们如何保护您的数据隐私。我们采用隐私优先设计，所有数据仅保存在您的浏览器本地，不收集不传输任何个人信息。';
+      const descEn = 'NatalCodex Privacy Policy — We are privacy-first. All data stays locally in your browser; no collection, no transfer to our servers.';
+      document.title = lang === 'zh' ? '隐私政策 | Privacy Policy - NatalCodex' : 'Privacy Policy | NatalCodex';
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', lang === 'zh' ? descZh : descEn);
+      const canonical = document.querySelector('link[rel="canonical"]');
+      const altZh = document.querySelector('link[rel="alternate"][hreflang="zh-CN"]');
+      const altEn = document.querySelector('link[rel="alternate"][hreflang="en"]');
+      const altDef = document.querySelector('link[rel="alternate"][hreflang="x-default"]');
+      const baseUrl = 'https://www.natalcodex.com/privacy.html';
+      if (canonical) canonical.setAttribute('href', lang === 'zh' ? baseUrl : `${baseUrl}?lang=en`);
+      if (altZh) altZh.setAttribute('href', baseUrl);
+      if (altEn) altEn.setAttribute('href', `${baseUrl}?lang=en`);
+      if (altDef) altDef.setAttribute('href', baseUrl);
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      const ogLocale = document.querySelector('meta[property="og:locale"]');
+      if (ogTitle) ogTitle.setAttribute('content', lang === 'zh' ? '隐私政策 - NatalCodex' : 'Privacy Policy - NatalCodex');
+      if (ogDesc) ogDesc.setAttribute('content', lang === 'zh' ? 'NatalCodex隐私政策 - 我们采用隐私优先设计，所有数据仅保存在本地。' : 'NatalCodex Privacy Policy — Privacy-first, data stays local.');
+      if (ogLocale) ogLocale.setAttribute('content', lang === 'zh' ? 'zh_CN' : 'en_US');
+      const twTitle = document.querySelector('meta[name="twitter:title"]');
+      const twDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twTitle) twTitle.setAttribute('content', lang === 'zh' ? '隐私政策 - NatalCodex' : 'Privacy Policy - NatalCodex');
+      if (twDesc) twDesc.setAttribute('content', lang === 'zh' ? 'NatalCodex隐私政策 - 我们采用隐私优先设计，所有数据仅保存在本地。' : 'NatalCodex Privacy Policy — Privacy-first, data stays local.');
     }
 
     updateLanguage(currentLang);

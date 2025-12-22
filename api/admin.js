@@ -67,7 +67,10 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('[Admin] Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error && error.message) || 'Error'
+    });
   }
 };
 

@@ -26,6 +26,16 @@ module.exports = async (req, res) => {
 
   console.log('[Notify] Params:', JSON.stringify(params));
 
+  const clientIp = (req.headers['x-forwarded-for']?.split(',')[0] || req.headers['x-real-ip'] || req.connection?.remoteAddress || '').toString();
+  const allowedIps = (process.env.XUNHUPAY_ALLOWED_IPS || '').split(',').map(s => s.trim()).filter(Boolean);
+  const isProd = process.env.NODE_ENV === 'production';
+  if (isProd && allowedIps.length > 0) {
+    if (!allowedIps.includes(clientIp)) {
+      console.error('[Notify] IP not allowed:', clientIp);
+      return res.status(200).send('fail');
+    }
+  }
+
   // 检查必要参数
   if (!params || !params.trade_order_id) {
     console.error('[Notify] Missing trade_order_id');

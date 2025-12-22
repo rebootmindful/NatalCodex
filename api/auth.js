@@ -204,8 +204,8 @@ async function handleRegister(req, res) {
   if (!auth.isValidPassword(password)) {
     return res.status(400).json({
       success: false,
-      error: 'Password must be at least 6 characters',
-      errorZh: '密码长度至少6位'
+      error: 'Password must include upper, lower, number and be at least 8 characters',
+      errorZh: '密码需至少8位，包含大小写字母和数字'
     });
   }
 

@@ -92,7 +92,10 @@ module.exports = async (req, res) => {
     }
   } catch (error) {
     console.error('[Pay] Error:', error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error && error.message) || 'Error'
+    });
   }
 };
 
@@ -152,26 +155,41 @@ async function handleCreate(req, res) {
   // 生成订单号
   const orderNo = xunhupay.generateOrderNo();
   
-  // 创建订单记录
-  await query(
-    `INSERT INTO orders (order_no, user_id, package_type, credits, original_price, promo_code, discount_percent, discount_amount, final_price, status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')`,
-    [orderNo, userId, packageType, priceInfo.credits, priceInfo.originalPrice, promoCode || null, discountPercent, priceInfo.discountAmount, priceInfo.finalPrice]
+  const pendingResult = await query(
+    `SELECT order_no, created_at FROM orders 
+     WHERE user_id = $1 AND package_type = $2 AND status = 'pending'
+     ORDER BY created_at DESC LIMIT 1`,
+    [userId, packageType]
   );
+  let useOrderNo = orderNo;
+  if (pendingResult.rows.length > 0) {
+    const createdAt = new Date(pendingResult.rows[0].created_at);
+    const diffMinutes = (Date.now() - createdAt.getTime()) / 60000;
+    if (diffMinutes <= 30) {
+      useOrderNo = pendingResult.rows[0].order_no;
+    }
+  }
+  if (useOrderNo === orderNo) {
+    await query(
+      `INSERT INTO orders (order_no, user_id, package_type, credits, original_price, promo_code, discount_percent, discount_amount, final_price, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending')`,
+      [orderNo, userId, packageType, priceInfo.credits, priceInfo.originalPrice, promoCode || null, discountPercent, priceInfo.discountAmount, priceInfo.finalPrice]
+    );
+  }
 
   // 创建支付订单 (2024新版: POST请求获取二维码URL)
   try {
     const payment = await xunhupay.createPayment({
-      orderNo,
+      orderNo: useOrderNo,
       amount: priceInfo.finalPrice,
       title: `NatalCodex ${priceInfo.packageName}`
     });
 
-    console.log('[Pay/Create] Order created:', orderNo, priceInfo);
+    console.log('[Pay/Create] Order created:', useOrderNo, priceInfo);
 
     return res.json({
       success: true,
-      orderNo,
+      orderNo: useOrderNo,
       qrCodeUrl: payment.qrCodeUrl,   // PC端二维码URL
       mobileUrl: payment.mobileUrl,    // 移动端跳转URL
       priceInfo
@@ -205,6 +223,13 @@ async function handleRetry(req, res) {
 
   if (!orderNo) {
     return res.status(400).json({ error: 'Missing orderNo' });
+  }
+
+  const RETRY_LIMIT = 5;
+  const RETRY_WINDOW = 60 * 60 * 1000;
+  const rlOk = await rateLimit(`order_retry:${orderNo}`, RETRY_LIMIT, RETRY_WINDOW);
+  if (!rlOk) {
+    return res.status(429).json({ error: 'Too many retries' });
   }
 
   // 获取用户信息

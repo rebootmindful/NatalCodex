@@ -425,7 +425,7 @@ ${content}
     console.error('[GenerateKuder] Error:', error);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error && error.message) || 'Error'
     });
   }
 };

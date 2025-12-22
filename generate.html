@@ -13,6 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>免费八字排盘与MBTI人格分析 - NatalCodex | 在线生成灵魂契合卡</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data:; script-src 'self' https://www.googletagmanager.com https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src 'self' https://www.natalcodex.com; frame-ancestors 'self'; base-uri 'self'">
 
   <!-- SEO Meta Tags -->
   <meta name="description" content="免费在线八字排盘工具，AI智能分析八字命理与MBTI人格，生成3000字深度报告和精美灵魂契合卡。支持真太阳时计算，全球200+城市时区自动识别。">
@@ -71,6 +72,19 @@
       "全球200+城市支持"
     ],
     "screenshot": "https://www.natalcodex.com/soulprint-card.webp.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://www.natalcodex.com/#organization",
+    "name": "NatalCodex",
+    "url": "https://www.natalcodex.com",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.natalcodex.com/favicon.svg"
+    }
   }
   </script>
 
@@ -1129,8 +1143,8 @@
         
         <form class="auth-form" id="registerFormEl">
           <input type="email" class="auth-input" id="registerEmail" data-i18n-placeholder="authEmail" placeholder="邮箱地址" required>
-          <input type="password" class="auth-input" id="registerPassword" data-i18n-placeholder="authPassword" placeholder="密码（至少6位）" required minlength="6">
-          <input type="password" class="auth-input" id="registerConfirm" data-i18n-placeholder="authConfirmPassword" placeholder="确认密码" required minlength="6">
+          <input type="password" class="auth-input" id="registerPassword" placeholder="密码（至少8位，含大小写和数字）" required minlength="8">
+          <input type="password" class="auth-input" id="registerConfirm" placeholder="确认密码" required minlength="8">
           <button type="submit" class="auth-btn" id="registerBtn" data-i18n="authRegisterBtn">注册</button>
         </form>
         
@@ -1380,7 +1394,8 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
 
   <script>
@@ -1589,6 +1604,34 @@
       if (lang === 'en') url.searchParams.set('lang', 'en');
       else url.searchParams.delete('lang');
       history.replaceState(null, '', url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : '') + url.hash);
+
+      // SEO: Update title and meta based on language
+      const titleZh = '免费八字排盘与MBTI人格分析 - NatalCodex | 在线生成灵魂契合卡';
+      const titleEn = 'Free BaZi Chart & MBTI Analysis - NatalCodex | Generate Soul Card Online';
+      const descZh = '免费在线八字排盘工具，AI智能分析八字命理与MBTI人格，生成3000字深度报告和精美灵魂契合卡。支持真太阳时计算，全球200+城市时区自动识别。';
+      const descEn = 'Free online BaZi chart tool with AI-powered BaZi & MBTI analysis. Generate a 3000-word report and beautiful Soul Card. True solar time, 200+ cities supported.';
+      document.title = lang === 'zh' ? titleZh : titleEn;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', lang === 'zh' ? descZh : descEn);
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute('content', lang === 'zh' ? '免费八字排盘与MBTI人格分析 - NatalCodex' : 'Free BaZi Chart & MBTI Analysis - NatalCodex');
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute('content', lang === 'zh' ? 'AI智能分析八字命理与MBTI人格，生成深度报告和精美灵魂契合卡。完全免费！' : 'AI-powered BaZi & MBTI analysis, generate a deep report and beautiful Soul Card. Free to use!');
+      const ogLocale = document.querySelector('meta[property="og:locale"]');
+      if (ogLocale) ogLocale.setAttribute('content', lang === 'zh' ? 'zh_CN' : 'en_US');
+      const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (twitterTitle) twitterTitle.setAttribute('content', document.title);
+      const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+      if (twitterDesc) twitterDesc.setAttribute('content', lang === 'zh' ? 'AI智能分析八字命理与MBTI人格，生成深度报告和精美灵魂契合卡。完全免费！' : 'AI-powered BaZi & MBTI analysis, generate a deep report and beautiful Soul Card. Free to use!');
+      const canonical = document.querySelector('link[rel="canonical"]');
+      const altZh = document.querySelector('link[rel="alternate"][hreflang="zh-CN"]');
+      const altEn = document.querySelector('link[rel="alternate"][hreflang="en"]');
+      const altDef = document.querySelector('link[rel="alternate"][hreflang="x-default"]');
+      const baseUrl = 'https://www.natalcodex.com/generate.html';
+      if (canonical) canonical.setAttribute('href', lang === 'zh' ? baseUrl : `${baseUrl}?lang=en`);
+      if (altZh) altZh.setAttribute('href', baseUrl);
+      if (altEn) altEn.setAttribute('href', `${baseUrl}?lang=en`);
+      if (altDef) altDef.setAttribute('href', baseUrl);
     }
 
     // Initialize language
@@ -2267,7 +2310,7 @@
         };
 
         // Render markdown to HTML
-        reportContent.innerHTML = marked.parse(cleanReport);
+        reportContent.innerHTML = DOMPurify.sanitize(marked.parse(cleanReport));
 
         // Show result
         loading.classList.remove('active');

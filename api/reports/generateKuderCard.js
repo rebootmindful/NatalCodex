@@ -25,7 +25,10 @@ module.exports = async (req, res) => {
       return res.json({ success: true, ...result });
     } catch (error) {
       console.error('[GenerateKuderCard] Status error:', error);
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error && error.message) || 'Error'
+      });
     }
   }
 
@@ -223,7 +226,7 @@ Quality: Ultra-detailed, sharp focus, professional card design`;
     console.error('[GenerateKuderCard] Error:', error);
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (error && error.message) || 'Error'
     });
   }
 };
