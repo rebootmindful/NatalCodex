@@ -10,21 +10,52 @@
 const { query } = require('../lib/db');
 const xunhupay = require('../lib/xunhupay');
 const { JWT_SECRET } = require('../lib/auth');
+const { rateLimit } = require('../lib/cache');
 
 // 优惠码验证失败限制
 const MAX_PROMO_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 10;
 
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  const raw = process.env.CORS_ALLOWED_ORIGINS || '';
+  const allowStar = process.env.NODE_ENV !== 'production' && raw.trim() === '';
+  const allowed = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  res.setHeader('Vary', 'Origin');
+  if (allowStar) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return true;
+  }
+  if (!origin) return true;
+  if (allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    return true;
+  }
+  return false;
+}
+
 module.exports = async (req, res) => {
   const action = req.query.action || req.body?.action;
 
-  // 允许 CORS 和多种方法
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const corsOk = applyCors(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
+    if (!corsOk) return res.status(403).end();
     return res.status(200).end();
+  }
+
+  if (!JWT_SECRET) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
+    });
   }
 
   try {
@@ -277,32 +308,11 @@ async function handleRetry(req, res) {
  * 2. 速率限制防止轮询滥用
  */
 
-// 订单状态查询速率限制 (内存存储，生产环境建议用 Redis)
-const statusQueryLimits = new Map();
 const STATUS_QUERY_LIMIT = 30;      // 每分钟最多 30 次
 const STATUS_QUERY_WINDOW = 60000;  // 1 分钟窗口
 
-function checkStatusQueryLimit(orderNo) {
-  const now = Date.now();
-  const record = statusQueryLimits.get(orderNo) || { count: 0, resetAt: now + STATUS_QUERY_WINDOW };
-
-  if (now > record.resetAt) {
-    record.count = 1;
-    record.resetAt = now + STATUS_QUERY_WINDOW;
-  } else {
-    record.count++;
-  }
-
-  statusQueryLimits.set(orderNo, record);
-
-  // 定期清理过期记录 (防止内存泄漏)
-  if (statusQueryLimits.size > 1000) {
-    for (const [key, val] of statusQueryLimits) {
-      if (now > val.resetAt) statusQueryLimits.delete(key);
-    }
-  }
-
-  return record.count <= STATUS_QUERY_LIMIT;
+async function checkStatusQueryLimit(orderNo) {
+  return rateLimit(`order_status:${orderNo}`, STATUS_QUERY_LIMIT, STATUS_QUERY_WINDOW);
 }
 
 async function handleStatus(req, res) {
@@ -316,7 +326,7 @@ async function handleStatus(req, res) {
   }
 
   // 🔒 速率限制检查
-  if (!checkStatusQueryLimit(orderNo)) {
+  if (!(await checkStatusQueryLimit(orderNo))) {
     return res.status(429).json({ error: 'Too many requests, please slow down' });
   }
 

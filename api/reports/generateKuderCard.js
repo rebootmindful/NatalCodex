@@ -14,18 +14,29 @@ const config = {
   IMAGE_MODEL: 'gemini-3-pro-image-preview'
 };
 
-const POLL_INTERVAL = 2000;
-const MAX_POLL_TIME = 120000;
-
 module.exports = async (req, res) => {
+  if (req.method === 'GET') {
+    const taskId = Array.isArray(req.query.taskId) ? req.query.taskId[0] : req.query.taskId;
+    if (!taskId) {
+      return res.status(400).json({ success: false, error: 'taskId required' });
+    }
+    try {
+      const result = await queryTask(taskId);
+      return res.json({ success: true, ...result });
+    } catch (error) {
+      console.error('[GenerateKuderCard] Status error:', error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
   const { name, gender, reportContent, rawAnalysis, language } = req.body;
 
   if (!name || !reportContent) {
-    return res.status(400).json({ error: 'name and reportContent required' });
+    return res.status(400).json({ success: false, error: 'name and reportContent required' });
   }
 
   const isEnglish = language === 'en';
@@ -186,29 +197,12 @@ Quality: Ultra-detailed, sharp focus, professional card design`;
     console.log('[GenerateKuderCard] Image prompt length:', imagePrompt.length);
     console.log('[GenerateKuderCard] Submitting image generation task...');
 
-    // Submit task
-    const submitResponse = await fetch(`${config.BASE_URL}/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: config.IMAGE_MODEL,
-        prompt: imagePrompt,
-        size: '9:16',
-        n: 1
-      })
+    const submitData = await submitTaskWithRetry({
+      model: config.IMAGE_MODEL,
+      prompt: imagePrompt,
+      size: '9:16',
+      n: 1
     });
-
-    if (!submitResponse.ok) {
-      const errorText = await submitResponse.text();
-      console.error('[GenerateKuderCard] Submit Error:', submitResponse.status, errorText);
-      throw new Error(`Submit failed: ${submitResponse.status} - ${errorText.substring(0, 200)}`);
-    }
-
-    const submitData = await submitResponse.json();
-    console.log('[GenerateKuderCard] Submit response:', JSON.stringify(submitData, null, 2));
 
     const taskId = submitData.data?.[0]?.task_id;
     if (!taskId) {
@@ -218,16 +212,11 @@ Quality: Ultra-detailed, sharp focus, professional card design`;
 
     console.log('[GenerateKuderCard] Task ID:', taskId);
 
-    // Poll for completion
-    const imageUrl = await pollTaskResult(taskId);
-
-    console.log('[GenerateKuderCard] Success! Image URL:', imageUrl.substring(0, 100) + '...');
-
     return res.json({
       success: true,
-      imageUrl,
       extractedInfo,
-      taskId
+      taskId,
+      status: 'submitted'
     });
 
   } catch (error) {
@@ -239,85 +228,87 @@ Quality: Ultra-detailed, sharp focus, professional card design`;
   }
 };
 
-async function pollTaskResult(taskId) {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < MAX_POLL_TIME) {
-    console.log('[GenerateKuderCard] Polling task:', taskId);
-
-    const queryResponse = await fetch(`${config.BASE_URL}/tasks/${taskId}`, {
-      method: 'GET',
+async function submitTaskWithRetry(payload) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const response = await fetch(`${config.BASE_URL}/images/generations`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${config.API_KEY}`,
         'Content-Type': 'application/json'
-      }
+      },
+      body: JSON.stringify(payload)
     });
 
-    if (!queryResponse.ok) {
-      const errorText = await queryResponse.text();
-      console.error('[GenerateKuderCard] Query Error:', queryResponse.status, errorText);
-      throw new Error(`Query failed: ${queryResponse.status}`);
+    if (response.ok) {
+      const json = await response.json();
+      console.log('[GenerateKuderCard] Submit response:', JSON.stringify(json, null, 2));
+      return json;
     }
 
-    const queryData = await queryResponse.json();
-    console.log('[GenerateKuderCard] Task response:', JSON.stringify(queryData, null, 2));
+    const errorText = await response.text();
+    console.error('[GenerateKuderCard] Submit Error:', response.status, errorText);
 
-    const status = queryData.data?.status || queryData.status;
-    const failCode = queryData.data?.failCode || queryData.failCode;
-    const failMsg = queryData.data?.failMsg || queryData.failMsg;
-    const error = queryData.error || queryData.data?.error;
-
-    // Try to find image URL
-    let imageUrl = queryData.data?.result?.images?.[0]?.url?.[0] ||
-                   queryData.data?.result?.images?.[0]?.url ||
-                   queryData.data?.output?.image_url ||
-                   queryData.data?.output?.url ||
-                   queryData.data?.result?.url ||
-                   queryData.data?.result?.image_url ||
-                   queryData.data?.url ||
-                   queryData.data?.image_url ||
-                   queryData.data?.output?.[0]?.url ||
-                   queryData.data?.images?.[0]?.url?.[0] ||
-                   queryData.data?.images?.[0]?.url ||
-                   queryData.data?.images?.[0] ||
-                   queryData.url ||
-                   queryData.image_url;
-
-    if (Array.isArray(imageUrl)) {
-      imageUrl = imageUrl[0];
+    if (attempt === maxAttempts || (response.status < 500 && response.status !== 429)) {
+      throw new Error(`Submit failed: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
-    if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
-      console.log('[GenerateKuderCard] Found image URL:', imageUrl);
-      return imageUrl;
-    }
-
-    if (failCode || failMsg || error || status === 'failed' || status === 'error') {
-      const errorMsg = failMsg || error || failCode || 'Task failed';
-      console.error('[GenerateKuderCard] Task failed with:', errorMsg);
-      throw new Error(`Generation failed: ${typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg}`);
-    }
-
-    if (status === 'processing' || status === 'pending' || status === 'submitted' || status === 'running') {
-      console.log('[GenerateKuderCard] Task still processing, status:', status);
-      await sleep(POLL_INTERVAL);
-      continue;
-    }
-
-    if (status === 'completed' || status === 'success') {
-      console.error('[GenerateKuderCard] Task completed but no image URL found');
-      throw new Error('Task completed but image URL not found');
-    }
-
-    console.log('[GenerateKuderCard] Unknown status:', status, '- continuing to poll...');
-    await sleep(POLL_INTERVAL);
+    await new Promise(r => setTimeout(r, 250 * attempt));
   }
-
-  throw new Error('Image generation timeout (2 minutes)');
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+async function queryTask(taskId) {
+  const response = await fetch(`${config.BASE_URL}/tasks/${taskId}`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${config.API_KEY}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('[GenerateKuderCard] Query Error:', response.status, errorText);
+    throw new Error(`Query failed: ${response.status}`);
+  }
+
+  const queryData = await response.json();
+
+  const status = queryData.data?.status || queryData.status;
+  const failCode = queryData.data?.failCode || queryData.failCode;
+  const failMsg = queryData.data?.failMsg || queryData.failMsg;
+  const error = queryData.error || queryData.data?.error;
+
+  let imageUrl = queryData.data?.result?.images?.[0]?.url?.[0] ||
+    queryData.data?.result?.images?.[0]?.url ||
+    queryData.data?.output?.image_url ||
+    queryData.data?.output?.url ||
+    queryData.data?.result?.url ||
+    queryData.data?.result?.image_url ||
+    queryData.data?.url ||
+    queryData.data?.image_url ||
+    queryData.data?.output?.[0]?.url ||
+    queryData.data?.images?.[0]?.url?.[0] ||
+    queryData.data?.images?.[0]?.url ||
+    queryData.data?.images?.[0] ||
+    queryData.url ||
+    queryData.image_url;
+
+  if (Array.isArray(imageUrl)) imageUrl = imageUrl[0];
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
+    return { status: 'completed', imageUrl };
+  }
+
+  if (failCode || failMsg || error || status === 'failed' || status === 'error') {
+    const errorMsg = failMsg || error || failCode || 'Task failed';
+    return { status: 'failed', error: typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : String(errorMsg) };
+  }
+
+  if (status === 'processing' || status === 'pending' || status === 'submitted' || status === 'running') {
+    return { status: 'processing' };
+  }
+
+  return { status: status || 'unknown' };
 }
 
 /**

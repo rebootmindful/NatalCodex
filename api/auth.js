@@ -12,23 +12,136 @@
 
 const db = require('../lib/db');
 const auth = require('../lib/auth');
+const crypto = require('crypto');
 
 // Google OAuth config
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://www.natalcodex.com/api/auth?action=google-callback';
 
+const GOOGLE_OAUTH_STATE_COOKIE = 'nc_google_oauth_state';
+const GOOGLE_OAUTH_STATE_TTL_SECONDS = 5 * 60;
+
+function parseCookieHeader(cookieHeader) {
+  if (!cookieHeader || typeof cookieHeader !== 'string') return {};
+
+  return cookieHeader.split(';').reduce((acc, part) => {
+    const [rawName, ...rawValueParts] = part.trim().split('=');
+    if (!rawName) return acc;
+    const rawValue = rawValueParts.join('=');
+    acc[rawName] = decodeURIComponent(rawValue || '');
+    return acc;
+  }, {});
+}
+
+function serializeCookie(name, value, options = {}) {
+  const segments = [`${name}=${encodeURIComponent(value)}`];
+
+  if (options.maxAge !== undefined) segments.push(`Max-Age=${options.maxAge}`);
+  if (options.expires) segments.push(`Expires=${options.expires.toUTCString()}`);
+  if (options.domain) segments.push(`Domain=${options.domain}`);
+  if (options.path) segments.push(`Path=${options.path}`);
+  if (options.httpOnly) segments.push('HttpOnly');
+  if (options.secure) segments.push('Secure');
+  if (options.sameSite) segments.push(`SameSite=${options.sameSite}`);
+
+  return segments.join('; ');
+}
+
+function appendSetCookieHeader(res, cookieValue) {
+  const existing = res.getHeader('Set-Cookie');
+  if (!existing) {
+    res.setHeader('Set-Cookie', cookieValue);
+    return;
+  }
+
+  if (Array.isArray(existing)) {
+    res.setHeader('Set-Cookie', [...existing, cookieValue]);
+    return;
+  }
+
+  res.setHeader('Set-Cookie', [existing, cookieValue]);
+}
+
+function stateCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+    path: '/api/auth'
+  };
+}
+
+function setGoogleOAuthStateCookie(res, state) {
+  appendSetCookieHeader(
+    res,
+    serializeCookie(GOOGLE_OAUTH_STATE_COOKIE, state, {
+      ...stateCookieOptions(),
+      maxAge: GOOGLE_OAUTH_STATE_TTL_SECONDS
+    })
+  );
+}
+
+function clearGoogleOAuthStateCookie(res) {
+  appendSetCookieHeader(
+    res,
+    serializeCookie(GOOGLE_OAUTH_STATE_COOKIE, '', {
+      ...stateCookieOptions(),
+      maxAge: 0,
+      expires: new Date(0)
+    })
+  );
+}
+
+function timingSafeEqualStrings(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const aBuf = Buffer.from(a, 'utf8');
+  const bBuf = Buffer.from(b, 'utf8');
+  if (aBuf.length !== bBuf.length) return false;
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  const raw = process.env.CORS_ALLOWED_ORIGINS || '';
+  const allowStar = process.env.NODE_ENV !== 'production' && raw.trim() === '';
+  const allowed = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  res.setHeader('Vary', 'Origin');
+  if (allowStar) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return true;
+  }
+  if (!origin) return true;
+  if (allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    return true;
+  }
+  return false;
+}
+
 module.exports = async (req, res) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const corsOk = applyCors(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
+    if (!corsOk) return res.status(403).end();
     return res.status(200).end();
   }
 
   const action = req.query.action;
+
+  if (!auth.JWT_SECRET && ['register', 'login', 'me', 'google-callback'].includes(action)) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
+    });
+  }
 
   try {
     switch (action) {
@@ -298,16 +411,19 @@ function handleGoogleRedirect(req, res) {
 
   const scope = encodeURIComponent('openid email profile');
   const redirectUri = encodeURIComponent(GOOGLE_REDIRECT_URI);
-  const state = Math.random().toString(36).substring(7);
+  const state = crypto.randomBytes(16).toString('hex');
   
   const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}&access_type=offline&prompt=consent`;
   
+  setGoogleOAuthStateCookie(res, state);
   res.redirect(302, googleAuthUrl);
 }
 
 // ========== Google OAuth Callback ==========
 async function handleGoogleCallback(req, res) {
-  const { code, error } = req.query;
+  const code = Array.isArray(req.query.code) ? req.query.code[0] : req.query.code;
+  const error = Array.isArray(req.query.error) ? req.query.error[0] : req.query.error;
+  const state = Array.isArray(req.query.state) ? req.query.state[0] : req.query.state;
 
   // Redirect URL for frontend
   const frontendUrl = 'https://www.natalcodex.com/generate.html';
@@ -319,6 +435,14 @@ async function handleGoogleCallback(req, res) {
 
   if (!code) {
     return res.redirect(`${frontendUrl}?auth_error=no_code`);
+  }
+
+  const cookies = parseCookieHeader(req.headers.cookie);
+  const storedState = cookies[GOOGLE_OAUTH_STATE_COOKIE];
+  clearGoogleOAuthStateCookie(res);
+
+  if (!state || !storedState || !timingSafeEqualStrings(String(state), String(storedState))) {
+    return res.redirect(`${frontendUrl}?auth_error=invalid_state`);
   }
 
   try {

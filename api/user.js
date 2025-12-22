@@ -7,18 +7,40 @@
  * GET  /api/user?action=check-image          - 检查是否可生成图片
  */
 
-const { query } = require('../lib/db');
+const { query, getClient } = require('../lib/db');
 const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { JWT_SECRET } = require('../lib/auth');
 
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  const raw = process.env.CORS_ALLOWED_ORIGINS || '';
+  const allowStar = process.env.NODE_ENV !== 'production' && raw.trim() === '';
+  const allowed = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  res.setHeader('Vary', 'Origin');
+  if (allowStar) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return true;
+  }
+  if (!origin) return true;
+  if (allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    return true;
+  }
+  return false;
+}
+
 module.exports = async (req, res) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const corsOk = applyCors(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
+    if (!corsOk) return res.status(403).end();
     return res.status(200).end();
   }
 
@@ -31,6 +53,15 @@ module.exports = async (req, res) => {
       success: false,
       error: 'Server configuration error',
       details: process.env.NODE_ENV !== 'production' ? 'DATABASE_URL not set' : undefined
+    });
+  }
+
+  if (!JWT_SECRET) {
+    console.error('[User] FATAL: JWT_SECRET not set');
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
     });
   }
 
@@ -138,23 +169,23 @@ async function handleDeduct(req, res, userId) {
   const reportId = uuidv4();
 
   // 扣减次数并创建使用记录
-  await query('BEGIN');
-  
+  const client = await getClient();
   try {
+    await client.query('BEGIN');
     // 扣次数
-    await query(
+    await client.query(
       `UPDATE users SET remaining_credits = remaining_credits - 1 WHERE id = $1`,
       [userId]
     );
 
     // 创建使用记录
-    await query(
+    await client.query(
       `INSERT INTO usage_logs (user_id, report_id, report_type, report_status, credits_deducted)
        VALUES ($1, $2, $3, 'pending', 1)`,
       [userId, reportId, reportType]
     );
 
-    await query('COMMIT');
+    await client.query('COMMIT');
 
     console.log('[User/Deduct] Credit deducted:', userId, reportType, reportId);
 
@@ -166,8 +197,12 @@ async function handleDeduct(req, res, userId) {
     });
 
   } catch (error) {
-    await query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch {}
     throw error;
+  } finally {
+    client.release();
   }
 }
 
@@ -208,22 +243,22 @@ async function handleRefund(req, res, userId) {
   }
 
   // 执行退款
-  await query('BEGIN');
-  
+  const client = await getClient();
   try {
+    await client.query('BEGIN');
     // 加回次数
-    await query(
+    await client.query(
       `UPDATE users SET remaining_credits = remaining_credits + 1 WHERE id = $1`,
       [userId]
     );
 
     // 更新使用记录
-    await query(
+    await client.query(
       `UPDATE usage_logs SET credits_refunded = true, report_status = 'failed', updated_at = NOW() WHERE report_id = $1`,
       [reportId]
     );
 
-    await query('COMMIT');
+    await client.query('COMMIT');
 
     console.log('[User/Refund] Credit refunded:', userId, reportId);
 
@@ -240,8 +275,12 @@ async function handleRefund(req, res, userId) {
     });
 
   } catch (error) {
-    await query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch {}
     throw error;
+  } finally {
+    client.release();
   }
 }
 

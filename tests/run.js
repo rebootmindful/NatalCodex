@@ -73,9 +73,35 @@ async function testStore(){
   assert(res._body&&Array.isArray(res._body.items),'export returns items');
 }
 
+async function testCreemWebhookSignature(){
+  const handler=require('../api/webhook/creem');
+  const crypto=require('crypto');
+  function mkRes(){return{code:200,_body:null,_headers:{},status(c){this.code=c;return this},json(o){this._body=o;return this},end(){return this},setHeader(k,v){this._headers[k]=v},getHeader(k){return this._headers[k]}}}
+
+  const prevSecret=process.env.CREEM_WEBHOOK_SECRET;
+  process.env.CREEM_WEBHOOK_SECRET='test_secret';
+  try{
+    const payloadObj={eventType:'checkout.completed',object:{id:'evt1',metadata:{orderNo:'o1',userId:'u1'}}};
+    const payloadStr=JSON.stringify(payloadObj);
+    const sig=crypto.createHmac('sha256',process.env.CREEM_WEBHOOK_SECRET).update(Buffer.from(payloadStr,'utf8')).digest('hex');
+
+    let res=mkRes();
+    await handler({method:'POST',headers:{'creem-signature':sig},rawBody:payloadStr,body:payloadObj},res);
+    assert(res.code!==400,'should not reject valid signature');
+
+    res=mkRes();
+    await handler({method:'POST',headers:{'creem-signature':sig},body:payloadObj},res);
+    assert(res.code===400,'should require raw body');
+    assert(res._body&&res._body.error,'should include error');
+  } finally {
+    process.env.CREEM_WEBHOOK_SECRET=prevSecret;
+  }
+}
+
 (async()=>{
   await run('report.generate',testReport);
   await run('kie.endpoints',testKie);
   await run('kie.storeResult',testStore);
+  await run('creem.webhook.signature',testCreemWebhookSignature);
   log('Done');
 })();

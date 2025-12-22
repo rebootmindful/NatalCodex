@@ -15,12 +15,35 @@ const CREEM_PRODUCTS = {
   PACK_20: process.env.CREEM_PRODUCT_PACK_20
 };
 
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  const raw = process.env.CORS_ALLOWED_ORIGINS || '';
+  const allowStar = process.env.NODE_ENV !== 'production' && raw.trim() === '';
+  const allowed = raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  res.setHeader('Vary', 'Origin');
+  if (allowStar) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return true;
+  }
+  if (!origin) return true;
+  if (allowed.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    return true;
+  }
+  return false;
+}
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const corsOk = applyCors(req, res);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, creem-signature');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
+    if (!corsOk) return res.status(403).end();
     return res.status(200).end();
   }
 
@@ -113,10 +136,15 @@ module.exports = async (req, res) => {
       serverURL: CREEM_SERVER_URL
     });
 
+    const successUrlBase =
+      process.env.CREEM_SUCCESS_URL ||
+      'https://www.natalcodex.com/pay/result.html';
+    const successUrl = `${successUrlBase}${successUrlBase.includes('?') ? '&' : '?'}provider=creem&order=${encodeURIComponent(orderNo)}`;
+
     const checkoutData = {
       productId,
       customer: userEmail ? { email: userEmail } : undefined,
-      successUrl: process.env.CREEM_SUCCESS_URL || 'https://www.natalcodex.com/pay/result?provider=creem',
+      successUrl,
       metadata: {
         orderNo,
         userId,

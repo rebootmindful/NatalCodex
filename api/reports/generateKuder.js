@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
   try {
     // Check cache first
     const cacheKey = { ...birthData, type: 'kuder' };
-    const cachedResult = cache.get(cacheKey);
+    const cachedResult = await cache.get(cacheKey);
     if (cachedResult) {
       console.log('[GenerateKuder] CACHE HIT - returning cached result');
       return res.json({
@@ -412,7 +412,7 @@ ${content}
     };
 
     // Save to cache
-    cache.set(cacheKey, result);
+    await cache.set(cacheKey, result);
 
     console.log('[GenerateKuder] Analysis completed');
     return res.json({

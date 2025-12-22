@@ -41,7 +41,7 @@ module.exports = async (req, res) => {
 
   try {
     // Check cache first (same birth data = same analysis result)
-    const cachedResult = cache.get(birthData);
+    const cachedResult = await cache.get(birthData);
     if (cachedResult) {
       console.log('[GenerateWithAPImart] CACHE HIT - returning cached result');
       // Update orderId for the new request
@@ -444,7 +444,7 @@ ${content}
     };
 
     // Save to cache for future identical requests
-    cache.set(birthData, result);
+    await cache.set(birthData, result);
 
     // Return the complete report
     console.log('[GenerateWithAPImart] Analysis completed, returning full markdown report');

@@ -1,19 +1,89 @@
 const { query } = require('../../lib/db');
 const crypto = require('crypto');
 
-const CREEM_WEBHOOK_SECRET = process.env.CREEM_WEBHOOK_SECRET;
+async function readRawBody(req, maxBytes) {
+  if (!req || typeof req !== 'object') return null;
 
-function verifySignature(payload, signature) {
-  if (!CREEM_WEBHOOK_SECRET) {
+  const fromRawBody = req.rawBody;
+  if (Buffer.isBuffer(fromRawBody)) return fromRawBody;
+  if (typeof fromRawBody === 'string') return Buffer.from(fromRawBody, 'utf8');
+
+  const fromBody = req.body;
+  if (Buffer.isBuffer(fromBody)) return fromBody;
+  if (typeof fromBody === 'string') return Buffer.from(fromBody, 'utf8');
+
+  if (typeof req.on !== 'function') return null;
+
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+
+    function cleanup() {
+      req.off('data', onData);
+      req.off('end', onEnd);
+      req.off('error', onError);
+      req.off('aborted', onAborted);
+    }
+
+    function onData(chunk) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += buf.length;
+      if (size > maxBytes) {
+        cleanup();
+        reject(new Error('payload_too_large'));
+        return;
+      }
+      chunks.push(buf);
+    }
+
+    function onEnd() {
+      cleanup();
+      resolve(Buffer.concat(chunks));
+    }
+
+    function onError(err) {
+      cleanup();
+      reject(err);
+    }
+
+    function onAborted() {
+      cleanup();
+      reject(new Error('aborted'));
+    }
+
+    req.on('data', onData);
+    req.on('end', onEnd);
+    req.on('error', onError);
+    req.on('aborted', onAborted);
+  });
+}
+
+function normalizeHexSignature(signature) {
+  const s = String(signature || '').trim();
+  if (!s) return null;
+  const cleaned = s.toLowerCase().startsWith('sha256=') ? s.slice(7).trim() : s.trim();
+  if (!/^[0-9a-f]+$/i.test(cleaned)) return null;
+  if (cleaned.length % 2 !== 0) return null;
+  return cleaned.toLowerCase();
+}
+
+function verifySignature(payloadBuffer, signature) {
+  const secret = process.env.CREEM_WEBHOOK_SECRET;
+  if (!secret) {
     return false;
   }
 
   try {
     const computed = crypto
-      .createHmac('sha256', CREEM_WEBHOOK_SECRET)
-      .update(payload)
+      .createHmac('sha256', secret)
+      .update(payloadBuffer)
       .digest('hex');
-    return computed === signature;
+    const sig = normalizeHexSignature(signature);
+    if (!sig) return false;
+    const a = Buffer.from(computed, 'hex');
+    const b = Buffer.from(sig, 'hex');
+    if (a.length !== b.length) return false;
+    return crypto.timingSafeEqual(a, b);
   } catch (error) {
     console.error('[CreemWebhook] Signature verification error:', error);
     return false;
@@ -21,10 +91,6 @@ function verifySignature(payload, signature) {
 }
 
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, creem-signature');
-
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -33,7 +99,7 @@ module.exports = async (req, res) => {
     return res.status(405).json({ success: false, error: 'Method not allowed' });
   }
 
-  if (!CREEM_WEBHOOK_SECRET) {
+  if (!process.env.CREEM_WEBHOOK_SECRET) {
     return res.status(500).json({ success: false, error: 'Creem webhook not configured' });
   }
 
@@ -47,16 +113,26 @@ module.exports = async (req, res) => {
     return res.status(400).json({ success: false, error: 'Missing creem-signature header' });
   }
 
-  const payload = typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
+  let payloadBuffer;
+  try {
+    payloadBuffer = await readRawBody(req, 2 * 1024 * 1024);
+  } catch (error) {
+    const msg = error && error.message === 'payload_too_large' ? 'Payload too large' : 'Failed to read raw body';
+    return res.status(400).json({ success: false, error: msg });
+  }
 
-  if (!verifySignature(payload, signatureHeader)) {
+  if (!payloadBuffer || payloadBuffer.length === 0) {
+    return res.status(400).json({ success: false, error: 'Missing raw body' });
+  }
+
+  if (!verifySignature(payloadBuffer, signatureHeader)) {
     console.error('[CreemWebhook] Invalid signature');
     return res.status(400).json({ success: false, error: 'Invalid signature' });
   }
 
   let event;
   try {
-    event = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    event = JSON.parse(payloadBuffer.toString('utf8'));
   } catch (error) {
     console.error('[CreemWebhook] Failed to parse payload:', error);
     return res.status(400).json({ success: false, error: 'Invalid payload' });

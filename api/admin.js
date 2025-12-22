@@ -21,6 +21,14 @@ const { JWT_SECRET } = require('../lib/auth');
 const ADMIN_EMAIL = 'rebootmindful@gmail.com';
 
 module.exports = async (req, res) => {
+  if (!JWT_SECRET) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server configuration error',
+      details: process.env.NODE_ENV !== 'production' ? 'JWT_SECRET not set' : undefined
+    });
+  }
+
   // 验证管理员权限
   const authResult = await verifyAdmin(req);
   if (!authResult.success) {
