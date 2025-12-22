@@ -3541,12 +3541,26 @@
           })
         });
 
-        const data = await response.json();
+        const text = await response.text();
+        let data = null;
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch (e) {}
 
-        if (data.success && data.paymentUrl) {
+        if (response.ok && data && data.success && data.paymentUrl) {
           window.location.href = data.paymentUrl;
         } else {
-          alert(data.error || (currentLang === 'zh' ? 'Creem 支付创建失败' : 'Failed to create Creem payment'));
+          const stage = data && data.stage ? String(data.stage) : '';
+          const upstreamStatus = data && data.upstreamStatus ? String(data.upstreamStatus) : '';
+          const baseMsg =
+            (data && data.error) ||
+            (text && text.trim()) ||
+            `HTTP ${response.status}`;
+          const detailParts = [];
+          if (stage) detailParts.push((currentLang === 'zh' ? `阶段: ${stage}` : `stage: ${stage}`));
+          if (upstreamStatus) detailParts.push((currentLang === 'zh' ? `上游状态: ${upstreamStatus}` : `upstream: ${upstreamStatus}`));
+          const detail = detailParts.length ? `\n${detailParts.join('\n')}` : '';
+          alert(`${baseMsg}${detail}`);
         }
       } catch (e) {
         console.error('Creem payment error:', e);

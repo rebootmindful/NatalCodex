@@ -187,11 +187,14 @@ module.exports = async (req, res) => {
       paymentUrl: checkoutResult.checkoutUrl
     });
   } catch (error) {
+    const rawMessage = error && typeof error.message === 'string' ? error.message : '';
+    const safeMessage = rawMessage.slice(0, 300);
+    const upstreamStatus = error && (error.status || (error.response && error.response.status));
     const debugInfo = {
       stage,
-      message: error && error.message,
+      message: safeMessage,
       name: error && error.name,
-      status: error && (error.status || (error.response && error.response.status)),
+      status: upstreamStatus,
       serverURL: CREEM_SERVER_URL,
       apiKeyPrefix: CREEM_API_KEY ? CREEM_API_KEY.slice(0, 10) : null
     };
@@ -200,8 +203,9 @@ module.exports = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: safeMessage ? safeMessage : 'Internal server error',
       stage,
+      upstreamStatus: upstreamStatus || null,
       details: process.env.NODE_ENV !== 'production' ? debugInfo : undefined
     });
   }
